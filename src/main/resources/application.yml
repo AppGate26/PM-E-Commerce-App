@@ -1,0 +1,104 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: 'true'
+    database-platform: org.hibernate.dialect.MySQLDialect
+  datasource:
+    username: admin
+    password: POMStoresAPPGATE123
+    # password: POMStores@APPGATE123
+    # url: jdbc:mysql://18.188.177.144:3306/pomstores
+    url: jdbc:mysql://pomstores.cdi4umkom8fh.us-east-2.rds.amazonaws.com:3306/pomstores
+    # username: root
+    # password: 
+    # url: jdbc:mysql://localhost:3306/pomstores
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  mail:
+    host: smtp.gmail.com
+    username: kings2kess@gmail.com
+    password: bwwtanloummhtelm
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            enable: false
+            trust: smtp.gmail.com
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+        debug: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health,info,metrics'
+
+app:
+  jwtSecret: pmsecretkeypmsecretkeypmsecretkey
+  jwtExpirationMs: 7200000
+  jwtCookieName: cmdm
+
+dojah:
+  api:
+    base-url: https://api.dojah.io
+    app-id: mock
+    secret-key: mock
+    timeout: 30000
+    mock-enabled: true  # Set to false when you have real Dojah credentials
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.appGate: DEBUG
+    web: DEBUG
+    org.springframework.web: DEBUG
+
+# logging:
+#   level:
+#     org.springframework: ERROR
+#     com.mkyong: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"
+    file: "%d %p %c{1.} [%t] %m%n"
+  file: app.log
+
+server:
+  error:
+    include-stacktrace: never
+  port: 8080
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:8065/eureka/
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  packagesToScan: com.appGate
+
+
+paystack:
+  secret:
+    Key: sk_test_34bbcec748a106d5f2084b7574aecc871ef5fc26
+  base:
+    url: https://api.paystack.co  
+  public:
+    Key: pk_test_ebad2e3ef9a0186bcfd1bcca5c11fc64625b7946
