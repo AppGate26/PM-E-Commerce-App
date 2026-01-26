@@ -61,12 +61,24 @@ public class SecurityConfig {
 
             // Goods Recovery Agent Authentication
             "/api/goods-recovery/auth/login",
+            "/api/goods-recovery/auth/forgot-password",
+            "/api/goods-recovery/auth/reset-password",
 
             // Email service (internal use - now direct method calls)
             "/api/email/send",
 
+            // Payment webhooks (must be public for payment gateway callbacks)
+            "/api/payments/webhook",
+
             // Public product browsing (optional - remove if you want auth required)
             "/api/inventory/products/public/**",
+
+            // Settings - public endpoints for language and currency options
+            "/api/settings/languages",
+            "/api/settings/currencies",
+
+            // Security questions - public for registration
+            "/api/admin/security/security-questions",
 
             // Error handling
             "/error"
@@ -149,6 +161,7 @@ public class SecurityConfig {
      * Role Hierarchy
      * Defines role inheritance: SUPER_ADMIN > ADMIN > USER
      * A SUPER_ADMIN automatically has ADMIN and USER permissions
+     * RIDER and RECOVERY_AGENT are separate roles with specific permissions
      */
     @Bean
     public RoleHierarchy roleHierarchy() {
@@ -156,6 +169,8 @@ public class SecurityConfig {
         hierarchy.setHierarchy("""
                 ROLE_SUPER_ADMIN > ROLE_ADMIN
                 ROLE_ADMIN > ROLE_USER
+                ROLE_ADMIN > ROLE_RIDER
+                ROLE_ADMIN > ROLE_RECOVERY_AGENT
                 """);
         return hierarchy;
     }
@@ -184,7 +199,8 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "http://localhost:5172",
                 "http://localhost:3000",
-                "http://localhost:4200"
+                "http://localhost:4200",
+                "https://pm-gamma-six.vercel.app"
         ));
 
         // Allow all HTTP methods

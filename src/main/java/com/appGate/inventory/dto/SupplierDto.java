@@ -1,6 +1,8 @@
 package com.appGate.inventory.dto;
 
+import jakarta.annotation.Nullable;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class SupplierDto {
@@ -12,5 +14,7 @@ public class SupplierDto {
     private String paymentTerms;
     private String deliveryTerms;
     private String address;
-    private String passportImage;
+
+    @Nullable
+    private MultipartFile passportImage;
 }

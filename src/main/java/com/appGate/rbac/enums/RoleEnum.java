@@ -3,5 +3,7 @@ package com.appGate.rbac.enums;
 public enum RoleEnum {
     SUPER_ADMIN,
     ADMIN,
-    USER
+    USER,
+    RIDER,
+    RECOVERY_AGENT
 }

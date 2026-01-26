@@ -23,6 +23,7 @@ public class ChatMessage extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "chat_conversation_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonBackReference
     private ChatConversation chatConversation;
 
     @Enumerated(EnumType.STRING)

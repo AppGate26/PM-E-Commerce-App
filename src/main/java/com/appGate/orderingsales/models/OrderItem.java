@@ -20,6 +20,7 @@ public class OrderItem extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonBackReference
     private Order order;
 
     @Column(name = "product_id", nullable = false)

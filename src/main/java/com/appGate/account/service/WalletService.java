@@ -233,12 +233,13 @@ public class WalletService {
             BaseResponse paymentVerification = paymentGatewayService.verifyPayment(paymentReference);
 
             if (paymentVerification.getStatus() == HttpStatus.OK.value()) {
-                // Extract payment details from verification response
-                Map<String, Object> paymentData = (Map<String, Object>) paymentVerification.getData();
+                // Extract payment object from verification response
+                com.appGate.account.models.Payment payment =
+                    (com.appGate.account.models.Payment) paymentVerification.getData();
 
-                if (paymentData.get("status").toString().equals("COMPLETED")) {
-                    Long userId = ((Number) paymentData.get("userId")).longValue();
-                    Double amount = ((Number) paymentData.get("amount")).doubleValue();
+                if (payment.getStatus() == com.appGate.account.enums.PaymentStatus.COMPLETED) {
+                    Long userId = payment.getUserId();
+                    Double amount = payment.getAmount();
 
                     // Credit wallet
                     creditWallet(userId, amount, "Wallet funded via Paystack - Ref: " + paymentReference);

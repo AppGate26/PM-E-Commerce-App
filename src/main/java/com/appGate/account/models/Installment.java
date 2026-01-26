@@ -1,6 +1,7 @@
 package com.appGate.account.models;
 
 import com.appGate.account.enums.InstallmentStatus;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,6 +20,7 @@ public class Installment extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "installment_plan_id", nullable = false)
+    @JsonBackReference
     private InstallmentPlan installmentPlan;
 
     @Column(nullable = false)

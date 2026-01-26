@@ -16,8 +16,9 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 
     List<Stock> findByQuantityLessThanEqual(Integer threshold);
 
-    // Find low stock items (quantity <= reorder level)
-    // List<Stock> findByQuantityLessThanEqualReorderLevel();
+    List<Stock> findByIsOpeningStockTrue();
+
+    List<Stock> findBySupplierId(Long supplierId);
 
     @Query("SELECT s FROM Stock s WHERE s.quantity <= s.reorderLevel")
     List<Stock> findLowStockItems();

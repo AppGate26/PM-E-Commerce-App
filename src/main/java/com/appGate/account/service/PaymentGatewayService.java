@@ -72,6 +72,7 @@ public class PaymentGatewayService {
             requestBody.put("amount", (int) (dto.getAmount() * 100)); // Paystack uses kobo
             requestBody.put("reference", savedPayment.getPaymentReference()); // ✅ Paystack uses this reference
             requestBody.put("callback_url", dto.getCallbackUrl());
+            requestBody.put("channels", new String[]{"card"}); // ✅ Restrict to CARD only
             requestBody.put("metadata", Map.of(
                 "userId", dto.getUserId(),
                 "paymentId", savedPayment.getId(),
@@ -112,6 +113,7 @@ public class PaymentGatewayService {
             }
 
         } catch (Exception e) {
+            e.printStackTrace(); // Log full stack trace for debugging
             return BaseResponse.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .message("Payment initialization error: " + e.getMessage())
@@ -243,7 +245,7 @@ public class PaymentGatewayService {
             Payment payment = new Payment();
             payment.setUserId(userId);
             payment.setAmount(amount);
-            payment.setPaymentMethod(PaymentMethod.WALLET); // Using WALLET to indicate wallet funding
+            payment.setPaymentMethod(PaymentMethod.CARD); // Card payment for wallet funding
             payment.setStatus(PaymentStatus.PENDING);
             payment.setPaymentReference(generatePaymentReference());
             payment.setOrderId(null); // No order for wallet funding
@@ -260,6 +262,7 @@ public class PaymentGatewayService {
             requestBody.put("amount", (int) (amount * 100)); // Paystack uses kobo
             requestBody.put("reference", savedPayment.getPaymentReference());
             requestBody.put("callback_url", callbackUrl);
+            requestBody.put("channels", new String[]{"card"}); // ✅ Restrict to CARD only
             requestBody.put("metadata", Map.of(
                 "userId", userId,
                 "paymentId", savedPayment.getId(),
@@ -300,6 +303,7 @@ public class PaymentGatewayService {
             }
 
         } catch (Exception e) {
+            e.printStackTrace(); // Log full stack trace for debugging
             return BaseResponse.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .message("Wallet funding initialization error: " + e.getMessage())

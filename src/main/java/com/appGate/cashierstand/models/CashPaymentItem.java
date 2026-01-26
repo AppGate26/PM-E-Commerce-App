@@ -22,6 +22,7 @@ public class CashPaymentItem extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "cash_payment_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonBackReference
     private CashPayment cashPayment;
 
     @Column(name = "product_name")

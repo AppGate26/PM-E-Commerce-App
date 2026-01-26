@@ -309,6 +309,24 @@ public class CustomerService {
         return new BaseResponse(HttpStatus.OK.value(), "successful", customerRepository.save(customer));
     }
 
+    public BaseResponse updateOnlineCustomer(Long customerId, CustomerDto customerDto, HttpServletRequest request) {
+
+        Customer customer = getCustomer(customerId);
+
+        String baseUrl = getBaseUrl(request);
+
+        if (customerDto.getPassport() != null && !customerDto.getPassport().isEmpty()) {
+            updateImage(customer, customerDto, "passport", baseUrl);
+        }
+        if (customerDto.getSignature() != null && !customerDto.getSignature().isEmpty()) {
+            updateImage(customer, customerDto, "signature", baseUrl);
+        }
+
+        updateCustomer(customer, customerDto);
+
+        return new BaseResponse(HttpStatus.OK.value(), "Online customer updated successfully", customerRepository.save(customer));
+    }
+
     private void updateImage(Customer customer, CustomerDto customerDto, String imageType, String baseUrl) {
 
         if ("passport".equals(imageType) && customerDto.getPassport() != null) {

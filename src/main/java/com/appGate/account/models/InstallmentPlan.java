@@ -2,6 +2,7 @@ package com.appGate.account.models;
 
 import com.appGate.account.enums.InstallmentFrequency;
 import com.appGate.account.enums.InstallmentStatus;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -71,5 +72,6 @@ public class InstallmentPlan extends BaseEntity {
     private Boolean earlyShipmentEligible = false; // After 2nd payment
 
     @OneToMany(mappedBy = "installmentPlan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Installment> installments = new ArrayList<>();
 }

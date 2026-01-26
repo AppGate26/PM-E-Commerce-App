@@ -215,12 +215,7 @@ public class ProductService {
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED, "error", e);
         }
 
-        fileSavedPath = baseUrl + "/api/users/customer/image/" + fileSavedPath;
-
-        System.out.println("fileSavedPath " + fileSavedPath);
-        System.out.println("baseUrl " + baseUrl);
-
-        return fileSavedPath;
+        return baseUrl + "/api/users/customer/image/" + fileSavedPath;
     }
 
     private String getBaseUrl(HttpServletRequest request) {

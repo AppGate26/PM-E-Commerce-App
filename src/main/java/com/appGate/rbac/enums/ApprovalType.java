@@ -1,0 +1,14 @@
+package com.appGate.rbac.enums;
+
+public enum ApprovalType {
+    STOCK_ADD,
+    CREDIT_SALES,
+    CASH_SALES,
+    CUSTOMER_REGISTRATION,
+    GOODS_SUPPLIED,
+    STOCK_DELETE,
+    SUPPLIER_REGISTRATION,
+    CUSTOMER_SUSPENSION,
+    CUSTOMER_UNBLOCK,
+    JOURNAL_ENTRY
+}

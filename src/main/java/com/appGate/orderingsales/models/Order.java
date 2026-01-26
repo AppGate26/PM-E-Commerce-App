@@ -111,6 +111,7 @@ public class Order extends BaseEntity {
 
     // Order items
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @Column(name = "notes", length = 1000)

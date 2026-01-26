@@ -3,6 +3,7 @@ package com.appGate.orderingsales.models;
 import com.appGate.orderingsales.enums.CustomerType;
 import com.appGate.orderingsales.enums.OrderStatus;
 import com.appGate.orderingsales.enums.SalesOrderType;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -123,6 +124,7 @@ public class SalesOrder extends BaseEntity {
 
     // Loan details reference
     @OneToOne(mappedBy = "salesOrder", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private LoanDetails loanDetails;
 
     @Column(name = "comment", length = 500)

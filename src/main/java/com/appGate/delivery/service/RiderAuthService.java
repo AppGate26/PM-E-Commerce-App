@@ -10,6 +10,7 @@ import com.appGate.email.dto.EmailDto;
 import com.appGate.email.services.EmailService;
 import com.appGate.rbac.dto.ResetPasswordDto;
 import com.appGate.rbac.models.User;
+import com.appGate.rbac.repository.UserRepository;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -35,16 +36,19 @@ public class RiderAuthService {
     private final String jwtSecret;
     private final int jwtExpirationMs;
     private final EmailService emailService;
+    private final UserRepository userRepository;
 
     public RiderAuthService(
             RiderRepository riderRepository,
             PasswordEncoder passwordEncoder,
             EmailService emailService,
+            UserRepository userRepository,
             @Value("${app.jwtSecret}") String jwtSecret,
             @Value("${app.jwtExpirationMs}") int jwtExpirationMs) {
         this.riderRepository = riderRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.userRepository = userRepository;
         this.jwtSecret = jwtSecret;
         this.jwtExpirationMs = jwtExpirationMs;
     }
@@ -54,10 +58,14 @@ public class RiderAuthService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
 
         if (rider.getSuspended()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Your account has been suspended: " + rider.getReasonForSuspension());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Your account has been suspended: " + rider.getReasonForSuspension());
         }
 
-        if (rider.getPassword() == null || !passwordEncoder.matches(loginDto.getPassword(), rider.getPassword())) {
+        User user = userRepository.findByEmail(rider.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
+
+        if (user.getPassword() == null || !passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
 
@@ -76,7 +84,10 @@ public class RiderAuthService {
         Rider rider = riderRepository.findById(riderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rider not found"));
 
-        if (!passwordEncoder.matches(dto.getOldPassword(), rider.getPassword())) {
+        User user = userRepository.findByEmail(rider.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email"));
+
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Old password is incorrect");
         }
 
@@ -84,8 +95,8 @@ public class RiderAuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
         }
 
-        rider.setPassword(passwordEncoder.encode(dto.getNewPassword()));
-        riderRepository.save(rider);
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
 
         return new BaseResponse(HttpStatus.OK.value(), "Password changed successfully", null);
     }
@@ -94,46 +105,46 @@ public class RiderAuthService {
         Rider rider = riderRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No rider found with this email"));
 
-            Random random = new Random();
-            int otp = 100000 + random.nextInt(900000);
+        User user = userRepository.findByEmail(rider.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email"));
 
-            rider.setResetOtp(String.valueOf(otp));
-            riderRepository.save(rider);
+        Random random = new Random();
+        int otp = 100000 + random.nextInt(900000);
 
-                        // Send password reset email
-            EmailDto emailDto = new EmailDto();
-            emailDto.setRecipient(rider.getEmail().toLowerCase());
-            emailDto.setSubject("Password Reset Request - PomStores");
-            emailDto.setContent(buildPasswordResetEmailContent(rider.getOtherName(), otp));
+        user.setResetOtp(String.valueOf(otp));
+        userRepository.save(user);
 
-            // Send email asynchronously to avoid blocking the response
-            try {
-                emailService.sendEmail(emailDto);
-            } catch (Exception e) {
-                // Log the error but don't fail the password reset process
-                System.err.println("Failed to send password reset email to " + rider.getEmail() + ": " + e.getMessage());
-            } 
+        // Send password reset email
+        EmailDto emailDto = new EmailDto();
+        emailDto.setRecipient(rider.getEmail().toLowerCase());
+        emailDto.setSubject("Password Reset Request - PomStores");
+        emailDto.setContent(buildPasswordResetEmailContent(rider.getOtherName(), otp));
+
+        // Send email asynchronously to avoid blocking the response
+        try {
+            emailService.sendEmail(emailDto);
+        } catch (Exception e) {
+            // Log the error but don't fail the password reset process
+            System.err.println("Failed to send password reset email to " + rider.getEmail() + ": " + e.getMessage());
+        }
 
         return new BaseResponse(HttpStatus.OK.value(),
                 "Password reset instructions have been sent to your email", null);
     }
 
     public BaseResponse resetPassword(ResetPasswordDto resetPasswordDto) {
-        Optional<Rider> rider = riderRepository.findByEmail(resetPasswordDto.getEmail().toLowerCase());
+        Rider rider = riderRepository.findByEmail(resetPasswordDto.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No rider found with this email"));
 
-        System.out.println("Reset Password Request for email: " + resetPasswordDto.getEmail());
+        User user = userRepository.findByEmail(rider.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User does not exist"));
 
-        if (rider.isPresent()) {
-            if (rider.get().getResetOtp().equals(resetPasswordDto.getResetOtp())) {
-                rider.get().setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
-                riderRepository.save(rider.get());
-                return new BaseResponse(HttpStatus.OK.value(), "successful", "Password reset successful");
-            } else {
-                return new BaseResponse(HttpStatus.BAD_REQUEST.value(), "failure", "Invalid OTP");
-            }
+        if (user.getResetOtp().equals(resetPasswordDto.getResetOtp())) {
+            user.setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
+            userRepository.save(user);
+            return new BaseResponse(HttpStatus.OK.value(), "successful", "Password reset successful");
         }
-
-        return new BaseResponse(HttpStatus.FORBIDDEN.value(), "failure", "User does not exist");
+        return new BaseResponse(HttpStatus.BAD_REQUEST.value(), "failure", "Invalid OTP");
     }
 
     private String generateRiderToken(Rider rider) {
@@ -151,7 +162,7 @@ public class RiderAuthService {
                 .compact();
     }
 
-        private String buildPasswordResetEmailContent(String firstName, int otp) {
+    private String buildPasswordResetEmailContent(String firstName, int otp) {
         return """
                 <!DOCTYPE html>
                 <html>
@@ -206,7 +217,8 @@ public class RiderAuthService {
                     </div>
                 </body>
                 </html>
-                """.formatted(firstName, otp);
+                """
+                .formatted(firstName, otp);
     }
 
 }

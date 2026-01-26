@@ -198,4 +198,14 @@ public class SalesController {
         Page<SalesOrder> orders = salesService.getWalkInCreditReport(startDate, endDate, page, size);
         return new BaseResponse(HttpStatus.OK.value(), "successful", orders);
     }
+
+    @GetMapping("/reports/walk-in/cash")
+    public BaseResponse getWalkInCashReport(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<SalesOrder> orders = salesService.getWalkInCashReport(startDate, endDate, page, size);
+        return new BaseResponse(HttpStatus.OK.value(), "successful", orders);
+    }
 }

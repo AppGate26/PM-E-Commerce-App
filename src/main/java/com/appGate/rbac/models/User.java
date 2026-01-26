@@ -2,6 +2,7 @@ package com.appGate.rbac.models;
 
 import com.appGate.rbac.enums.RoleEnum;
 import com.appGate.rbac.enums.GenderEnum;
+import com.appGate.rbac.enums.UserStatusEnum;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -48,7 +49,17 @@ public class User extends BaseEntity {
 
     @Column(name = "resetOtp")
     private String resetOtp;
-    
+
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private UserStatusEnum status = UserStatusEnum.ACTIVE;
+
+    @Column(name = "department")
+    private String department;
+
+    @Column(name = "user_code")
+    private String userCode;
 }

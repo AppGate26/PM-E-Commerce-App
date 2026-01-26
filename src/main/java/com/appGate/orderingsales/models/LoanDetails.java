@@ -1,5 +1,6 @@
 package com.appGate.orderingsales.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class LoanDetails extends BaseEntity {
 
     @OneToOne
     @JoinColumn(name = "sales_order_id", nullable = false)
+    @JsonBackReference
     private SalesOrder salesOrder;
 
     @Column(name = "loan_type")

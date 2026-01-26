@@ -40,5 +40,6 @@ public class ChatConversation extends BaseEntity {
     private Integer unreadCount = 0;
 
     @OneToMany(mappedBy = "chatConversation", cascade = CascadeType.ALL)
+    @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<ChatMessage> messages = new ArrayList<>();
 }

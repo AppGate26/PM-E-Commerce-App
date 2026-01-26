@@ -11,7 +11,7 @@ public class CustomerDto {
 
     private String accountNumber;
     private String email;
-    private String surname ;
+    private String surname;
     private String firstName;
     private String dob;
     private String phoneNumber;

@@ -54,4 +54,6 @@ public class Rider extends BaseEntity{
     @Column(name = "resetOtp")
     private String resetOtp;
 
+    @Column(name = "userId", unique = true)
+    private Long userId;
 }

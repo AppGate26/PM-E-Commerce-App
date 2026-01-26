@@ -28,7 +28,6 @@ public class CustomerController {
 
     @PostMapping(value = "/admin/add-walk-in-customer", consumes = "multipart/form-data")
     public BaseResponse createWalkinCustomer(@ModelAttribute CustomerDto customerDto, HttpServletRequest request) {
-
         return customerService.createWalkinCustomer(customerDto, request);
     }
 
@@ -49,6 +48,11 @@ public class CustomerController {
     @PutMapping(value = "/admin/update-walk-in-customer/{customerId}", consumes = "multipart/form-data")
     public BaseResponse updateWalkinCustomer(@PathVariable Long customerId, @ModelAttribute CustomerDto customerDto, HttpServletRequest request) {
         return customerService.updateWalkinCustomer(customerId, customerDto, request);
+    }
+
+    @PutMapping(value = "/admin/update-online-customer/{customerId}", consumes = "multipart/form-data")
+    public BaseResponse updateOnlineCustomer(@PathVariable Long customerId, @ModelAttribute CustomerDto customerDto, HttpServletRequest request) {
+        return customerService.updateOnlineCustomer(customerId, customerDto, request);
     }
 
     @GetMapping(path = "/admin/customers")

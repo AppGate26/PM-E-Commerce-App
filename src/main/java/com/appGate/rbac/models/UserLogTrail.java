@@ -29,8 +29,17 @@ public class UserLogTrail {
     private LocalTime timeIn;
 
     @Column(name = "activity")
-    private String activity; // PURCHASE, ORDER, COMPLAIN
+    private String activity; // PURCHASE, ORDER, COMPLAIN, LOGIN, LOGOUT
 
     @Column(name = "time_out")
     private LocalTime timeOut;
+
+    @Column(name = "ip_address")
+    private String ipAddress;
+
+    @Column(name = "user_agent")
+    private String userAgent;
+
+    @Column(name = "session_active")
+    private Boolean sessionActive = false;
 }

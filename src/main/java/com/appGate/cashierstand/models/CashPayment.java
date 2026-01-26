@@ -50,5 +50,6 @@ public class CashPayment extends BaseEntity {
     private LocalDateTime transactionDate;
 
     @OneToMany(mappedBy = "cashPayment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<CashPaymentItem> items = new ArrayList<>();
 }

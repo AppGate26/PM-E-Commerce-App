@@ -18,7 +18,11 @@ import com.appGate.delivery.repository.RiderBoxRepository;
 import com.appGate.delivery.repository.RiderRepository;
 import com.appGate.delivery.response.BaseResponse;
 import com.appGate.delivery.utils.FileUploadUtil;
+
+import com.appGate.rbac.repository.UserRepository;
+
 import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
@@ -27,25 +31,31 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.appGate.rbac.enums.RoleEnum;
+import com.appGate.rbac.models.User;
+
 
 @Service
 public class RiderService {
 
     private final RiderRepository riderInfoRepository;
     private final RiderBoxRepository riderBoxRepository;
+    private final UserRepository userRepository;
 
-    public RiderService(RiderRepository riderInfoRepository, RiderBoxRepository riderBoxRepository) {
+
+    public RiderService(RiderRepository riderInfoRepository, RiderBoxRepository riderBoxRepository, UserRepository userRepository) {
         this.riderInfoRepository = riderInfoRepository;
         this.riderBoxRepository = riderBoxRepository;
+        this.userRepository = userRepository;
     }
 
     public BaseResponse createRider(RiderDto riderInfoDto, HttpServletRequest request){
        String baseUrl  = getBaseurl(request);
 
-       return  new BaseResponse(HttpStatus.CREATED.value(),"Success", saveRider(riderInfoDto, baseUrl));
+       return new BaseResponse(HttpStatus.CREATED.value(),"Success", saveRider(riderInfoDto, baseUrl));
     }
 
-    private   String getBaseurl(HttpServletRequest request){
+    private String getBaseurl(HttpServletRequest request){
         String forwardedHost = request.getHeader("X-Forwarded-Host");
         String forwardedProto = request.getHeader("X-Forwarded-Proto");
         String forwardedPrefix = request.getHeader("X-Forwarded-Prefix");
@@ -98,7 +108,20 @@ public class RiderService {
     // save the rider info::
     private Rider saveRider(RiderDto riderInfoDto, String baseUrl){
         // create the rider instance::
+
+        User user = new User();
+        user.setEmail(riderInfoDto.getEmail());
+        user.setFirstName(riderInfoDto.getOtherName());
+        user.setLastName(riderInfoDto.getSurName());
+        user.setPassword(riderInfoDto.getEmail());
+        user.setRole(RoleEnum.RIDER);
+        user.setPhoneNumber(riderInfoDto.getPhoneNumber());
+
+        User newUser = userRepository.save(user);
+
+
         Rider riderInfo = new Rider();
+        riderInfo.setUserId(newUser.getId());
         riderInfo.setSurName(riderInfoDto.getSurName());
         riderInfo.setOtherName(riderInfoDto.getOtherName());
         riderInfo.setContactAddress(riderInfoDto.getContactAddress());

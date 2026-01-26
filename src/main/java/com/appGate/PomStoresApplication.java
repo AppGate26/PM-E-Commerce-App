@@ -35,7 +35,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
     "com.appGate.orderingsales", // Orders & sales
     "com.appGate.rbac",          // Authentication & authorization
     "com.appGate.recovery",      // Account recovery (password reset)
-    "com.appGate.goodsrecovery"  // Goods recovery (item retrieval from defaulting customers)
+    "com.appGate.goodsrecovery",  // Goods recovery (item retrieval from defaulting customers)
+    "com.appGate.settings"        // Settings (set language, currency)
 })
 public class PomStoresApplication {
 

@@ -322,4 +322,10 @@ public class SalesService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return salesOrderRepository.findWalkInCreditOrders(startDate, endDate, pageable);
     }
+
+    public Page<SalesOrder> getWalkInCashReport(LocalDateTime startDate,
+            LocalDateTime endDate, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return salesOrderRepository.findWalkInCashOrders(startDate, endDate, pageable);
+    }
 }
