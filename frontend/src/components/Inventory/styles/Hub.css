@@ -1,0 +1,88 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+body {
+  background-color: #f6faff;
+}
+.hub-container {
+  margin-top: 10rem;
+}
+.hub-image {
+  width: 100%;
+  object-fit: cover;
+}
+.hub-h2 {
+  font-size: 5.3rem;
+  color: #676767;
+  font-weight: 600;
+  font-family: "Montserrat";
+}
+.hub-h1 {
+  font-family: "Montserrat";
+  font-weight: 600;
+  font-size: 17rem;
+  color: #0867db;
+}
+.hub-txt {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  line-height: 2.5rem;
+}
+
+
+/* ***********************  */
+/* BELOW 1200PX (LANDSCAPE TABLET) */
+/* **************** ********/
+@media (max-width: 75em) {
+  .hub-image {
+    height: 100%;
+  }
+  .hub-h2 {
+    font-size: 5rem;
+  }
+  .hub-h1 {
+    font-size: 15rem;
+  }
+  .hub-txt {
+    font-size: 1.5rem;
+  }
+}
+@media (max-width: 59em){
+   .hub-image {
+    width: 100%;
+    height: 80%;
+    /* background-color: red; */
+    object-fit: contain;
+  }
+  .hub-container {
+  margin-top: 5rem;
+}
+}
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+/* 550 / 16 =34 */
+@media (max-width: 34em) {
+  .hub-container {
+    margin-top: 6rem;
+  }
+  .hub-txt {
+    padding-bottom: 3rem;
+  }
+  .hub-h2{
+    font-size: 4rem;
+  }
+ 
+   .hub-h1 {
+    font-size: 12rem;
+  }
+}
+
+@media (max-width: 22.5em) {
+  .hub-h2 {
+    font-size: 4rem;
+  }
+  .hub-h1 {
+    font-size: 12rem;
+  }
+}

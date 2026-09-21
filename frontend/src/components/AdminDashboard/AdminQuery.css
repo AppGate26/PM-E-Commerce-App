@@ -1,0 +1,64 @@
+/* ***********************  */
+/* BELOW 1200PX (LANDSCAPE TABLET) */
+/* **************** ********/
+@media (max-width: 75em) {
+  .a-logo {
+    width: 240px;
+    height: 240px;
+  }
+  .management-row {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 4rem 4rem 7rem;
+    height: fit-content;
+  }
+  .management-box {
+    text-align: center;
+  }
+}
+@media (max-width: 59em) {
+  .dashboard-section {
+    height: fit-content;
+    overflow-y: auto;
+    /* padding-bottom: 6rem; */
+  }
+  .management-row {
+    padding: 4rem 4rem;
+    row-gap: 6rem;
+    /* Keep total height within viewport on medium screens */
+    height: calc(100vh - 11rem); /* 4rem top + 7rem bottom padding */
+  }
+}
+/* ***********************  */
+/* BELOW 724PX (small tablet) */
+/* **************** ********/
+@media (max-width: 48em) {
+  .box-logo {
+    display: none !important;
+  }
+}
+
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+@media (max-width: 34em) {
+  .management-row {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 4rem 1rem;
+    column-gap: 2rem;
+    row-gap: 4rem;
+  }
+  .management-box {
+    text-align: center;
+    font-size: 1.8rem;
+    line-height: 2.2rem;
+  }
+}
+
+@media (max-width: 22.5em) {
+  .management-row {
+    grid-template-columns: 1fr;
+    padding: 4rem 2rem 7rem;
+    column-gap: 2rem;
+    row-gap: 4rem;
+  }
+}

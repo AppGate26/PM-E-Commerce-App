@@ -1,0 +1,121 @@
+body.product_active-modal {
+  overflow-y: hidden;
+}
+
+.EditCat_modal,
+.EditCat_modal-overlay {
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  z-index: 1;
+}
+
+.EditCat_modal-overlay {
+  background: rgba(0, 0, 1, 0.6);
+  z-index: -1;
+}
+.EditCat_modal-content {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1.4;
+  background: transparent;
+  border-radius: 3px;
+  z-index: 999;
+  max-width: 1000px;
+  min-width: 700px;
+}
+.cat-container-box {
+  background-color: white;
+  border-radius: 10px;
+  overflow: auto;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+.cat-category-id-dropdown {
+  width: 40rem;
+  background-color: white;
+  height: 10vh;
+  display: flex;
+  align-items: center;
+  font-size: 2rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-family: "Montserrat", sans-serif;
+  justify-content: space-evenly;
+  color: #868e96;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+.cat-container-box {
+  padding: 2rem;
+}
+.cat-id-dropdown-content {
+  width: 40rem;
+}
+.cat-id-dropdown {
+  background-color: white;
+  padding: 2rem 4rem;
+  border-bottom: 5px solid #f8f9fa;
+  font-size: 1.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #868e96;
+  cursor: pointer;
+}
+
+.edit-check-cat_name {
+  background-color: white;
+  width: 90%;
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  margin: 4rem 0;
+  height: 10vh;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  font-weight: 500;
+  color: #868e96;
+  cursor: pointer;
+  padding-left: 3rem;
+}
+.edit-check-cat_desc {
+  height: 20vh;
+}
+/* EDIT ICON */
+.custom-icon {
+  width: 26px;
+  height: 26px;
+  fill: #fff;
+}
+.cat-shift-icon {
+  position: relative;
+  top: -3.6rem;
+}
+.cat-bg-icon {
+  background-color: #0867db;
+  height: 10vh;
+  width: 10%;
+  padding: 12px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  border-radius: 0 6px 0 0;
+  cursor: pointer;
+}
+
+.btn-save {
+  position: relative;
+  left: 21.4em;
+  width: 25%;
+  background-color: #0867db;
+  padding: 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 2rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #fff;
+}

@@ -1,0 +1,13 @@
+{
+    "productId": 1,
+    "categoryId": 1,
+    "subCategoryId": 1,
+    "supplierId": 1,
+    "description": "drive",
+    "quantity": 4,
+    "reorderLevel": 3,
+    "unitPrice": "500",
+    "accountToCredit": "account to credit 1",
+    "accountToDebit": "account to debit 2",
+    "date": "2026-03-23"
+}

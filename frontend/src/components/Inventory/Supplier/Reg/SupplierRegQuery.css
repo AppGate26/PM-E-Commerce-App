@@ -1,0 +1,124 @@
+/* ***********************  */
+/* BELOW 1344PX (FOR SMALLER COMPUTER) */
+/* **************** ********/
+@media (max-width: 75em) {
+  .bg-reg-container {
+    width: 800px;
+
+    padding: 4rem 6rem 0;
+  }
+
+  #save-reg-btn {
+    left: 39em;
+  }
+  .icon-reg-uploader {
+    left: 14rem;
+    top: -6.5rem;
+  }
+
+  .reg-form label {
+    font-size: 14px;
+  }
+}
+@media (max-width: 59em) {
+  .reg_modal-content {
+    position: absolute;
+    left: 50% !important;
+  }
+  #reg-supplier-cancel {
+    left: 54em;
+  }
+  
+}
+/* ***********************  */
+/* BELOW 724PX (small tablet) */
+/* **************** ********/
+@media (max-width: 51em) {
+  .bg-reg-container {
+    width: 750px;
+    padding: 4rem 4rem 0;
+  }
+}
+
+/* ***********************  */
+/* BELOW 724PX (small tablet) */
+/* **************** ********/
+@media (max-width: 48em) {
+  .bg-reg-container {
+    width: 700px;
+    padding: 4rem 2rem 0;
+    max-height: calc(200vh - 200px); /* Adjust as needed */
+    border-radius: 12px;
+  }
+  .form-end {
+    padding-left: 0rem;
+  }
+  .reg_modal-content {
+    max-height: calc(100vh - 100px); /* Adjust as needed */
+    overflow-y: auto;
+    position: fixed;
+  }
+  #save-reg-btn {
+    left: 35em;
+    margin: 2rem 0;
+    top: 0rem;
+  }
+}
+
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+@media (max-width: 34em) {
+  #reg-supplier-cancel{
+    left: 70em;
+  }
+  .supplier-reg-h1{
+    margin-left: 16rem;
+    width: max-content;
+  }
+  .reg_modal-content {
+background-color: white;
+    position: relative;
+    top: 50%;
+    width: max-content ;
+    min-width: 96%;
+    left: 50% !important;
+
+    /* height: 20px; */
+  }
+  .bg-reg-container {
+    padding: 4rem 2rem 0;
+    border-radius: 12px;
+  }
+  .grid-supplier-reg{
+    display: grid;
+    width: max-content !important;
+    grid-template-columns: 1fr 1fr;
+  }
+  #save-reg-btn {
+    left: 19em;
+    margin: 2rem 0;
+    top: 0rem;
+  }
+}
+
+@media (max-width: 25em) {
+  .bg-reg-container {
+    width: 370px;
+    padding: 4rem 2rem 0;
+    max-height: calc(240vh - 240px); /* Adjust as needed */
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 23em) {
+  .bg-reg-container {
+    width: 340px;
+    padding: 4rem 2rem 0;
+    max-height: calc(240vh - 240px); /* Adjust as needed */
+    border-radius: 12px;
+  }
+  #save-reg-btn {
+    left: 17em;
+  }
+}

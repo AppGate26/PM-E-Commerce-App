@@ -1,0 +1,63 @@
+/* ***********************  */
+/* BELOW 1200PX (LANDSCAPE TABLET) */
+/* **************** ********/
+@media (max-width: 75em) {
+  .stock_setup_modal-content {
+    background-color: white;
+    min-width: 850px;
+  }
+  .stock_setup-container {
+    max-width: 1000px;
+    min-width: 850px;
+  }
+
+  #setup-close_icon {
+    left: 45em;
+  }
+}
+@media (max-width: 59em) {
+#open-stock-close{
+  left: 64em ;
+}
+}
+/* ***********************  */
+/* BELOW 724PX (small tablet) */
+/* **************** ********/
+@media (max-width: 50em) {
+  .stock_setup_modal-content {
+
+    min-width: 750px;
+  }
+  .stock_setup-container {
+    min-width: 750px;
+  }
+
+ #open-stock-close{
+  left:54em ;
+}
+
+  .stock-insert_btn {
+    margin: 3rem 0rem 2rem 20em;
+  }
+}
+
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+@media (max-width: 34em) {
+  .stock_setup_modal-content{
+    min-width: 96%;
+    scrollbar-width: none;
+  }
+.stock_setup-container {
+  width: 300px;
+}
+  #setup-close_icon {
+    left: 40em;
+  }
+
+  .stock-insert_btn {
+    margin: 3rem 0rem 2rem 20em;
+  }
+
+}

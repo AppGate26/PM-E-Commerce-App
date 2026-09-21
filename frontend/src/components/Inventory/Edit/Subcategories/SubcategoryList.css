@@ -1,0 +1,133 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+.subcategory-list-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.subcategory-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #0867db;
+  padding: 1.6rem 6rem;
+}
+
+.subcategory-nav-title {
+  font-size: 2rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: white;
+  font-family: "Montserrat", sans-serif;
+  margin: 0;
+}
+
+.subcategory-content {
+  padding: 2rem 4rem;
+  background-color: white;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.subcategory-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #212529;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  margin-bottom: 2rem;
+}
+
+.subcategory-table-container {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.subcategory-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.subcategory-table th {
+  padding: 1.5rem 2rem;
+  text-align: left;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  color: #ffffff;
+  border-bottom: 2px solid #e9ecef;
+  background-color: #0867db;
+}
+
+.subcategory-table td {
+  padding: 1.5rem 2rem;
+  font-size: 1.4rem;
+  font-weight: 500;
+  font-family: "Montserrat", sans-serif;
+  color: #495057;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.subcategory-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.subcategory-row:hover {
+  background-color: #f8f9fa;
+}
+
+.subcategory-row:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.subcategory-row:nth-child(even):hover {
+  background-color: #f0f0f0;
+}
+
+.delete-subcategory-btn {
+  background: none;
+  border: none;
+  color: #f3989a;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  transition: color 0.2s;
+}
+
+.delete-subcategory-btn:hover {
+  color: #dc3545;
+}
+
+.delete-subcategory-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading-message,
+.no-subcategories-message {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #868e96;
+  padding: 4rem 2rem;
+  font-family: "Montserrat", sans-serif;
+  text-transform: uppercase;
+}
+
+.error-message {
+  color: #f3989a;
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  font-family: "Montserrat", sans-serif;
+}
+

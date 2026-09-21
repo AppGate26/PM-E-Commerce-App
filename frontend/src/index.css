@@ -1,0 +1,83 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+.cashier-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #0867db;
+  background: #ffffff;
+  color: #0867db;
+  font-weight: 700;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-right: 10px;
+  text-decoration: none;
+  line-height: 1.2;
+}
+
+.cashier-back-btn:hover {
+  background: #e9f2ff;
+}
+
+.cashier-back-btn:focus-visible {
+  outline: 2px solid #0867db;
+  outline-offset: 2px;
+}
+
+.cashier-back-icon {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+
+}
+html {
+  /* font-size: 10px; */
+  /* 10px / 16px = 0.625 = 62.5% */
+  /* Percentage of user's browser font-size setting */
+  font-size: 62.5%;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  line-height: 1;
+  font-weight: 400;
+  color: #555;
+  /* overflow-x: hidden; */
+}
+
+/* Hide scrollbar but allow scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+:root {
+  --primary-blue: #0867db;
+  --light-blue: #C6DCF5;
+  --light-bg: #f6faff;
+  --white: #ffffff;
+  --text-dark: #495057;
+  --text-gray: #666666;
+  --text-light-gray: #adb5bd;
+  --border-light: #dee2e6;
+  --table-alt-row: #f8fbff;
+  --table-hover: #eef5ff;
+  --success-green: #28a745;
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.25);
+  --overlay-dark: rgba(0, 0, 0, 0.7);
+}

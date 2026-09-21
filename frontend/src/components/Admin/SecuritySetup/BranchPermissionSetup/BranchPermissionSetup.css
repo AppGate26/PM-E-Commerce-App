@@ -1,0 +1,187 @@
+/* Branch & Permission Setup — additions layered on top of SecurityStandard.css.
+   Every rule is scoped under .branch-registry-page so nothing here can affect
+   any other Security Setup screen (they share the same base stylesheet). */
+
+.branch-registry-page .reg-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.branch-registry-page .reg-stat-card {
+  padding: 18px 20px;
+  border: 1px solid #dce8f7;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 12px 26px rgba(28, 70, 136, 0.06);
+}
+
+.branch-registry-page .reg-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8ea1bd;
+}
+
+.branch-registry-page .reg-stat-label svg {
+  width: 12px;
+  height: 12px;
+}
+
+.branch-registry-page .reg-stat-value {
+  margin-top: 8px;
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: #14325b;
+  letter-spacing: -0.01em;
+}
+
+.branch-registry-page .reg-stat-value.hq {
+  font-size: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #0456ba;
+}
+
+.branch-registry-page .reg-stat-value.hq svg {
+  width: 16px;
+  height: 16px;
+}
+
+.branch-registry-page .reg-stat-sub {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: #8ea1bd;
+}
+
+.branch-registry-page .reg-stat-sub strong {
+  color: #647890;
+  font-weight: 700;
+}
+
+/* Head Office indicator badge — shown wherever a branch or assignment is flagged */
+.branch-registry-page .reg-hq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #0f6ae6 0%, #2f82f9 100%);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  width: fit-content;
+  box-shadow: 0 6px 14px rgba(15, 106, 230, 0.28);
+}
+
+.branch-registry-page .reg-hq-badge svg {
+  width: 11px;
+  height: 11px;
+}
+
+.branch-registry-page .reg-hq-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #c9ddfb;
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: #eef5ff;
+  color: #0456ba;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.branch-registry-page .reg-hq-chip svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Icon-based row actions, replacing bare text links */
+.branch-registry-page .reg-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.branch-registry-page .reg-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #dce8f7;
+  background: #ffffff;
+  display: inline-grid;
+  place-items: center;
+  color: #647890;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.branch-registry-page .reg-icon-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.branch-registry-page .reg-icon-btn:hover {
+  transform: translateY(-1px);
+  border-color: #a9c0ff;
+  background: #eef5ff;
+  color: #0456ba;
+}
+
+.branch-registry-page .reg-icon-btn.danger:hover {
+  border-color: #f59b9b;
+  background: #fff5f5;
+  color: #c33d3d;
+}
+
+/* Segmented control for Head Office / Branch Office posting */
+.branch-registry-page .reg-segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #d8e5f5;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.branch-registry-page .reg-segmented button {
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #8ea1bd;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.branch-registry-page .reg-segmented button.on {
+  background: #ffffff;
+  color: #0456ba;
+  box-shadow: 0 6px 14px rgba(28, 70, 136, 0.1);
+}
+
+@media (max-width: 1080px) {
+  .branch-registry-page .reg-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .branch-registry-page .reg-stats {
+    grid-template-columns: 1fr;
+  }
+}

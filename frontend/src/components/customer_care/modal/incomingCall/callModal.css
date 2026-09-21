@@ -1,0 +1,252 @@
+.incoming-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(8, 26, 56, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.incoming-modal {
+  width: min(520px, 100%);
+  background: #f7fbff;
+  border: 1px solid #c6d8f1;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.33);
+  position: relative;
+}
+
+.incoming-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #bfd2ed;
+  background: #fff;
+  color: #335e98;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.incoming-header {
+  padding: 16px;
+  background: linear-gradient(90deg, #103b7a 0%, #1b5cb8 100%);
+  color: #edf5ff;
+  text-align: center;
+}
+
+.incoming-header.active {
+  background: linear-gradient(90deg, #0f7d4c 0%, #15a15f 100%);
+}
+
+.incoming-header h3 {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 1.05rem;
+}
+
+.incoming-header p {
+  margin: 5px 0 0;
+  font-size: 0.85rem;
+  color: #d9e8ff;
+}
+
+.incoming-body {
+  padding: 18px;
+}
+
+.incoming-empty,
+.incoming-pending,
+.incoming-active {
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.incoming-empty p,
+.incoming-pending p,
+.incoming-active p {
+  color: #5b7aa6;
+}
+
+.incoming-pending img,
+.incoming-active img {
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #1f63c3;
+  margin-bottom: 12px;
+}
+
+.incoming-active img {
+  border-color: #169258;
+}
+
+.incoming-pending h4,
+.incoming-active h4 {
+  margin: 0;
+  color: #1b4276;
+}
+
+.incoming-pending small {
+  color: #6d8bb1;
+}
+
+.incoming-nav {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.incoming-nav button {
+  border: 1px solid #c5d7f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #31598f;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.incoming-nav button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.incoming-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.incoming-footer {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.action-success,
+.action-danger,
+.action-light {
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.action-success,
+.action-danger {
+  flex: 1;
+  color: #fff;
+}
+
+.action-light {
+  flex: 1;
+  border: 1px solid #c4d7f0;
+  background: #fff;
+  color: #335f96;
+}
+
+.action-light.warn {
+  color: #c03939;
+  border-color: #efc4c4;
+}
+
+.action-success {
+  background: #1d9f60;
+}
+
+.action-danger {
+  background: #d74343;
+}
+
+.action-success:disabled,
+.action-danger:disabled,
+.action-light:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.end-form {
+  width: 100%;
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.end-form label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #4b6790;
+  text-transform: uppercase;
+}
+
+.end-form select,
+.end-form textarea {
+  width: 100%;
+  border: 1px solid #c5d7f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f4676;
+  font-size: 0.92rem;
+  padding: 10px 11px;
+}
+
+.incoming-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, #cf2e3d 0%, #e55039 100%);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+}
+
+.incoming-toast button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+.big-icon {
+  font-size: 32px;
+}
+
+.muted {
+  color: #94accb;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -1,0 +1,59 @@
+/* ***********************  */
+/* BELOW 1200PX (LANDSCAPE TABLET) */
+/* **************** ********/
+@media (max-width: 75em) {
+  .proforma_modal-content {
+    top: 45%;
+  }
+
+  .invoice_modal-content {
+    background-color: transparent;
+    padding: 2rem 2rem 2rem;
+  }
+  .invoice-container {
+    padding: 2rem;
+    border-radius: 10px;
+  }
+  .invoice_table table {
+    width: 800px;
+  }
+}
+
+/* ***********************  */
+/* BELOW 724PX (small tablet) */
+/* **************** ********/
+@media (max-width: 50em) {
+  .invoice_modal-content {
+    max-width: 750px;
+    min-width: 750px;
+    margin-top: 4rem;
+  }
+  .invoice-container {
+    padding: 2rem 4rem;
+    width: 820px;
+  }
+  .invoice_table table {
+    width: 750px;
+  }
+}
+
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+@media (max-width: 34em) {
+  .proforma-container {
+    min-width: 300px;
+    max-width: 400px;
+  }
+  
+  .invoice-enter {
+    width: 34%;
+    margin: 2rem 0 2rem 20rem;
+  }
+
+  .invoice_modal-content {
+    max-width: 400px;
+    min-width: 400px;
+    padding: 0;
+  }
+}

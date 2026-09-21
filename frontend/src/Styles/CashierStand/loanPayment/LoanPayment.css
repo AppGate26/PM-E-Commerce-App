@@ -1,0 +1,819 @@
+.lp-shell {
+  background: radial-gradient(circle at top right, #d5e8ff, #f7fafd 42%);
+  border-radius: 14px;
+}
+
+/* Full-screen overlay positioning for the loan payment modal. These used to be
+   inherited from CashPayment.css, but Cash Payment was removed from the cashier,
+   so its stylesheet no longer loads and the modal fell back into normal flow. */
+.CPay_modal,
+.CPay_modal-overlay {
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  z-index: 1050;
+}
+
+.CPay_modal-overlay {
+  background: rgba(12, 18, 33, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: -1;
+}
+
+.CPay_modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow-y: auto;
+  background: #f7fafd;
+  box-shadow: 0 25px 55px rgba(7, 31, 67, 0.2);
+  border-radius: 18px;
+}
+
+.loan-payment-content {
+  max-height: calc(100vh - 18px);
+  overflow-y: auto;
+}
+
+.lp-container {
+  width: min(1120px, 96vw);
+  min-width: 0;
+  border-radius: 14px;
+  padding: 0.9rem;
+  background: transparent;
+  font-size: 0.95rem;
+}
+
+.lp-header {
+  margin-bottom: 0.55rem;
+}
+
+.lp-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.lp-dashboard-link {
+  margin-left: auto;
+  text-decoration: none;
+  padding: 0.48rem 0.85rem;
+  border-radius: 8px;
+  background: #0f6fe0;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.lp-dashboard-link:hover {
+  background: #0b57b0;
+}
+
+.lp-close-btn {
+  border: none;
+  background: #e4edf8;
+  color: #223450;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.lp-title-wrap {
+  margin-top: 0.45rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.lp-title-wrap h1 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2vw, 1.7rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #0f2f5a;
+  text-transform: uppercase;
+}
+
+.lp-title-wrap p {
+  margin: 0;
+  color: #506680;
+  font-size: 0.9rem;
+}
+
+.lp-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1.1fr 0.8fr;
+  gap: 0.65rem;
+  align-items: start;
+}
+
+.lp-card {
+  border: 1px solid #d8e3f0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.72rem;
+}
+
+.lp-card-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #163964;
+  text-transform: uppercase;
+}
+
+.lp-label {
+  display: inline-block;
+  margin-bottom: 0.22rem;
+  margin-top: 0.35rem;
+  color: #4d6280;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+.lp-input,
+.lp-textarea {
+  width: 100%;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  padding: 0.5rem 0.58rem;
+  border: 1px solid #bfd0e4;
+  background: #fdfefe;
+  margin: 0;
+}
+
+.lp-input:focus,
+.lp-textarea:focus {
+  outline: none;
+  border-color: #2d7de1;
+  box-shadow: 0 0 0 3px rgba(45, 125, 225, 0.18);
+}
+
+.lp-input:disabled {
+  background: #f4f7fb;
+  color: #47607e;
+}
+
+.lp-search-btn {
+  margin-top: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  padding: 0.48rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: #0f6fe0;
+  color: #fff;
+}
+
+.lp-search-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.lp-read-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+}
+
+.lp-amount-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0f6fe0, #0a5ab8);
+  color: #fff;
+  padding: 0.55rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.lp-currency {
+  opacity: 0.95;
+}
+
+.lp-passport p {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #4d6280;
+  margin: 0 0 0.35rem;
+}
+
+.lp-passport-img {
+  width: 100%;
+  height: 118px;
+  border: 1px solid #bfd0e4;
+  background: #e9f2ff;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b8099;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.lp-wallet-card {
+  grid-column: 1 / -1;
+}
+
+.lp-wallet-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.lp-wallet-title-block {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.lp-wallet-kicker {
+  width: fit-content;
+  border-radius: 999px;
+  background: #e7f1ff;
+  color: #0b4a96;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lp-wallet-head p {
+  margin: -0.2rem 0 0;
+  color: #506680;
+  font-size: 0.86rem;
+}
+
+.lp-wallet-badge {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #e7f1ff;
+  color: #0b4a96;
+  padding: 0.34rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lp-wallet-toggle-btn {
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 8px;
+  background: #0f6fe0;
+  color: #fff;
+  padding: 0.58rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.lp-wallet-toggle-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.lp-wallet-alert {
+  margin: 0 0 0.8rem;
+}
+
+.lp-wallet-quick-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  border: 1px solid #d8e3f0;
+  border-radius: 10px;
+  background: #f7fbff;
+  color: #52677f;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.86rem;
+}
+
+.lp-wallet-quick-summary strong {
+  color: #163964;
+}
+
+.lp-wallet-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 0.7rem;
+  align-items: start;
+  margin-top: 0.6rem;
+}
+
+.lp-wallet-form-stack {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.lp-wallet-panel {
+  border: 1px solid #d8e3f0;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0.72rem;
+}
+
+.lp-wallet-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.45rem;
+}
+
+.lp-wallet-panel-head > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0f6fe0;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.lp-wallet-panel-head h4 {
+  margin: 0;
+  color: #163964;
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.lp-wallet-panel-head p {
+  margin: 0.1rem 0 0;
+  color: #60758c;
+  font-size: 0.8rem;
+}
+
+.lp-wallet-search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.lp-wallet-search-row .lp-search-btn {
+  margin-top: 0;
+  min-width: 96px;
+}
+
+.lp-wallet-customer-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.55rem;
+  border: 1px solid #d8e3f0;
+  border-radius: 10px;
+  background: #f7fbff;
+  padding: 0.55rem;
+  color: #52677f;
+  font-size: 0.86rem;
+}
+
+.lp-wallet-customer-card strong {
+  display: block;
+  color: #163964;
+  margin-top: 0.15rem;
+  word-break: break-word;
+}
+
+.lp-wallet-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.lp-wallet-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.lp-method-btn {
+  border: 1px solid #bfd0e4;
+  background: #f7fbff;
+  color: #294967;
+  border-radius: 8px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+  min-width: 128px;
+}
+
+.lp-method-btn.active {
+  border-color: #0f6fe0;
+  background: #0f6fe0;
+  color: #fff;
+}
+
+.lp-card-register-area,
+.lp-bank-transfer-box {
+  margin-top: 0.65rem;
+  border: 1px solid #d8e3f0;
+  border-radius: 10px;
+  background: #f7fbff;
+  padding: 0.65rem;
+}
+
+.lp-card-register-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.lp-card-register-head h5,
+.lp-bank-transfer-box h5 {
+  margin: 0;
+  color: #163964;
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.lp-card-register-head p,
+.lp-bank-transfer-box p {
+  margin: 0.2rem 0 0;
+  color: #60758c;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.lp-card-refresh-btn {
+  border: 1px solid #bfd0e4;
+  border-radius: 8px;
+  background: #fff;
+  color: #0b4a96;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.lp-card-refresh-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.lp-saved-card-list {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.lp-saved-card-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid #d5e2f1;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0.55rem;
+  cursor: pointer;
+}
+
+.lp-saved-card-option.selected {
+  border-color: #0f6fe0;
+  box-shadow: 0 0 0 3px rgba(15, 111, 224, 0.12);
+}
+
+.lp-saved-card-option input {
+  width: 16px;
+  height: 16px;
+}
+
+.lp-saved-card-option span {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.lp-saved-card-option strong {
+  color: #163964;
+  font-size: 0.86rem;
+}
+
+.lp-saved-card-option small {
+  color: #60758c;
+  font-size: 0.76rem;
+}
+
+.lp-no-card-box {
+  display: grid;
+  gap: 0.15rem;
+  margin-top: 0.55rem;
+  border: 1px dashed #b8d0ed;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0.65rem;
+  color: #60758c;
+  font-size: 0.82rem;
+}
+
+.lp-no-card-box strong {
+  color: #163964;
+}
+
+.lp-paystack-secure-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.lp-paystack-secure-fields div {
+  border: 1px solid #d8e3f0;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.5rem;
+}
+
+.lp-paystack-secure-fields span {
+  display: block;
+  color: #60758c;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lp-paystack-secure-fields strong {
+  display: block;
+  color: #163964;
+  font-size: 0.82rem;
+  margin-top: 0.2rem;
+}
+
+.lp-card-register-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 0.55rem;
+  align-items: end;
+  margin-top: 0.6rem;
+}
+
+.lp-register-card-btn {
+  white-space: nowrap;
+}
+
+.lp-wallet-summary {
+  border: 1px solid #b8d0ed;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f7fbff, #eef6ff);
+  padding: 0.7rem;
+  position: sticky;
+  top: 0.5rem;
+}
+
+.lp-wallet-summary-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  border-bottom: 1px solid #d1e1f2;
+  padding-bottom: 0.55rem;
+  margin-bottom: 0.1rem;
+}
+
+.lp-wallet-summary-head span {
+  color: #60758c;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lp-wallet-summary-head strong {
+  color: #0b4a96;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.lp-wallet-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #dce7f4;
+  padding: 0.5rem 0;
+  color: #52677f;
+}
+
+.lp-wallet-summary-row:first-child {
+  padding-top: 0;
+}
+
+.lp-wallet-summary-row strong {
+  color: #163964;
+  text-align: right;
+  word-break: break-word;
+}
+
+.lp-wallet-note {
+  margin-top: 0.55rem;
+  border-radius: 8px;
+  background: #fff;
+  color: #52677f;
+  padding: 0.55rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.lp-wallet-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.65rem;
+}
+
+.lp-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  margin-top: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.lp-method-modal {
+  position: fixed;
+  inset: 0;
+  /* Portaled to document.body, so it must sit above the .CPay_modal shell (z-index: 1050). */
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.lp-method-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 18, 33, 0.52);
+}
+
+.lp-method-modal-card {
+  position: relative;
+  z-index: 1;
+  width: min(680px, 94vw);
+  max-height: min(84vh, 720px);
+  overflow-y: auto;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(8, 32, 68, 0.28);
+  padding: 0.9rem;
+}
+
+.lp-method-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #d8e3f0;
+  padding-bottom: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+
+.lp-method-modal-head h3 {
+  margin: 0.25rem 0 0;
+  color: #163964;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.lp-method-modal-head button {
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: #e4edf8;
+  color: #223450;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.lp-method-modal-body {
+  margin-top: 0;
+}
+
+.lp-method-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.8rem;
+}
+
+.lp-primary-btn,
+.lp-secondary-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lp-primary-btn {
+  background: #0f6fe0;
+  color: #fff;
+}
+
+.lp-primary-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.lp-secondary-btn {
+  background: #d6e7fb;
+  color: #0b4a96;
+}
+
+@media (max-width: 72em) {
+  .lp-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 56em) {
+  .lp-container {
+    width: 96vw;
+    padding: 1.2rem;
+  }
+
+  .lp-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-read-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-wallet-head,
+  .lp-wallet-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-wallet-head {
+    display: grid;
+  }
+
+  .lp-wallet-actions .lp-primary-btn {
+    width: 100%;
+  }
+
+  .lp-wallet-toggle-btn {
+    width: 100%;
+  }
+
+  .lp-wallet-search-row,
+  .lp-wallet-customer-card,
+  .lp-wallet-field-grid,
+  .lp-card-register-form,
+  .lp-paystack-secure-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-wallet-summary {
+    position: static;
+  }
+
+  .lp-card-register-head {
+    display: grid;
+  }
+
+  .lp-actions {
+    justify-content: stretch;
+  }
+
+  .lp-method-modal-card {
+    max-height: 88vh;
+  }
+
+  .lp-primary-btn,
+  .lp-secondary-btn {
+    width: 100%;
+  }
+}

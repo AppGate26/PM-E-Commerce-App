@@ -1,0 +1,525 @@
+/* ============================================
+   ORDER REPORT CSS - ReportOrder.css
+   ============================================ */
+
+/* Order Report Container */
+.order-report-container {
+  width: 100%;
+  min-height: 100%;
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Updated Header Section - Matches Screenshot */
+.order-report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 3rem;
+  background-color: white;
+  border-bottom: 2px solid #e9ecef;
+  position: relative;
+}
+
+.company-logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.company-name {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #0867db;
+  text-transform: uppercase;
+}
+
+.report-main-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.sales-title,
+.order-title,
+.report-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #495057;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sales-title {
+  color: #0867db;
+}
+
+.order-title {
+  color: #28a745;
+}
+
+.report-title {
+  color: #dc3545;
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.display-section-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  margin: 0;
+  text-align: right;
+  letter-spacing: 0.5px;
+}
+
+.icon-btn {
+  width: 3rem;
+  height: 3rem;
+  border: none;
+  background-color: transparent;
+  color: #0867db;
+  font-size: 1.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.icon-btn:hover {
+  background-color: #e9ecef;
+}
+
+.close-icon {
+  color: #dc3545;
+  font-size: 3rem;
+}
+
+
+
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.calendar-icon {
+  position: absolute;
+  left: 1rem;
+  font-size: 1.6rem;
+  color: #6c757d;
+}
+
+.date-input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3.5rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+  color: #495057;
+  transition: border-color 0.15s ease-in-out;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #0867db;
+  box-shadow: 0 0 0 0.2rem rgba(8, 103, 219, 0.15);
+}
+
+.select-input {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+  color: #868e96;
+  cursor: pointer;
+  transition: border-color 0.15s ease-in-out;
+}
+
+.select-input:focus {
+  outline: none;
+  border-color: #0867db;
+  box-shadow: 0 0 0 0.2rem rgba(8, 103, 219, 0.15);
+}
+
+/* All Checkbox */
+.all-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 2rem;
+  padding-left: 0.5rem;
+}
+
+.all-checkbox input[type="checkbox"] {
+  width: 1.8rem;
+  height: 1.8rem;
+  cursor: pointer;
+  accent-color: #0867db;
+}
+
+.all-checkbox label {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #495057;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+/* Display Options Section */
+.display-options-section {
+  background-color: #f8f9fa;
+  padding: 2.5rem;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.display-options-title {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f8f9fa;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Updated Radio Options - Now 3 columns instead of 4 */
+.radio-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #495057;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  transition: all 0.2s ease;
+}
+
+.radio-label:hover {
+  border-color: #0867db;
+  transform: translateY(-2px);
+}
+
+.radio-label input[type="radio"] {
+  width: 1.8rem;
+  height: 1.8rem;
+  cursor: pointer;
+  accent-color: #0867db;
+}
+
+.radio-label span {
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+}
+
+/* Display Button */
+.display-btn {
+  width: 100%;
+  padding: 1.4rem 2rem;
+  background-color: #0867db;
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.display-btn:hover:not(:disabled) {
+  background-color: #0654b8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(8, 103, 219, 0.3);
+}
+
+.display-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Filters Tags */
+.filters-tags {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e9ecef;
+}
+
+.filters-tags h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filter-tag {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 0.8rem 1.5rem;
+  border-radius: 20px;
+  font-size: 1.2rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid #ced4da;
+}
+
+/* Alert Styling */
+.alert {
+  padding: 1rem 1.5rem;
+  margin: 0 3rem 2rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .filter-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .radio-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .order-report-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+  
+  .company-logo-section {
+    align-items: center;
+  }
+  
+  .header-actions {
+    align-items: center;
+  }
+  
+  .display-section-title {
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .radio-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .order-report-header {
+    padding: 1.5rem 2rem;
+  }
+  
+  .company-name {
+    font-size: 2.2rem;
+  }
+  
+  .sales-title,
+  .order-title,
+  .report-title {
+    font-size: 1.5rem;
+  }
+  
+  .display-section-title {
+    font-size: 1.4rem;
+  }
+  
+  .filter-section {
+    padding: 2rem;
+    margin: 1rem 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .company-name {
+    font-size: 1.8rem;
+  }
+  
+  .sales-title,
+  .order-title,
+  .report-title {
+    font-size: 1.2rem;
+  }
+  
+  .display-section-title {
+    font-size: 1.2rem;
+  }
+  
+  .tags-container {
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   ORDER GENERATOR - STANDARD MODE
+   ============================================ */
+.order-report-container {
+  background:
+    radial-gradient(1200px 420px at 100% -10%, #d8ebff 0%, transparent 62%),
+    radial-gradient(900px 360px at -10% 100%, #e8f3ff 0%, transparent 60%),
+    #f7fbff;
+  border: 1px solid #d9e6f5;
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(16, 55, 105, 0.1);
+  padding-bottom: 1rem;
+}
+
+.order-report-header {
+  background: linear-gradient(135deg, #0f6fe0 0%, #084ea3 100%);
+  border-bottom: none;
+  position: relative;
+  justify-content: center;
+  padding: 1.1rem 2rem;
+}
+
+.company-name {
+  color: #ffffff;
+  font-size: 1.65rem;
+  width: 100%;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.header-icons .icon-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: 10px;
+}
+
+.order-report-header .header-icons {
+  position: absolute;
+  right: 1.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.header-icons .icon-btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.order-report-container .filter-section {
+  border: 1px solid #c8dcf3;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f6fbff 100%);
+  box-shadow: inset 0 1px 0 #ffffff;
+  margin: 1rem 2rem;
+  padding: 1.6rem;
+}
+
+.order-report-container .filter-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.order-report-container .filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-report-container .filter-group label {
+  color: #3f628f;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+}
+
+.order-report-container .date-input,
+.order-report-container .select-input {
+  border-radius: 10px;
+  border: 1px solid #bfd4ea;
+  background: #ffffff;
+  font-size: 1rem;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+
+.order-report-container .display-options-section {
+  border: 1px solid #d2e1f2;
+  background: #f7fbff;
+  border-radius: 10px;
+  padding: 1.8rem;
+}
+
+.order-report-container .display-options-title {
+  border-radius: 999px;
+  background: #ffffff;
+  color: #084ea3;
+  border: 1px solid #d2e1f2;
+  padding: 0.2rem 1rem;
+}
+
+.order-report-container .radio-label {
+  border-radius: 8px;
+  padding: 0.7rem 0.8rem;
+}
+
+.order-report-container .all-checkbox label {
+  font-size: 1.05rem;
+}
+
+.order-report-container .display-btn {
+  font-size: 1.05rem;
+  padding: 1rem 1.2rem;
+}

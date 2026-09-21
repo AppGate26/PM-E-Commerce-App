@@ -1,0 +1,155 @@
+spring:
+  jpa:
+    hibernate:
+      # Flyway now owns the schema (see spring.flyway below) - validate checks the
+      # live schema matches these entity mappings on startup instead of silently
+      # auto-altering it. IMPORTANT: this only works once docs/flyway_baseline_bootstrap.sql
+      # has been run by hand against this database - without that, Flyway sees no
+      # history at all and tries to replay V1 through V999 for real, which will fail
+      # outright on V4 (DROP COLUMN products.branch_id - already gone).
+      ddl-auto: validate
+    show-sql: 'false'
+    # database-platform: org.hibernate.dialect.MySQLDialect
+    # Custom dialect (com.appGate.config.VarcharEnumMariaDBDialect) instead of the stock
+    # MariaDBDialect: Hibernate 6 defaults @Enumerated(EnumType.STRING) columns to a
+    # native SQL ENUM type on MySQL/MariaDB, but every enum column in this schema was
+    # created years ago (under ddl-auto=update, which never checked this) as plain
+    # VARCHAR, which is what's actually correct here. The documented global property for
+    # this (hibernate.type.preferred_enum_jdbc_type) only affects DDL generation, not
+    # schema validation, in this Hibernate version - it had no effect on the
+    # ddl-auto=validate failure this dialect override fixes.
+    database-platform: com.appGate.config.VarcharEnumMariaDBDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # No baseline-on-migrate here - docs/flyway_baseline_bootstrap.sql already creates
+    # flyway_schema_history and inserts the baseline row by hand (recommended baseline
+    # version 1000.1, since the V1000/V1000.1 sample-ledger-data files never actually
+    # ran and shouldn't fire automatically the first time this boots with Flyway on).
+  datasource:
+    username: admin
+    password: POMStoresAPPGATE123
+    # password: POMStores@APPGATE123
+    # url: jdbc:mysql://18.188.177.144:3306/pomstores
+    url: jdbc:mariadb://3.143.17.59:3306/pomstores
+    # url: jdbc:mariadb://52.14.68.171:3306/pomstores
+    # username: root
+    # password: 
+    # url: jdbc:mysql://localhost:3306/pomstores
+    driver-class-name: org.mariadb.jdbc.Driver
+  mail:
+    host: smtp.gmail.com
+    username: kings2kess@gmail.com
+    password: bwwtanloummhtelm
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            enable: false
+            trust: smtp.gmail.com
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+        debug: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health,info,metrics'
+
+app:
+  jwtSecret: pmsecretkeypmsecretkeypmsecretkey
+  jwtExpirationMs: 7200000
+  jwtCookieName: cmdm
+
+dojah:
+  api:
+    base-url: https://api.dojah.io
+    app-id: mock
+    secret-key: mock
+    timeout: 30000
+    mock-enabled: true  # Set to false when you have real Dojah credentials
+
+googlemaps:
+  api:
+    base-url: https://maps.googleapis.com/maps/api
+    key: AIzaSyCRHTVNREdsEVBZE-p3hpAeVS8pOjp7fac
+    timeout: 15000
+    mock-enabled: false  # Using real Google Maps API
+
+logging:
+  level:
+    root: WARN
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    com.appGate: INFO
+    API_CALL: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"
+    file: "%d %p %c{1.} [%t] %m%n"
+  file: app.log
+
+server:
+  error:
+    include-stacktrace: never
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: /opt/app/keystore.p12
+    key-store-password: POMStoresKEYSTORE123
+    key-store-type: PKCS12
+    key-alias: springboot
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:8065/eureka/
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  packagesToScan: com.appGate
+
+# google:
+#   maps:
+#     api-key: AIzaSyCRHTVNREdsEVBZE-p3hpAeVS8pOjp7fac
+#     distance-matrix-api-url: https://maps.googleapis.com/maps/api/distancematrix/json
+
+paystack:
+  secret:
+    key: sk_test_34bbcec748a106d5f2084b7574aecc871ef5fc26
+  base:
+    url: https://api.paystack.co
+  preferred:
+    bank: test-bank        # use wema-bank / titan-paystack for live DVAs
+  public:
+    key: pk_test_ebad2e3ef9a0186bcfd1bcca5c11fc64625b7946
+
+# Fallback email used to open the Paystack checkout for walk-in wallet funding when the
+# selected customer has no email on file.
+store:
+  default:
+    email: store@pomstores.com
+
+# POMStoresKEYSTORE123
+
+
+# google.maps.api-key=AIzaSyD_aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
+# google.maps.distance-matrix-api-url=https://maps.googleapis.com/maps/api/distancematrix/json
+

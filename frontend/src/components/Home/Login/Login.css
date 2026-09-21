@@ -1,0 +1,295 @@
+body.new_active-modal {
+  overflow-y: hidden;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3.2rem 1.8rem;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(8, 103, 219, 0.16), transparent 34%),
+    radial-gradient(circle at 88% 86%, rgba(30, 148, 228, 0.12), transparent 36%),
+    linear-gradient(150deg, #eef5ff 0%, #f8fbff 48%, #ffffff 100%);
+}
+
+.login-layout {
+  width: min(108rem, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(38rem, 0.8fr);
+  align-items: stretch;
+  gap: 2rem;
+}
+
+.login-brand-panel {
+  min-height: 54rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2.4rem;
+  padding: 3.4rem;
+  border-radius: 2.2rem;
+  background:
+    linear-gradient(135deg, rgba(8, 103, 219, 0.94), rgba(43, 140, 245, 0.94)),
+    url("../../../assets/images/PMlogo.png") center/22rem no-repeat;
+  color: #ffffff;
+  box-shadow: 0 22px 48px rgba(8, 73, 159, 0.22);
+}
+
+.login-brand-mark {
+  width: 6rem;
+  height: 6rem;
+  display: grid;
+  place-items: center;
+  border-radius: 1.8rem;
+  background: rgba(255, 255, 255, 0.96);
+  color: #0867db;
+  font-size: 1.8rem;
+  font-weight: 900;
+  box-shadow: 0 16px 26px rgba(4, 42, 93, 0.18);
+}
+
+.login-kicker {
+  margin: 0 0 1rem;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.login-brand-panel h1 {
+  margin: 0;
+  font-size: clamp(3.2rem, 5vw, 5.6rem);
+  line-height: 1;
+  font-weight: 900;
+}
+
+.login-brand-panel p {
+  max-width: 48rem;
+  margin: 1.4rem 0 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 1.55rem;
+  line-height: 1.65;
+}
+
+.login-feature-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.login-feature-list span {
+  padding: 0.9rem 1.15rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.16rem;
+  font-weight: 800;
+}
+
+.form-box {
+  position: relative;
+  align-self: center;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(8, 103, 219, 0.14);
+  border-radius: 2.2rem;
+  padding: 3.2rem;
+  box-shadow:
+    0 20px 45px rgba(15, 23, 42, 0.14),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  animation: loginCardEnter 280ms ease-out;
+}
+
+.form-box::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(8, 103, 219, 0.48), rgba(8, 103, 219, 0.08));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.form-box form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.login-form-title {
+  position: relative;
+  margin: 0;
+  color: #174ea6;
+  font-size: 3rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-shadow:
+    0 0 10px rgba(47, 134, 238, 0.28),
+    0 0 22px rgba(8, 103, 219, 0.16);
+}
+
+.login-form-subtitle {
+  margin: 1rem 0 2.6rem;
+  color: #4c5f7f;
+  font-size: 1.45rem;
+  line-height: 1.45;
+  text-shadow: 0 0 8px rgba(8, 103, 219, 0.14);
+}
+
+.input-box,
+.password-container {
+  width: 100%;
+}
+
+.login-label {
+  display: block;
+  margin-bottom: 0.8rem;
+  font-size: 1.25rem;
+  color: #334155;
+  font-weight: 600;
+}
+
+.login-input-wrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background: #f8fbff;
+  border: 1px solid #dbe7f7;
+  border-radius: 1.2rem;
+  padding: 0 1.2rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.login-input-wrap:focus-within {
+  border-color: #0867db;
+  box-shadow: 0 0 0 3px rgba(8, 103, 219, 0.14);
+  transform: translateY(-1px);
+}
+
+.icon-id {
+  color: #7b8798;
+  flex-shrink: 0;
+}
+
+.login-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #0f172a;
+  font-size: 1.55rem;
+  line-height: 1.3;
+  padding: 1.3rem 1rem;
+  outline: none;
+}
+
+.login-input::placeholder {
+  color: #94a3b8;
+  font-size: 1.42rem;
+}
+
+.password-container {
+  margin-top: 1.8rem;
+}
+
+.password-toggle {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.9rem;
+  color: #64748b;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  background: #e5eefc;
+  color: #1d4ed8;
+  outline: none;
+}
+
+.Log_in-btn {
+  margin-top: 2.6rem;
+  border: none;
+  width: 100%;
+  border-radius: 1.2rem;
+  padding: 1.35rem 1.6rem;
+  font-size: 1.6rem;
+  background: linear-gradient(135deg, #0867db 0%, #2f86ee 100%);
+  color: #ffffff;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  box-shadow: 0 12px 22px rgba(8, 103, 219, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.Log_in-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(8, 103, 219, 0.34);
+  filter: brightness(1.02);
+}
+
+.Log_in-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.login-error {
+  margin-top: 1.4rem;
+  color: #dc2626;
+  font-size: 1.35rem;
+  line-height: 1.35;
+}
+
+.login-success {
+  margin-top: 1.4rem;
+  color: #15803d;
+  font-size: 1.35rem;
+  line-height: 1.35;
+}
+
+@keyframes loginCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 920px) {
+  .login-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .login-brand-panel {
+    min-height: auto;
+    padding: 2.6rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .login-page {
+    align-items: flex-start;
+    padding: 1.8rem 1.2rem;
+  }
+
+  .form-box,
+  .login-brand-panel {
+    border-radius: 1.6rem;
+    padding: 2.2rem;
+  }
+}

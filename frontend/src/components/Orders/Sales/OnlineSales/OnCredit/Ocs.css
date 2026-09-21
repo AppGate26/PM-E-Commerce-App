@@ -1,0 +1,133 @@
+.Csh-container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 12px;
+  background-color: #f6faff;
+  padding: 2rem 4rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.Csh-container h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  color: #0867db;
+  margin: 0 0 2rem 0;
+}
+
+
+/* Section Styling */
+.online-credit-section {
+  margin-bottom: 2.5rem;
+}
+
+.section-header {
+  background-color: #0867db;
+  padding: 1rem;
+  border-radius: 8px 8px 0 0;
+  text-align: center;
+}
+
+.section-header h5 {
+  color: white;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.product-box {
+  background-color: white;
+  border: 3px solid #67a1e9;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 3rem 4rem;
+}
+
+/* Grid Layouts */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem 4rem;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3rem 4rem;
+}
+
+.grid-customer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem 3rem;
+}
+
+/* Loan section special layout: 5 fields → 3 columns with proper placement */
+.grid-loan {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem 3rem;
+  align-items: end;
+}
+
+/* Form Labels & Inputs */
+.product-box label {
+  display: block;
+  color: #343a40;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.product-box-select,
+.product-box-inputs,
+.product-msg-box {
+  width: 100%;
+  border: 1px solid #868e96;
+  border-radius: 4px;
+  font-weight: 500;
+  box-sizing: border-box;
+}
+
+.product-box-select {
+  height: 60px;
+  padding: 0 1.5rem;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.product-box-inputs {
+  height: 60px;
+  padding: 0 1.5rem;
+  font-size: 1.4rem;
+}
+
+.product-msg-box {
+  height: 100px;
+  padding: 1rem 1.5rem;
+  font-size: 1.4rem;
+  resize: none;
+}
+
+/* Submit Button */
+.text-center button {
+  background-color: #0867db;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 1.4rem 3rem;
+  border: none;
+  border-radius: 8px;
+  min-width: 200px;
+  cursor: pointer;
+}
+
+.text-center button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

@@ -1,0 +1,660 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+.all-products-container {
+  min-height: 100vh;
+  background-color: #f6faff;
+}
+
+.all-products-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #0867db;
+  padding: 1.6rem 6rem;
+}
+
+.logo-product {
+  width: 60px;
+  height: 60px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.all-products-title {
+  font-size: 2rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: white;
+  font-family: "Montserrat", sans-serif;
+}
+
+.products-filter-section {
+  background-color: white;
+  padding: 2rem 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.label-product {
+  font-weight: 600;
+  line-height: 2rem;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  color: #343a40;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.products-form {
+  width: 100%;
+  height: 5vh;
+  padding: 1rem 2rem;
+  background-color: white;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  color: #343a40;
+  font-weight: 500;
+  font-size: 1.4rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+
+.products-form::placeholder {
+  text-transform: uppercase;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #adb5bd;
+}
+
+.products-form:focus {
+  outline: none;
+  border-color: #1c73de;
+  box-shadow: 0 0 0 3px rgba(28, 115, 222, 0.1);
+}
+
+.search-input {
+  width: 100% !important;
+  padding: 1rem 2rem !important;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 1.4rem;
+  color: #343a40;
+  font-weight: 500;
+  font-family: "Montserrat", sans-serif;
+}
+
+.search-input::placeholder {
+  text-transform: uppercase;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #adb5bd;
+}
+
+.clear-filter-btn {
+  background-color: #407bff;
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 500;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  font-family: "Montserrat", sans-serif;
+  transition: background-color 0.2s;
+}
+
+.clear-filter-btn:hover {
+  background-color: #1c73de;
+}
+
+.products-list-section {
+  padding: 3rem 0;
+  min-height: 60vh;
+}
+
+.products-header-info {
+  margin-bottom: 2rem;
+}
+
+.products-count {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #1c73de;
+  font-family: "Montserrat", sans-serif;
+  text-transform: uppercase;
+}
+
+.loading-message,
+.no-products-message {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #868e96;
+  padding: 4rem 2rem;
+  font-family: "Montserrat", sans-serif;
+  text-transform: uppercase;
+}
+
+.error-message {
+  color: #f3989a;
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.product-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.product-card-header {
+  position: relative;
+  background-color: #f6faff;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.product-image {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.product-image-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 200px;
+  background-color: #e9ecef;
+  border-radius: 8px;
+}
+
+.product-id-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: #1c73de;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-family: "Montserrat", sans-serif;
+}
+
+.product-card-body {
+  padding: 1.5rem;
+  flex-grow: 1;
+}
+
+.product-name {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1c73de;
+  margin-bottom: 1rem;
+  font-family: "Montserrat", sans-serif;
+  text-transform: uppercase;
+}
+
+.product-description {
+  font-size: 1.4rem;
+  color: #868e96;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  font-family: "Montserrat", sans-serif;
+}
+
+.product-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.product-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.product-detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+}
+
+.detail-value {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #212529;
+  font-family: "Montserrat", sans-serif;
+}
+
+.product-card-footer {
+  padding: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  border-top: 1px solid #e9ecef;
+  background-color: #f8f9fa;
+}
+
+.edit-product-btn,
+.delete-product-btn {
+  flex: 1;
+  padding: 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+  font-family: "Montserrat", sans-serif;
+  text-decoration: none;
+}
+
+.edit-product-btn {
+  background-color: #407bff;
+  color: white;
+}
+
+.edit-product-btn:hover {
+  background-color: #1c73de;
+  color: white;
+  text-decoration: none;
+}
+
+.delete-product-btn {
+  background-color: #fce4e4;
+  color: #f3989a;
+}
+
+.delete-product-btn:hover {
+  background-color: #f3989a;
+  color: white;
+}
+
+.Log_Out-btn {
+  background-color: white;
+  color: #0867db;
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  transition: background-color 0.2s;
+}
+
+.Log_Out-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.products-list-container {
+  padding: 3rem;
+  min-height: 60vh;
+}
+
+.all-products-table-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.all-products-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.all-products-table thead {
+  background-color: #0867db;
+}
+
+.all-products-table th {
+  padding: 1.2rem 1.5rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  letter-spacing: 0.03em;
+}
+
+.all-products-table td {
+  padding: 1.2rem 1.5rem;
+  font-size: 1.3rem;
+  color: #495057;
+  font-family: "Montserrat", sans-serif;
+  border-top: 1px solid #f1f3f5;
+}
+
+.all-products-row:nth-child(even) {
+  background-color: #f8fbff;
+}
+
+.all-products-row:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.all-products-row:hover {
+  background-color: #e9f3ff;
+}
+
+.products-form {
+  width: 100%;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #d0d7e2;
+  background-color: #f8fbff;
+  font-size: 1.3rem;
+  font-family: "Montserrat", sans-serif;
+  outline: none;
+}
+
+.products-form:focus {
+  border-color: #0867db;
+  box-shadow: 0 0 0 2px rgba(8, 103, 219, 0.1);
+}
+
+.search-input {
+  height: 3.6rem;
+}
+
+.products-pagination {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.pagination-btn {
+  padding: 0.8rem 1.8rem;
+  border-radius: 4px;
+  border: none;
+  background-color: #0867db;
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pagination-btn:disabled {
+  background-color: #d0d7e2;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 1.3rem;
+  color: #495057;
+}
+
+/* Standard directory redesign */
+.all-products-nav--standard {
+  background:
+    linear-gradient(135deg, #0b57b6 0%, #0f7af0 100%);
+  padding: 1.4rem 3rem;
+}
+
+.all-products-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.all-products-eyebrow {
+  margin: 0 0 0.25rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.all-products-back-btn {
+  border-radius: 999px;
+  padding: 0.9rem 1.25rem;
+}
+
+.all-products-hero-wrap {
+  padding: 1.5rem 0 0;
+}
+
+.all-products-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: stretch;
+  background:
+    radial-gradient(circle at top right, rgba(8, 103, 219, 0.08), transparent 16rem),
+    #ffffff;
+  border: 1px solid rgba(8, 103, 219, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(17, 54, 117, 0.08);
+  padding: 1.6rem 1.8rem;
+}
+
+.all-products-hero h2 {
+  margin: 0;
+  font-size: 2rem;
+  color: #16375f;
+}
+
+.all-products-hero p {
+  margin: 0.7rem 0 0;
+  max-width: 44rem;
+  color: #6b7890;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.all-products-hero-badge {
+  margin: 0 0 0.45rem;
+  color: #0867db;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.all-products-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.all-products-stat-card {
+  min-width: 11rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: #f7faff;
+  border: 1px solid #dce8f8;
+}
+
+.all-products-stat-card span {
+  display: block;
+  color: #6f7d93;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.all-products-stat-card strong {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 1.8rem;
+  color: #16375f;
+}
+
+.products-filter-section {
+  background: transparent;
+  box-shadow: none;
+  padding-top: 1.35rem;
+}
+
+.products-filter-section .container {
+  background: #fff;
+  border: 1px solid rgba(8, 103, 219, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(17, 54, 117, 0.08);
+  padding: 1.5rem;
+}
+
+.label-product {
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  color: #16375f;
+}
+
+.products-form,
+.search-input {
+  height: auto;
+  min-height: 3.5rem;
+  border-radius: 16px;
+  background: #f8fbff;
+  border: 1px solid #d7e3f3;
+  font-size: 1rem;
+}
+
+.clear-filter-btn {
+  border-radius: 16px;
+  min-height: 3.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.products-list-section .container {
+  background: #fff;
+  border: 1px solid rgba(8, 103, 219, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(17, 54, 117, 0.08);
+  padding: 1.5rem;
+}
+
+.products-header-info {
+  margin-bottom: 1rem;
+}
+
+.products-count {
+  font-size: 1rem;
+  color: #47617f;
+}
+
+.all-products-table-container {
+  border: 1px solid #dfe8f4;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.all-products-table thead {
+  background: linear-gradient(135deg, #0c5cc2 0%, #0f7af0 100%);
+}
+
+.all-products-table th,
+.all-products-table td {
+  padding: 1rem 1.1rem;
+  font-size: 0.95rem;
+  vertical-align: top;
+}
+
+.all-products-row:hover {
+  background-color: #eef6ff;
+}
+
+.all-products-description-cell {
+  min-width: 16rem;
+  max-width: 22rem;
+  white-space: normal;
+  line-height: 1.55;
+  color: #5f6e84;
+}
+
+.all-products-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8.5rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+}
+
+.all-products-status-pill.unsold {
+  background: #eaf8ef;
+  color: #137a3b;
+  border: 1px solid #b7e3c5;
+}
+
+.all-products-status-pill.sold {
+  background: #fff1f3;
+  color: #c63f56;
+  border: 1px solid #f0c0ca;
+}
+
+.products-pagination {
+  margin-top: 1.5rem;
+}
+
+.pagination-btn {
+  border-radius: 999px;
+  padding: 0.85rem 1.4rem;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 900px) {
+  .all-products-nav--standard {
+    padding: 1.2rem;
+  }
+
+  .all-products-hero {
+    flex-direction: column;
+  }
+
+  .all-products-stats {
+    flex-direction: column;
+  }
+}

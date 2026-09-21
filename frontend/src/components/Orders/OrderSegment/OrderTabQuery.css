@@ -1,0 +1,119 @@
+/* ***********************  */
+/* BELOW 1344PX (FOR SMALLER COMPUTER) */
+/* **************** ********/
+@media (max-width: 84em) {
+  .order-container {
+    margin: 0rem 4rem;
+  }
+}
+
+/* ***********************  */
+/* BELOW 1200PX (LANDSCAPE TABLET) */
+/* **************** ********/
+@media (max-width: 75em) {
+  .order-container {
+    margin: 6rem 2rem;
+  }
+  #sales-ul {
+    top: 6.5em;
+  }
+  #cashier-ul {
+    top: 14em;
+  }
+  .mx-log-out {
+    margin-left: 0rem;
+  }
+
+  .order-h1 {
+    font-size: 11rem;
+  }
+  .order-h2 {
+    font-size: 4rem;
+  }
+  .order_links {
+    margin: 0;
+  }
+  /* .sales-ul-dropdown {
+    top: 8rem;
+    left: 1rem;
+  } */
+  /*////////ORDER DROPDOWN//////*/
+  .order_ul-dropdown {
+    top: 22rem;
+    left: 1rem;
+  }
+}
+@media (max-width: 59em) {
+  /* Disable hover on touch devices */
+  @media (hover: none) {
+    #sales-drop:hover .sales-ul-dropdown,
+    #order_drop:hover .order_ul-dropdown,
+    #order-action:hover .order_ul-dropdown,
+    #order-not:hover .order-ul-dropdown,
+    #report_drop:hover .report_ul-dropdown {
+      visibility: hidden !important;
+    }
+  }
+
+  .sales-ul-dropdown {
+    top: 8rem !important;
+    left: inherit;
+  }
+  .order_ul-dropdown {
+    top: 8rem !important;
+    left: inherit;
+  }
+  .orderTab-image {
+    height: 40vh;
+    width: 100%;
+  }
+  .bi-bell-fill {
+    font-size: 2rem;
+    position: relative;
+    top: 2rem;
+  }
+  .order_links {
+    margin: 0 1rem;
+  }
+  .order-log-out {
+    margin-top: 1rem;
+    margin-left: 0rem;
+  }
+
+  .content__box {
+    margin: 1rem 8rem 0;
+  }
+}
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+@media (max-width: 34em) {
+  .order_links {
+    margin: 0;
+  }
+
+  .sales-li-dropdown,
+  .order_li-dropdown {
+    padding: 1.4rem 2rem;
+  }
+
+  .order-h2 {
+    font-size: 3rem;
+  }
+  .order-h1 {
+    font-size: 8rem;
+  }
+  .order-txt {
+    padding: 0;
+    text-align: start;
+  }
+  .content__box {
+    margin: 1rem 0rem 0;
+  }
+  .bi-bell-fill-box {
+    margin: 1rem 1rem 2rem ;
+    .bi-bell-fill {
+      color: #0d6dfc !important;
+    }
+  }
+}

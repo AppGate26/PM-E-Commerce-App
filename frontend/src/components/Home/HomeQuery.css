@@ -1,0 +1,381 @@
+/* ***********************  */
+/* BELOW 1344PX (FOR SMALLER COMPUTER) */
+/* **************** ********/
+@media (max-width: 84em) {
+  /**************************/
+  /* HERO COMPONENT */
+  /**************************/
+
+  .hero_text-h4 {
+    font-size: 3.3rem;
+  }
+  .hero_text-h1 {
+    font-size: 10rem;
+  }
+
+  /**************************/
+  /* DOWNLOAD COMPONENT */
+  /**************************/
+  .download-text-h1 {
+    font-size: 2rem;
+  }
+
+  /**************************/
+  /* CUSTOMER COMPONENT */
+  /**************************/
+  .customer-card_box {
+    padding-top: 0rem;
+  }
+  .customer-card {
+    padding: 5rem 4rem 3rem;
+    margin: 6rem 2rem 2rem;
+  }
+  .customer-image {
+    margin-top: -5rem;
+  }
+
+  /**************************/
+  /* FAQ COMPONENT */
+  /**************************/
+  .question-drop-down,
+  .response-drop-down {
+    width: 100rem;
+  }
+
+  /**************************/
+  /* FOOTER COMPONENT */
+  /**************************/
+  .footer-links:link,
+  .footer-links:visited {
+    margin-left: 9rem;
+  }
+}
+
+/* ***********************  */
+/* BELOW 1200PX (LANDSCAPE TABLET) */
+/* **************** ********/
+@media (max-width: 75em) {
+  /**************************/
+  /* HERO COMPONENT */
+  /**************************/
+
+  .hero_text-h4 {
+    font-size: 2.3rem;
+  }
+  .hero_text-h1 {
+    font-size: 7rem;
+  }
+  .register-btn {
+    padding: 24px 60px 24px 40px;
+  }
+  .hero-img {
+    width: 80%;
+    height: 80%;
+    margin-top: 2rem ;
+    object-fit: cover;
+  }
+
+  /**************************/
+  /* WHY COMPONENT */
+  /**************************/
+  .grid-cols {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /**************************/
+  /* DOWNLOAD COMPONENT */
+  /**************************/
+  .img-download__box {
+    width: 100%;
+
+    margin: 14rem 0rem 9rem;
+  }
+  .content-text {
+    margin: 14rem 5rem;
+  }
+
+  /**************************/
+  /* CUSTOMER COMPONENT */
+  /**************************/
+  .customer-card {
+    height: 28vh;
+  }
+  .customer-image {
+    left: 7rem;
+  }
+
+  /**************************/
+  /* FAQ COMPONENT */
+  /**************************/
+  .question-drop-down,
+  .response-drop-down {
+    width: 60rem;
+  }
+
+  /**************************/
+  /* FOOTER COMPONENT */
+  /**************************/
+  .footer-links:link,
+  .footer-links:visited {
+    margin-left: 1rem;
+  }
+}
+
+/* ***********************  */
+/* BELOW 724PX (small tablet) */
+/* **************** ********/
+@media (max-width: 48em) {
+  /**************************/
+  /* HERO COMPONENT */
+  /**************************/
+
+  .hero_text-h4 {
+    font-size: 2.3rem;
+  }
+  .hero_text-h1 {
+    font-size: 4rem;
+  }
+  .register-btn {
+    padding: 24px 60px 24px 40px;
+  }
+  .hero-img {
+    width: 120%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /**************************/
+  /* WHY COMPONENT */
+  /**************************/
+  .grid-cols {
+    grid-template-columns: 1fr;
+  }
+
+  /**************************/
+  /* DOWNLOAD COMPONENT */
+  /**************************/
+  .img-download__box {
+    width: 120%;
+  }
+  .content-text {
+    margin: 14rem 3rem;
+  }
+
+  /**************************/
+  /* CUSTOMER COMPONENT */
+  /**************************/
+  .customer-card_box {
+    padding-top: 0rem;
+  }
+  .customer-card {
+    padding: 5rem 2rem;
+    margin: 6rem 1rem 2rem;
+    height: 34vh;
+  }
+  .customer-image {
+    left: 5rem;
+  }
+
+  /**************************/
+  /* FAQ COMPONENT */
+  /**************************/
+
+  .question-drop-down,
+  .response-drop-down {
+    width: 44rem;
+  }
+}
+
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+/* 550 / 16 =34 */
+@media (max-width: 34em) {
+#PMlogo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+.Login-btn {
+  padding: 10px 24px;
+  border: none;
+  background-color: #c6dcf5;
+  color: #0867db;
+  font-size: 15px;
+  font-family: "Montserrat";
+  font-weight: 600;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+
+  .hero-py {
+    padding: 8rem 2rem;
+  }
+
+  .hero_text-h4 {
+    font-size: 2.2rem;
+  }
+  .hero_text-h1 {
+    font-size: 6rem;
+  }
+  .header-content {
+    padding: 2rem;
+  }
+  .w-sm-img {
+    margin: 0 auto;
+  }
+
+  .hero-img {
+    width: 100%;
+    object-fit: contain;
+  }
+
+  /**************************/
+  /* DOWNLOAD COMPONENT */
+  /**************************/
+  .download-box {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .img-download__box {
+    width: 100%;
+  }
+  .img-download {
+    width: 90%;
+  }
+
+  .content-text {
+    margin: 3rem;
+  }
+  .pm-store-img {
+    width: 60%;
+  }
+  .input-email {
+    width: 100%;
+  }
+
+  /**************************/
+  /* CUSTOMER COMPONENT */
+  /**************************/
+  .customer-image {
+    left: 9rem;
+  }
+
+  /**************************/
+  /* FAQ COMPONENT */
+  /**************************/
+
+  .question-drop-down {
+    width: 32rem;
+    padding: 2rem 4rem;
+    margin: 3rem 2.2rem -1rem;
+  }
+  .question-text {
+    font-size: 16px;
+  }
+  .response-drop-down {
+    width: 32rem;
+    margin-left: 2rem;
+  }
+
+  /**************************/
+  /* FOOTER COMPONENT */
+  /**************************/
+  .footer-links:link,
+  .footer-links:visited {
+    margin-left: 2rem;
+  }
+  .footer-logo {
+    width: 80px;
+    margin: 5rem 2rem 2rem;
+  }
+  .subs-box {
+    margin: 1rem 2rem;
+  }
+  .copy-right,
+  .copy {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 25em) {
+  .hero_text-h4 {
+    font-size: 2rem;
+  }
+  .hero_text-h1 {
+    font-size: 5rem;
+  }
+
+  /**************************/
+  /* CUSTOMER COMPONENT */
+  /**************************/
+  .customer-image {
+    left: 4.5rem;
+  }
+  .customer-card {
+    padding: 4rem 4rem;
+    height: 45vh;
+  }
+
+  /**************************/
+  /* QUESTION COMPONENT */
+  /**************************/
+  .question-header {
+    font-size: 3rem;
+  }
+  .ques-container-bg {
+    padding: 5rem 0.6rem;
+  }
+  .question-drop-down {
+    width: 30rem;
+    padding: 2rem 4rem;
+    margin: 3rem 0.8rem -1rem;
+    line-height: 20px;
+  }
+  .question-text {
+    font-size: 16px;
+  }
+  .response-drop-down {
+    width: 30rem;
+    margin-left: 0.8rem;
+  }
+}
+
+@media (max-width: 27em){
+.hero_text-h1{
+  font-size: 5rem;
+}
+}
+@media (max-width: 22.5em) {
+  .hero_text-h1{
+  font-size: 4rem;
+}
+  /**************************/
+  /* CUSTOMER COMPONENT */
+  /**************************/
+  .customer-image {
+    left: 4rem;
+  }
+
+  /**************************/
+  /* QUESTION COMPONENT */
+  /**************************/
+  .ques-container-bg {
+    padding: 5rem 0rem;
+  }
+  .question-drop-down {
+    width: 28rem;
+    padding: 2rem 4rem;
+    margin: 3rem 1.4rem -1rem;
+  }
+  .question-text {
+    font-size: 16px;
+  }
+  .response-drop-down {
+    width: 28rem;
+    margin-left: 1.4rem;
+  }
+  .download-text-h1 {
+    font-size: 1.6rem;
+  }
+}

@@ -1,0 +1,208 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
+.standard-mail-parent {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: #F6FAFF;
+  min-height: 80vh;
+  padding: 20px 60px;
+  gap: 20px;
+  margin-top: 90px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.standard-mail-card-full {
+  width: 100%;
+  background-color: #fff;
+  border-radius: 5px 5px 0px 0px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.standard-mail-header-blue {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: #0867db;
+  padding: 20px 25px;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-height: 7vh;
+}
+
+.standard-mail-form {
+  padding: 40px;
+}
+
+.standard-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.standard-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.standard-input,
+.standard-textarea {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: "Montserrat", sans-serif;
+  color: #333;
+  background-color: #fff;
+  transition: border-color 0.3s;
+}
+
+.standard-input:focus,
+.standard-textarea:focus {
+  outline: none;
+  border-color: #0867db;
+}
+
+.standard-input::placeholder,
+.standard-textarea::placeholder {
+  color: #999;
+}
+
+.standard-textarea {
+  resize: vertical;
+  min-height: 150px;
+}
+
+/* Attachment Section */
+.standard-attachment-section {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.standard-attachment-info {
+  margin-bottom: 15px;
+}
+
+.standard-attachment-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.standard-attachment-controls {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.standard-attachment-box {
+  width: 200px;
+  height: 150px;
+  border: 2px dashed #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.standard-attachment-box:hover {
+  border-color: #0867db;
+  background-color: #f0f7ff;
+}
+
+.standard-attachment-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.standard-attach-btn,
+.standard-delete-btn {
+  padding: 12px 30px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: "Montserrat", sans-serif;
+  white-space: nowrap;
+}
+
+.standard-attach-btn {
+  background-color: #0867db;
+  color: white;
+}
+
+.standard-attach-btn:hover {
+  background-color: #0654b8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(8, 103, 219, 0.3);
+}
+
+.standard-delete-btn {
+  background-color: #fc8a8b;
+  color: white;
+}
+
+.standard-delete-btn:hover:not(:disabled) {
+  background-color: #fb6b6d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(252, 138, 139, 0.3);
+}
+
+.standard-delete-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Actions */
+.standard-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.standard-send-btn {
+  padding: 15px 50px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: "Montserrat", sans-serif;
+  background-color: #0867db;
+  color: white;
+}
+
+.standard-send-btn:hover:not(:disabled) {
+  background-color: #0654b8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(8, 103, 219, 0.3);
+}
+
+.standard-send-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}

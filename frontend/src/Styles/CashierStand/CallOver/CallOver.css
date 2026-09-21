@@ -1,0 +1,255 @@
+/* Modal frame */
+.CO_modal-content::-webkit-scrollbar {
+  width: 0;
+}
+
+.CO_modal-content {
+  scrollbar-width: thin;
+}
+
+body.product_active-modal {
+  overflow-y: hidden;
+}
+
+.CO_modal,
+.CO_modal-overlay {
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  z-index: 1;
+}
+
+.CO_modal-overlay {
+  background: rgba(12, 18, 33, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: -1;
+}
+
+.CO_modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 95%;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 55px rgba(7, 31, 67, 0.2);
+  border-radius: 18px;
+}
+
+.co-shell {
+  background: radial-gradient(circle at top right, #d5e8ff, #f7fafd 42%);
+  border-radius: 18px;
+}
+
+.CO-container {
+  width: min(1120px, 95vw);
+  min-width: 0;
+  border-radius: 18px;
+  padding: 2rem;
+  background: transparent;
+  font-size: 1.05rem;
+}
+
+.co-header {
+  margin-bottom: 1rem;
+}
+
+.co-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.co-dashboard-link {
+  margin-left: auto;
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: #0f6fe0;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.co-dashboard-link:hover {
+  background: #0b57b0;
+}
+
+.call-over-cancel {
+  border: none;
+  background: #e4edf8;
+  color: #223450;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.co-title-wrap {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.call-over-h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 2.6vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #0f2f5a;
+  text-transform: uppercase;
+}
+
+.co-subtitle {
+  margin: 0;
+  color: #506680;
+  font-size: 1.05rem;
+}
+
+.co-total-chip {
+  width: fit-content;
+  margin-top: 0.3rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  background: #0f6fe0;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.co-alert {
+  margin: 0.8rem 0;
+}
+
+.product-box {
+  background: #fff;
+  border: 1px solid #d8e3f0;
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.product-box_grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.product-box_grid label {
+  display: inline-block;
+  margin-bottom: 0.45rem;
+  color: #4d6280;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+.product-box-select,
+.product-box-inputs {
+  width: 100%;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  padding: 0.85rem 0.7rem;
+  border: 1px solid #bfd0e4;
+  background: #fdfefe;
+  margin: 0;
+}
+
+.product-box-select:focus,
+.product-box-inputs:focus {
+  outline: none;
+  border-color: #2d7de1;
+  box-shadow: 0 0 0 3px rgba(45, 125, 225, 0.18);
+}
+
+.co-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.co-fetch-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: #0f6fe0;
+  color: #fff;
+}
+
+.co-fetch-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.callOver-table {
+  border: 1px solid #d8e3f0;
+  background: #fff;
+  border-radius: 14px;
+  padding: 0.5rem;
+}
+
+.table-scroll-bar {
+  overflow-x: auto;
+}
+
+.callOver-table table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.callOver-table table th {
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: #5a6e89;
+  background: #eef4fb;
+  padding: 0.7rem 0.6rem;
+  border-bottom: 1px solid #d4dfec;
+}
+
+.callOver-table td {
+  padding: 0.6rem;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 1rem;
+}
+
+.co-empty-cell {
+  text-align: center;
+  padding: 20px;
+}
+
+.co-error-cell {
+  color: #d73737;
+}
+
+@media (max-width: 64em) {
+  .CO-container {
+    width: 96vw;
+    padding: 1.2rem;
+  }
+
+  .product-box_grid {
+    grid-template-columns: 1fr;
+  }
+
+  .co-actions {
+    justify-content: stretch;
+  }
+
+  .co-fetch-btn {
+    width: 100%;
+  }
+}

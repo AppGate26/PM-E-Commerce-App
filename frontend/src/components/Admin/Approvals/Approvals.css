@@ -1,0 +1,263 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
+/* Approvals Page Styles */
+.admin-approvals-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.admin-approvals-title {
+  font-size: 60px;
+  font-weight: 700;
+  margin-bottom: 60px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.admin-approvals-illustration {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  margin-top: 40px;
+}
+
+.approvals-illustration-img {
+  max-width: 90%;
+  height: auto;
+  z-index: 1;
+  object-fit: contain;
+}
+
+.approvals-overlay-text {
+  position: absolute;
+  right: 80px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2;
+  font-size: 72px;
+  font-weight: 700;
+  font-family: "Montserrat", sans-serif;
+  line-height: 1.1;
+  pointer-events: none;
+}
+
+/* The Approvals hub drops the hero illustration and widens/compacts everything so most
+   categories are visible without scrolling — this page has ~20 approval types to show,
+   which the default dashboard layout (narrow content column + huge title) wasn't built for. */
+.admin-approvals-page {
+  align-items: stretch;
+}
+
+.admin-approvals-page .admin-dashboard-content {
+  width: 100%;
+  max-width: 1600px;
+}
+
+.admin-approvals-title-compact {
+  margin-bottom: 1.1rem;
+  font-size: clamp(1.9rem, 2.6vw, 2.6rem);
+}
+
+.admin-approvals-page .admin-page-copy {
+  margin: 0 0 1.3rem;
+}
+
+.admin-approval-search-wrap {
+  width: 100%;
+  margin: 0 0 1.6rem;
+}
+
+.admin-approval-search {
+  width: 100%;
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid #b9d6ff;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(8, 47, 105, 0.06);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #17355d;
+}
+
+.admin-approval-search::placeholder {
+  color: #8ea1bd;
+  font-weight: 500;
+}
+
+.admin-approval-search:focus {
+  outline: none;
+  border-color: #0867db;
+  box-shadow: 0 0 0 3px rgba(8, 103, 219, 0.14);
+}
+
+.admin-approval-category {
+  width: 100%;
+  margin-bottom: 1.8rem;
+}
+
+.admin-approval-category-title {
+  margin: 0 0 0.9rem;
+  color: #17355d;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #dbe8fb;
+}
+
+.admin-approvals-page .admin-approval-counter {
+  width: 100%;
+}
+
+.admin-approval-error-banner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: -0.7rem 0 1.1rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid #f6c453;
+  background: #fff8e6;
+  color: #7a5300;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.admin-approval-error-banner button {
+  flex-shrink: 0;
+  border: 1px solid #e0a800;
+  background: #ffffff;
+  color: #7a5300;
+  padding: 0.45rem 0.9rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.admin-approval-error-banner button:hover {
+  background: #fff2cc;
+}
+
+.admin-approval-error-card {
+  border-color: #f6c453 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fffaf0 100%) !important;
+}
+
+.admin-approval-card-counter-error {
+  background: #e0a800;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+/* 4 columns on desktop, scaling down as the viewport shrinks — replaces the default
+   2-column .admin-overview-grid so more categories fit above the fold. */
+.admin-approvals-page .admin-approval-live-grid {
+  width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.admin-approvals-page .admin-approval-live-grid .admin-overview-card {
+  padding: 1rem 3.6rem 1rem 1.1rem;
+  gap: 0.35rem;
+}
+
+@media (max-width: 1300px) {
+  .admin-approvals-page .admin-approval-live-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-approvals-page .admin-approval-live-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-approvals-page .admin-approval-live-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-approvals-page .admin-approval-empty-card {
+  width: 100%;
+}
+
+.admin-approval-idle-card {
+  position: relative;
+  opacity: 0.85;
+  padding-right: 3.6rem;
+}
+
+.admin-approval-idle-card:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(8, 47, 105, 0.1);
+}
+
+.admin-approval-idle-card p {
+  color: #8ea1bd;
+}
+
+/* Every card shows its pending count, live (red) or idle (muted grey at zero) — matches
+   the badge that used to only appear on cards with a pending request. */
+.admin-approval-card-counter-idle {
+  background: #c3d0e3;
+  color: #4a5c78;
+  box-shadow: none;
+}
+
+/* Responsive for Approvals */
+@media (max-width: 1200px) {
+  .admin-approvals-title {
+    font-size: 48px;
+  }
+
+  .approvals-overlay-text {
+    font-size: 56px;
+    right: 40px;
+  }
+}
+
+@media (max-width: 968px) {
+  .admin-approvals-title {
+    font-size: 40px;
+  }
+
+  .approvals-overlay-text {
+    font-size: 48px;
+    right: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-approvals-title {
+    font-size: 36px;
+  }
+
+  .approvals-overlay-text {
+    font-size: 40px;
+    right: 20px;
+  }
+}
+
+
+
+
+
+
+
+
+

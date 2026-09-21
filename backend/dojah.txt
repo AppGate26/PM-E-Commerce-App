@@ -1,0 +1,603 @@
+// ============================================================================
+// 1. APPLICATION.YML
+// ============================================================================
+
+/*
+dojah:
+  api:
+    base-url: https://api.dojah.io
+    app-id: ${DOJAH_APP_ID}
+    secret-key: ${DOJAH_SECRET_KEY}
+    timeout: 30000
+*/
+
+// ============================================================================
+// 2. CONFIGURATION CLASS
+// ============================================================================
+
+package com.yourcompany.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import lombok.Data;
+
+import java.time.Duration;
+
+@Configuration
+@ConfigurationProperties(prefix = "dojah.api")
+@Data
+public class DojahConfig {
+    private String baseUrl;
+    private String appId;
+    private String secretKey;
+    private Long timeout = 30000L;
+
+    @Bean
+    public RestTemplate dojahRestTemplate(RestTemplateBuilder builder) {
+        return builder
+                .setConnectTimeout(Duration.ofMillis(timeout))
+                .setReadTimeout(Duration.ofMillis(timeout))
+                .build();
+    }
+}
+
+// ============================================================================
+// 3. DTOs - RESPONSE OBJECTS
+// ============================================================================
+
+package com.yourcompany.dto.response;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class DojahApiResponse {
+    private Entity entity;
+    
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Entity {
+        private String bvn;
+        private String nin;
+        
+        @JsonProperty("first_name")
+        private String firstName;
+        
+        @JsonProperty("middle_name")
+        private String middleName;
+        
+        @JsonProperty("last_name")
+        private String lastName;
+        
+        @JsonProperty("date_of_birth")
+        private String dateOfBirth;
+        
+        @JsonProperty("phone_number")
+        private String phoneNumber;
+        
+        @JsonProperty("phone_number2")
+        private String phoneNumber2;
+        
+        private String email;
+        private String gender;
+        private String image;
+        
+        @JsonProperty("residential_address")
+        private String residentialAddress;
+        
+        private String state;
+        
+        @JsonProperty("state_of_origin")
+        private String stateOfOrigin;
+        
+        private String lga;
+        
+        @JsonProperty("lga_of_origin")
+        private String lgaOfOrigin;
+        
+        private String nationality;
+        
+        @JsonProperty("enrollment_bank")
+        private String enrollmentBank;
+        
+        @JsonProperty("enrollment_branch")
+        private String enrollmentBranch;
+        
+        @JsonProperty("watch_listed")
+        private String watchListed;
+        
+        @JsonProperty("registration_date")
+        private String registrationDate;
+        
+        @JsonProperty("level_of_account")
+        private String levelOfAccount;
+        
+        @JsonProperty("marital_status")
+        private String maritalStatus;
+    }
+}
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+class VerificationResponse {
+    private boolean success;
+    private String message;
+    private String verificationType; // BVN or NIN
+    private PersonData data;
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PersonData {
+        private String bvn;
+        private String nin;
+        private String firstName;
+        private String middleName;
+        private String lastName;
+        private String fullName;
+        private String dateOfBirth;
+        private String phoneNumber;
+        private String phoneNumber2;
+        private String email;
+        private String gender;
+        private String address;
+        private String state;
+        private String stateOfOrigin;
+        private String lga;
+        private String lgaOfOrigin;
+        private String nationality;
+        private String image;
+        private String enrollmentBank;
+        private String enrollmentBranch;
+        private String registrationDate;
+        private String maritalStatus;
+        private String watchListed;
+    }
+}
+
+// ============================================================================
+// 4. CUSTOM EXCEPTION
+// ============================================================================
+
+package com.yourcompany.exception;
+
+public class VerificationException extends RuntimeException {
+    public VerificationException(String message) {
+        super(message);
+    }
+    
+    public VerificationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+// ============================================================================
+// 5. SERVICE INTERFACE
+// ============================================================================
+
+package com.yourcompany.service;
+
+import com.yourcompany.dto.response.VerificationResponse;
+
+public interface VerificationService {
+    VerificationResponse verifyBvn(String bvn);
+    VerificationResponse verifyNin(String nin);
+}
+
+// ============================================================================
+// 6. SERVICE IMPLEMENTATION
+// ============================================================================
+
+package com.yourcompany.service.impl;
+
+import com.yourcompany.config.DojahConfig;
+import com.yourcompany.dto.response.DojahApiResponse;
+import com.yourcompany.dto.response.VerificationResponse;
+import com.yourcompany.exception.VerificationException;
+import com.yourcompany.service.VerificationService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class DojahVerificationServiceImpl implements VerificationService {
+
+    private final RestTemplate dojahRestTemplate;
+    private final DojahConfig dojahConfig;
+
+    private HttpHeaders createHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", dojahConfig.getSecretKey());
+        headers.set("AppId", dojahConfig.getAppId());
+        return headers;
+    }
+
+    @Override
+    public VerificationResponse verifyBvn(String bvn) {
+        log.info("Verifying BVN: {}", maskSensitiveData(bvn));
+        
+        try {
+            String url = String.format("%s/api/v1/kyc/bvn?bvn=%s", 
+                dojahConfig.getBaseUrl(), bvn);
+            
+            HttpEntity<Void> entity = new HttpEntity<>(createHeaders());
+            
+            ResponseEntity<DojahApiResponse> response = dojahRestTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                DojahApiResponse.class
+            );
+            
+            return mapToVerificationResponse(response.getBody(), "BVN");
+            
+        } catch (HttpClientErrorException e) {
+            log.error("BVN verification failed: {} - {}", e.getStatusCode(), e.getMessage());
+            
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new VerificationException("BVN not found or invalid");
+            } else if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                throw new VerificationException("Invalid API credentials");
+            }
+            
+            throw new VerificationException("BVN verification failed: " + e.getStatusCode());
+            
+        } catch (Exception e) {
+            log.error("Unexpected error during BVN verification", e);
+            throw new VerificationException("BVN verification error: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public VerificationResponse verifyNin(String nin) {
+        log.info("Verifying NIN: {}", maskSensitiveData(nin));
+        
+        try {
+            String url = String.format("%s/api/v1/kyc/nin?nin=%s", 
+                dojahConfig.getBaseUrl(), nin);
+            
+            HttpEntity<Void> entity = new HttpEntity<>(createHeaders());
+            
+            ResponseEntity<DojahApiResponse> response = dojahRestTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                DojahApiResponse.class
+            );
+            
+            return mapToVerificationResponse(response.getBody(), "NIN");
+            
+        } catch (HttpClientErrorException e) {
+            log.error("NIN verification failed: {} - {}", e.getStatusCode(), e.getMessage());
+            
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new VerificationException("NIN not found or invalid");
+            } else if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                throw new VerificationException("Invalid API credentials");
+            }
+            
+            throw new VerificationException("NIN verification failed: " + e.getStatusCode());
+            
+        } catch (Exception e) {
+            log.error("Unexpected error during NIN verification", e);
+            throw new VerificationException("NIN verification error: " + e.getMessage());
+        }
+    }
+
+    private VerificationResponse mapToVerificationResponse(DojahApiResponse apiResponse, String type) {
+        if (apiResponse == null || apiResponse.getEntity() == null) {
+            return VerificationResponse.builder()
+                    .success(false)
+                    .message("No data returned from verification service")
+                    .verificationType(type)
+                    .build();
+        }
+        
+        DojahApiResponse.Entity entity = apiResponse.getEntity();
+        
+        VerificationResponse.PersonData personData = VerificationResponse.PersonData.builder()
+                .bvn(entity.getBvn())
+                .nin(entity.getNin())
+                .firstName(entity.getFirstName())
+                .middleName(entity.getMiddleName())
+                .lastName(entity.getLastName())
+                .fullName(buildFullName(entity))
+                .dateOfBirth(entity.getDateOfBirth())
+                .phoneNumber(entity.getPhoneNumber())
+                .phoneNumber2(entity.getPhoneNumber2())
+                .email(entity.getEmail())
+                .gender(entity.getGender())
+                .address(entity.getResidentialAddress())
+                .state(entity.getState())
+                .stateOfOrigin(entity.getStateOfOrigin())
+                .lga(entity.getLga())
+                .lgaOfOrigin(entity.getLgaOfOrigin())
+                .nationality(entity.getNationality())
+                .image(entity.getImage())
+                .enrollmentBank(entity.getEnrollmentBank())
+                .enrollmentBranch(entity.getEnrollmentBranch())
+                .registrationDate(entity.getRegistrationDate())
+                .maritalStatus(entity.getMaritalStatus())
+                .watchListed(entity.getWatchListed())
+                .build();
+        
+        return VerificationResponse.builder()
+                .success(true)
+                .message(type + " verification successful")
+                .verificationType(type)
+                .data(personData)
+                .build();
+    }
+
+    private String buildFullName(DojahApiResponse.Entity entity) {
+        StringBuilder fullName = new StringBuilder();
+        
+        if (entity.getFirstName() != null) {
+            fullName.append(entity.getFirstName());
+        }
+        
+        if (entity.getMiddleName() != null) {
+            if (fullName.length() > 0) fullName.append(" ");
+            fullName.append(entity.getMiddleName());
+        }
+        
+        if (entity.getLastName() != null) {
+            if (fullName.length() > 0) fullName.append(" ");
+            fullName.append(entity.getLastName());
+        }
+        
+        return fullName.toString();
+    }
+
+    private String maskSensitiveData(String data) {
+        if (data == null || data.length() < 4) {
+            return "****";
+        }
+        return data.substring(0, 3) + "****" + data.substring(data.length() - 2);
+    }
+}
+
+// ============================================================================
+// 7. REST CONTROLLER
+// ============================================================================
+
+package com.yourcompany.controller;
+
+import com.yourcompany.dto.response.VerificationResponse;
+import com.yourcompany.service.VerificationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+
+@RestController
+@RequestMapping("/api/v1/verification")
+@RequiredArgsConstructor
+@Validated
+@Tag(name = "Identity Verification", description = "BVN and NIN verification endpoints")
+public class VerificationController {
+
+    private final VerificationService verificationService;
+
+    @GetMapping("/bvn/{bvn}")
+    @Operation(
+        summary = "Verify BVN", 
+        description = "Retrieve and verify Bank Verification Number (BVN) details from NIBSS database"
+    )
+    public ResponseEntity<VerificationResponse> verifyBvn(
+            @Parameter(description = "11-digit Bank Verification Number", required = true)
+            @PathVariable 
+            @NotBlank(message = "BVN is required")
+            @Pattern(regexp = "\\d{11}", message = "BVN must be exactly 11 digits")
+            String bvn) {
+        
+        VerificationResponse result = verificationService.verifyBvn(bvn);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/nin/{nin}")
+    @Operation(
+        summary = "Verify NIN", 
+        description = "Retrieve and verify National Identity Number (NIN) details from NIMC database"
+    )
+    public ResponseEntity<VerificationResponse> verifyNin(
+            @Parameter(description = "11-digit National Identity Number", required = true)
+            @PathVariable 
+            @NotBlank(message = "NIN is required")
+            @Pattern(regexp = "\\d{11}", message = "NIN must be exactly 11 digits")
+            String nin) {
+        
+        VerificationResponse result = verificationService.verifyNin(nin);
+        return ResponseEntity.ok(result);
+    }
+}
+
+// ============================================================================
+// 8. GLOBAL EXCEPTION HANDLER
+// ============================================================================
+
+package com.yourcompany.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(VerificationException.class)
+    public ResponseEntity<Map<String, Object>> handleVerificationException(VerificationException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+        error.put("error", "Verification Failed");
+        error.put("message", ex.getMessage());
+        
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+        error.put("error", "Validation Error");
+        
+        String message = ex.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.joining(", "));
+        
+        error.put("message", message);
+        
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+        error.put("error", "Validation Error");
+        
+        Map<String, String> fieldErrors = new HashMap<>();
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
+        }
+        
+        error.put("fieldErrors", fieldErrors);
+        
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        error.put("error", "Internal Server Error");
+        error.put("message", "An unexpected error occurred");
+        
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+}
+
+// ============================================================================
+// 9. POM.XML DEPENDENCIES
+// ============================================================================
+
+/*
+<dependencies>
+    <!-- Spring Boot Starter Web -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    
+    <!-- Spring Boot Starter Validation -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+    
+    <!-- Lombok -->
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <optional>true</optional>
+    </dependency>
+    
+    <!-- SpringDoc OpenAPI (Swagger) - Optional -->
+    <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        <version>2.2.0</version>
+    </dependency>
+    
+    <!-- Spring Boot Starter Test -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+*/
+
+// ============================================================================
+// 10. USAGE EXAMPLES
+// ============================================================================
+
+/*
+# Verify BVN
+curl -X GET http://localhost:8080/api/v1/verification/bvn/22222222222
+
+# Verify NIN
+curl -X GET http://localhost:8080/api/v1/verification/nin/12345678901
+
+# Sample Success Response
+{
+  "success": true,
+  "message": "BVN verification successful",
+  "verificationType": "BVN",
+  "data": {
+    "bvn": "22222222222",
+    "firstName": "John",
+    "middleName": "Doe",
+    "lastName": "Smith",
+    "fullName": "John Doe Smith",
+    "dateOfBirth": "1990-01-15",
+    "phoneNumber": "08012345678",
+    "email": "john.doe@example.com",
+    "gender": "Male",
+    "address": "123 Main Street, Lagos",
+    "state": "Lagos",
+    "lga": "Ikeja",
+    "nationality": "Nigerian",
+    "image": "base64_encoded_image_string",
+    "enrollmentBank": "First Bank",
+    "enrollmentBranch": "Ikeja Branch",
+    "registrationDate": "2015-03-20",
+    "watchListed": "NO"
+  }
+}
+
+# Sample Error Response
+{
+  "timestamp": "2024-11-30T10:30:45",
+  "status": 400,
+  "error": "Verification Failed",
+  "message": "BVN not found or invalid"
+}
+*/

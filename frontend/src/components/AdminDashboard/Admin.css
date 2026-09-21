@@ -1,0 +1,49 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+.box-logo {
+  background-color: #0867db;
+}
+.a-logo {
+  width: 340px;
+  height: 340px;
+}
+
+/**************************/
+/* ADMIN SECTION BOXES */
+/**************************/
+.dashboard-section {
+  background-color: #f6faff;
+  height: fit-content;
+}
+.management-row {
+  display: grid;
+  /* Make total box (content + padding) equal to viewport height */
+  height: calc(100vh - 9rem); /* 2rem top + 7rem bottom padding */
+  padding: 2rem 6rem 7rem;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 5rem;
+  row-gap: 7rem;
+}
+.management-box {
+  height: 14rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  padding: 0 1rem;
+  font-weight: 600;
+  color: #0867db;
+  font-family: "Montserrat", sans-serif;
+  box-shadow: rgba(8, 103, 219, 0.1) 0px 10px 15px -3px,
+    rgba(8, 103, 219, 0.2) 0px 4px 6px -2px;
+
+  transition: all 0.4s;
+}
+.management-box:hover {
+  background-color: #0867db;
+  color: #fff;
+  cursor: pointer;
+  transform: translateY(-1.2rem);
+}

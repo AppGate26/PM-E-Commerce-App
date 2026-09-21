@@ -1,0 +1,137 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
+.stock-delete-approval-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: "Montserrat", sans-serif;
+  padding: 20px 0;
+  gap: 30px;
+}
+
+.stock-delete-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0867db;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.stock-delete-card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 30px 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stock-delete-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 40px;
+}
+
+.stock-delete-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stock-delete-form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stock-delete-form-group input {
+  padding: 12px 16px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: "Montserrat", sans-serif;
+  color: #333333;
+}
+
+.stock-delete-form-group input:focus {
+  outline: none;
+  border-color: #0867db;
+  box-shadow: 0 0 0 1px rgba(8, 103, 219, 0.15);
+}
+
+.stock-delete-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding-top: 40px;
+}
+
+.stock-delete-btn {
+  padding: 15px 40px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: "Montserrat", sans-serif;
+  min-width: 150px;
+}
+
+.stock-delete-accept-btn {
+  background-color: #0867db;
+  color: #ffffff;
+}
+
+.stock-delete-accept-btn:hover:not(:disabled) {
+  background-color: #0654b8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(8, 103, 219, 0.3);
+}
+
+.stock-delete-accept-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.stock-delete-decline-btn {
+  background-color: #fc8a8b;
+  color: #ffffff;
+}
+
+.stock-delete-decline-btn:hover:not(:disabled) {
+  background-color: #fb6b6d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(252, 138, 139, 0.3);
+}
+
+.stock-delete-decline-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+@media (max-width: 968px) {
+  .stock-delete-card {
+    padding: 20px;
+  }
+
+  .stock-delete-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stock-delete-actions {
+    flex-direction: column;
+  }
+
+  .stock-delete-btn {
+    width: 100%;
+  }
+}

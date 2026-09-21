@@ -1,0 +1,215 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+/* Main Title */
+.orderlist-paid-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #0867db;
+  text-transform: uppercase;
+  margin: 2rem 0;
+  font-family: "Montserrat", sans-serif;
+  letter-spacing: 1px;
+}
+
+/* Content Container */
+.orderlist-paid-content {
+  padding: 0 3rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Info Message Box at Top */
+.info-message-box {
+  background-color: white;
+  border: 3px solid #67a1e9;
+  border-radius: 8px;
+  padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.info-message-text {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #6c757d;
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* Order List Card */
+.order-list-card {
+  background-color: white;
+  border: 3px solid #67a1e9;
+  border-radius: 8px;
+  padding: 3rem 2.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Order List Items */
+.order-list-item {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.order-list-item:last-of-type {
+  border-bottom: none;
+  margin-bottom: 2rem;
+}
+
+.order-list-label {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #6c757d;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  letter-spacing: 0.5px;
+}
+
+/* Payment Section */
+.payment-section {
+  padding-top: 2rem;
+  border-top: 2px solid #e9ecef;
+}
+
+.payment-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Payment Button Group */
+.payment-button-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Enable/Disable Button */
+.enable-disable-btn {
+  padding: 0.8rem 1.8rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.btn-disable {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-disable:hover {
+  background-color: #c82333;
+  transform: translateY(-1px);
+}
+
+.btn-enable {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-enable:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+/* View Details Button */
+.view-details-btn {
+  padding: 0.8rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background-color: #0867db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.view-details-btn:hover {
+  background-color: #0654b8;
+  transform: translateY(-1px);
+}
+
+/* Payment Bar Wrapper */
+.payment-bar-wrapper {
+  width: 100%;
+  height: 35px;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.payment-bar-fill {
+  height: 100%;
+  background-color: #0867db;
+  transition: width 0.4s ease;
+  border-radius: 8px;
+}
+
+/* Alert Styles */
+.alert {
+  padding: 1.2rem 1.8rem;
+  margin: 1.5rem 3rem;
+  border-radius: 8px;
+  font-size: 1.3rem;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border: 2px solid #f5c2c7;
+  color: #842029;
+}
+
+.alert-success {
+  background-color: #d1e7dd;
+  border: 2px solid #badbcc;
+  color: #0f5132;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .orderlist-paid-content {
+    padding: 0 1.5rem 2rem;
+  }
+
+  .order-list-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .orderlist-paid-title {
+    font-size: 2.2rem;
+  }
+
+  .info-message-box {
+    padding: 1.5rem;
+  }
+
+  .payment-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .payment-button-group {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .enable-disable-btn,
+  .view-details-btn {
+    width: 100%;
+  }
+}

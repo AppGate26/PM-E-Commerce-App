@@ -1,0 +1,243 @@
+.mail-hub {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 136px 28px 40px;
+}
+
+.mail-hub-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.9fr);
+  gap: 22px;
+  margin-bottom: 24px;
+}
+
+.mail-hub-hero-card,
+.mail-hub-summary,
+.mail-hub-panel,
+.mail-hub-card {
+  border: 1px solid rgba(17, 101, 216, 0.1);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 18px 36px rgba(28, 70, 136, 0.08);
+}
+
+.mail-hub-hero-card {
+  padding: 30px 32px;
+  background:
+    radial-gradient(circle at top right, rgba(47, 130, 249, 0.18), transparent 28%),
+    linear-gradient(145deg, #ffffff 0%, #f4f9ff 100%);
+}
+
+.mail-hub-kicker {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #2b78f5;
+}
+
+.mail-hub-hero-card h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 2.6vw, 2.8rem);
+  color: #14325b;
+}
+
+.mail-hub-hero-card p {
+  margin: 12px 0 0;
+  max-width: 760px;
+  color: #5f748d;
+  line-height: 1.68;
+}
+
+.mail-hub-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.mail-hub-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 16px;
+  border: none;
+  text-decoration: none;
+  font-size: 0.96rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mail-hub-btn:hover {
+  transform: translateY(-1px);
+}
+
+.mail-hub-btn-primary {
+  background: linear-gradient(180deg, #0f6ae6 0%, #2f82f9 100%);
+  color: #fff;
+  box-shadow: 0 14px 24px rgba(15, 106, 230, 0.22);
+}
+
+.mail-hub-btn-secondary {
+  background: #eef3f9;
+  color: #355375;
+}
+
+.mail-hub-summary {
+  padding: 26px;
+}
+
+.mail-hub-summary-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.mail-hub-summary-item {
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: #f8fbff;
+  border: 1px solid #e6eef9;
+}
+
+.mail-hub-summary-item span {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f8097;
+}
+
+.mail-hub-summary-item strong {
+  color: #17355d;
+  font-size: 1.08rem;
+}
+
+.mail-hub-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.95fr);
+  gap: 22px;
+}
+
+.mail-hub-panel {
+  padding: 24px;
+}
+
+.mail-hub-panel h2,
+.mail-hub-card h3 {
+  margin: 0;
+  color: #16345d;
+}
+
+.mail-hub-panel-copy,
+.mail-hub-card p {
+  margin: 8px 0 0;
+  color: #647890;
+  line-height: 1.6;
+}
+
+.mail-hub-card-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.mail-hub-card {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.mail-hub-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #0f6ae6 0%, #2f82f9 100%);
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.mail-hub-card-copy strong {
+  display: block;
+  font-size: 1rem;
+  color: #16345d;
+}
+
+.mail-hub-card-copy span {
+  display: block;
+  margin-top: 6px;
+  color: #647890;
+  line-height: 1.55;
+}
+
+.mail-hub-arrow {
+  color: #2c73e3;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.mail-hub-side {
+  display: grid;
+  gap: 22px;
+}
+
+.mail-hub-side .mail-hub-card {
+  grid-template-columns: 1fr;
+  align-items: flex-start;
+}
+
+.mail-hub-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.mail-hub-list-item {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #f9fbff;
+  border: 1px solid #edf2f8;
+  color: #26415f;
+}
+
+.mail-hub-list-item strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 1100px) {
+  .mail-hub-hero,
+  .mail-hub-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .mail-hub {
+    padding: 120px 16px 28px;
+  }
+
+  .mail-hub-hero-card,
+  .mail-hub-summary,
+  .mail-hub-panel {
+    padding: 22px;
+  }
+
+  .mail-hub-card {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+}

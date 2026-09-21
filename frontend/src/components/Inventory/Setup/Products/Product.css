@@ -1,0 +1,362 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+/* MODAL STYLING */
+body.product_active-modal {
+  overflow-y: hidden;
+}
+#product-cancel{
+  left: 67em ;
+  top: -3rem;
+}
+.product_modal,
+.product_modal-overlay {
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  z-index: 1;
+}
+
+.product_modal-overlay {
+  background: rgba(0, 0, 1, 0.6);
+  z-index: -1;
+}
+
+.product_modal-content {
+  position: absolute;
+  top: 51%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1.5rem;
+  background: transparent;
+  padding: 14px 28px;
+  border-radius: 3px;
+  max-width: 1800px;
+  min-width: 780px;
+  z-index: 999;
+}
+
+/* CARD STYLING */
+.add-product-box {
+  max-width: 1800px;
+  min-width: 860px;
+  height: fit-content;
+  z-index: 10;
+  padding: 2rem 1rem 1rem ;
+  border-radius: 24px;
+  background-color: white;
+}
+.product-header {
+  text-align: center;
+  font-size: 2.3rem;
+  color: #1c73de;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+}
+label {
+  font-size: 1.4rem;
+  font-weight: 600;
+  font-family: "Montserrat";
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.form-container {
+  height: fit-content;
+  margin: 0;
+  padding: 0rem 0rem 0rem 4rem;
+}
+.inputs-box {
+  margin: 0.8rem 0;
+}
+.product-input {
+  width: 85%;
+  height: 7vh;
+  border-radius: 4px;
+  outline: none;
+  font-size: 1.5rem;
+  color: #868e96;
+  font-weight: 500;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  border: 1px solid #ced4da;
+}
+.description-input {
+  width: 85%;
+  height: 19vh;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  font-size: 1.6rem;
+  color: #868e96;
+  text-transform: uppercase;
+  padding: 1rem;
+}
+.image-uploader-box {
+  background-color: white;
+  width: 85%;
+  height: 65%;
+  border: 3px dashed #1c73de;
+  border-radius: 3px;
+}
+#upload-input {
+  width: 100%;
+  opacity: 0;
+  background-color: white;
+  cursor: pointer;
+}
+.icon-uploader {
+  position: relative;
+  left: 14rem;
+  top: -4.5rem;
+  fill: #1c73de;
+}
+#save-btn {
+  width: 34%;
+  margin-top: 2rem;
+  margin-left: 10em;
+  padding: 1rem;
+  background-color: #407bff;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 500;
+
+  border-radius: 2px;
+}
+
+/*////////////////////////////////// 
+SUCCESSFUL  MODAL FORM STYLING
+/////////////////////////////////// */
+.success-logo {
+  width: 120px;
+  height: 140px;
+  object-fit: contain;
+  z-index: 20;
+}
+/* SUCCESSFUL MODAL STYLING */
+/* Initial positioning for ModalSuccess */
+.success_modal {
+  position: fixed;
+  top: -10rem;
+  left: 50%;
+}
+
+/* Modal overlay styling */
+.success_modal-overlay {
+  background: rgba(0, 0, 1, 0.6);
+}
+
+/* Modal content styling */
+.success_modal-content {
+  position: absolute;
+  transform: translateX(-50%);
+  line-height: 1.5rem;
+  background-color: white;
+  border-radius: 3px;
+  max-width: 900px;
+  min-width: 520px;
+  height: 30vh;
+  z-index: 2000; /* Adjust z-index to ensure it appears on top */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-success-txt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 4rem 0 2rem;
+}
+.checked-icon {
+  background-color: #1c73de;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+.msg-success {
+  font-size: 3rem;
+  color: #1c73de;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+}
+.text-success {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #212529;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* Standard product form redesign */
+.product-standard-shell {
+  padding: 1rem;
+}
+
+.product-standard-card {
+  border: 1px solid rgba(8, 103, 219, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 28px 60px rgba(15, 61, 130, 0.16);
+  padding: 2rem 2rem 1.6rem;
+}
+
+.product-standard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 1.75rem;
+}
+
+.product-standard-title {
+  max-width: 48rem;
+}
+
+.product-standard-eyebrow {
+  margin: 0 0 0.5rem;
+  color: #0867db;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.product-standard-subtitle {
+  margin: 0.75rem 0 0;
+  color: #637087;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.product-standard-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.product-standard-link,
+.product-standard-close {
+  border: 1px solid rgba(8, 103, 219, 0.12);
+  background: #f6f9ff;
+  color: #0867db;
+  border-radius: 999px;
+  padding: 0.8rem 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.product-standard-close {
+  width: 3rem;
+  height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.product-standard-form {
+  padding: 0;
+}
+
+.product-standard-form .inputs-box {
+  margin-bottom: 1.35rem;
+}
+
+.product-linked-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.product-linked-add-btn {
+  border: none;
+  background: #edf4ff;
+  color: #0867db;
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.product-linked-add-btn:hover {
+  background: #dcecff;
+  transform: translateY(-1px);
+}
+
+.product-linked-add-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.product-standard-form .product-input,
+.product-standard-form .description-input {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid #d7e3f3;
+  background: #fbfdff;
+  color: #21324b;
+  font-size: 1.05rem;
+  padding: 1rem 1.1rem;
+}
+
+.product-standard-form .description-input {
+  min-height: 11rem;
+  resize: vertical;
+}
+
+.product-standard-form label {
+  font-size: 0.92rem;
+  letter-spacing: 0.05em;
+  color: #193253;
+}
+
+.product-standard-form .image-uploader-box {
+  width: 100%;
+  min-height: 8rem;
+  border-radius: 18px;
+  border-width: 2px;
+  background: #fbfdff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-standard-form .icon-uploader {
+  position: static;
+}
+
+.product-standard-submit-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.6rem;
+}
+
+.product-standard-submit-wrap #save-btn {
+  width: auto;
+  min-width: 14rem;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.95rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.product-standard-error {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+}

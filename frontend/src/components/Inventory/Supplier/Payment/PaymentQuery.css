@@ -1,0 +1,111 @@
+/* ***********************  */
+/* BELOW 1200PX (LANDSCAPE TABLET) */
+/* **************** ********/
+@media (max-width: 75em) {
+  .payment-box {
+    background-color: white;
+    max-width: 1000px;
+    min-width: 850px;
+    padding: 4rem 1rem 1rem;
+    border-radius: 10px;
+  }
+  .add-save_btn {
+    left: 30em;
+  }
+  .close {
+    left: 20em;
+    top: 1rem;
+  }
+}
+@media (max-width: 59em) {
+  #payment-sup-cancel {
+    left: 64em;
+    top: -4rem;
+  }
+}
+@media (max-width: 50em) {
+  .payment-box {
+    background-color: white;
+    max-width: 1000px;
+    min-width: 750px;
+    padding: 4rem 1rem 1rem;
+    border-radius: 10px;
+  }
+
+  .payment-detail {
+    margin-bottom: 2rem;
+    width: 90%;
+    height: 7vh;
+    border-radius: 8px;
+    outline: none;
+    border: 1px solid #5697e6;
+    font-size: 14px;
+    color: #343a40;
+    padding-left: 1rem;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .add-save_btn {
+    left: 20em;
+    height: 3vh;
+    font-size: 1.4rem;
+  }
+  .close {
+    left: 17em;
+    top: 1rem;
+  }
+}
+/* ***********************  */
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+@media (max-width: 34em) {
+  .payment-grid {
+    display: grid;
+    width: 800px;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .payment_modal-content {
+    min-width: 96%;
+    overflow: auto;
+    background-color: white;
+    height: 90vh;
+  }
+  .payment-box {
+    background-color: white;
+    max-width: 300px;
+    min-width: 300px;
+
+    /* display: none; */
+  }
+
+  .pay-header {
+    margin-left: 10em;
+    width: 100%;
+  }
+  #dashboard-payment-int {
+    top: 4rem !important;
+  }
+  .colum-grid-2 {
+    padding: 2rem;
+
+    background-color: white;
+  }
+  #sup-input {
+    width: 20rem;
+  }
+  .modal-content-showPaymentPeriodModal,
+  .modal-content {
+    
+    width: 100%;
+  }
+  .showPaymentPeriodModal-close,
+  .close{
+    left: 11em;
+  }
+  .add-save_btn{
+    left: 10em;
+  }
+}

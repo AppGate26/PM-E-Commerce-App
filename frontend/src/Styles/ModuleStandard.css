@@ -1,0 +1,259 @@
+.module-page-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(8, 103, 219, 0.12), transparent 24%),
+    linear-gradient(180deg, #eef5ff 0%, #ffffff 38%);
+}
+
+.module-mobile-bar {
+  padding: 1rem 1.1rem;
+  background: linear-gradient(135deg, #0a56b5 0%, #0867db 52%, #2d8dff 100%);
+  box-shadow: 0 12px 30px rgba(8, 47, 105, 0.18);
+}
+
+.module-desktop-nav {
+  position: relative;
+  z-index: 30;
+  width: min(96%, 1380px);
+  margin: 1.3rem auto 0;
+  padding: 1rem 1.45rem;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #0a56b5 0%, #0867db 52%, #2d8dff 100%);
+  box-shadow: 0 20px 46px rgba(8, 47, 105, 0.18);
+}
+
+.module-nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.module-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  text-decoration: none;
+}
+
+.module-brand-logo {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.16);
+  padding: 0.35rem;
+}
+
+.module-brand-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.module-brand-title {
+  color: #fff;
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
+.module-brand-subtitle {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.module-nav-links {
+  gap: 0.85rem !important;
+}
+
+.module-nav-pill,
+.module-nav-links > li > a.invent_links,
+.module-nav-links > li > a.order_links,
+.module-nav-links > li > a.client_links,
+.module-nav-links > li > a.delivery_links,
+.module-nav-links > li > a.recovery_links {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 1rem 1.2rem !important;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 1.12rem;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.module-nav-pill:hover,
+.module-nav-links > li:hover > a.invent_links,
+.module-nav-links > li:hover > a.order_links,
+.module-nav-links > li:hover > a.client_links,
+.module-nav-links > li:hover > a.delivery_links,
+.module-nav-links > li:hover > a.recovery_links {
+  background: #ffffff;
+  color: #0867db !important;
+  box-shadow: 0 12px 28px rgba(6, 32, 75, 0.14);
+  transform: translateY(-1px);
+}
+
+.module-quick-link {
+  text-decoration: none;
+}
+
+.module-logout-btn {
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: white !important;
+  font-weight: 700 !important;
+}
+
+.module-content-shell {
+  width: min(96%, 1380px);
+  margin: 1.5rem auto 2rem;
+}
+
+.module-surface {
+  border: 1px solid #d5e3f8;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(8, 103, 219, 0.08), transparent 25%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  box-shadow: 0 20px 50px rgba(8, 47, 105, 0.08);
+  overflow: hidden;
+}
+
+.module-heading-band {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.35rem 1.6rem;
+  border-bottom: 1px solid #dde8f8;
+  background: linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(241,247,255,0.92) 100%);
+}
+
+.module-heading-copy h1 {
+  margin: 0;
+  color: #0b458d;
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  font-weight: 800;
+}
+
+.module-heading-copy p {
+  margin: 0.35rem 0 0;
+  color: #5f7fae;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.module-heading-badge {
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: rgba(8, 103, 219, 0.1);
+  color: #0867db;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.module-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Branch badge + user chip, side by side in the heading band. */
+.module-user-chip-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.module-user-chip {
+  min-height: 42px;
+  max-width: 240px;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.4rem 0.8rem 0.4rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid #d5e3f8;
+  background: #ffffff;
+  color: #0b458d;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(8, 47, 105, 0.08);
+}
+
+.module-user-avatar {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(8, 103, 219, 0.1);
+  color: #0867db;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.module-user-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.12rem;
+  line-height: 1.05;
+}
+
+.module-user-copy strong,
+.module-user-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 170px;
+}
+
+.module-user-copy strong {
+  color: #052f6f;
+  font-size: 0.9rem;
+  font-weight: 1000;
+}
+
+.module-user-copy small {
+  color: #526781;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+@media (max-width: 992px) {
+  .module-desktop-nav {
+    width: 94%;
+    padding: 0.95rem 1rem;
+  }
+
+  .module-brand-copy {
+    display: none;
+  }
+
+  .module-content-shell {
+    width: 94%;
+  }
+
+  .module-heading-band {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .module-heading-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

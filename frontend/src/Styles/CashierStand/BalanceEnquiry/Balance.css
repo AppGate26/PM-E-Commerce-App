@@ -1,0 +1,513 @@
+.be-shell {
+  background: radial-gradient(circle at top right, #d5e8ff, #f7fafd 42%);
+  border-radius: 18px;
+}
+
+.be-modal-content {
+  overflow: hidden !important;
+  max-height: 95vh !important;
+}
+
+.be-container {
+  width: min(1120px, 95vw);
+  min-width: 0;
+  border-radius: 18px;
+  padding: 2rem;
+  background: transparent;
+  overflow: hidden;
+  font-size: 1.05rem;
+}
+
+.be-header {
+  margin-bottom: 1rem;
+}
+
+.be-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.be-dashboard-link {
+  margin-left: auto;
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: #0f6fe0;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.be-dashboard-link:hover {
+  background: #0b57b0;
+}
+
+.be-close-btn {
+  border: none;
+  background: #e4edf8;
+  color: #223450;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.be-title-wrap {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.be-title-wrap h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 2.6vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #0f2f5a;
+  text-transform: uppercase;
+}
+
+.be-title-wrap p {
+  margin: 0;
+  color: #506680;
+  font-size: 1.05rem;
+}
+
+.be-alert {
+  margin: 0.8rem 0;
+}
+
+.be-card {
+  border: 1px solid #d8e3f0;
+  background: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.be-filter-row {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.be-filter-main {
+  flex: 1;
+}
+
+.be-filter-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.be-label {
+  display: inline-block;
+  margin-bottom: 0.4rem;
+  color: #4d6280;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+.be-ledger-filters > div:first-child {
+  position: relative;
+}
+
+.be-input {
+  width: 100%;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  padding: 0.78rem 0.7rem;
+  border: 1px solid #bfd0e4;
+  background: #fdfefe;
+  margin: 0;
+}
+
+.be-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: #fff;
+  border: 1px solid #bfd0e4;
+  border-radius: 10px;
+  box-shadow: 0 12px 24px rgba(16, 45, 81, 0.14);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.be-suggestion-item {
+  width: 100%;
+  border: none;
+  background: #fff;
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  cursor: pointer;
+}
+
+.be-suggestion-item span {
+  font-size: 0.95rem;
+  color: #18395f;
+  font-weight: 600;
+}
+
+.be-suggestion-item small {
+  font-size: 0.8rem;
+  color: #66809f;
+}
+
+.be-suggestion-item:hover:not(:disabled) {
+  background: #edf4ff;
+}
+
+.be-suggestion-item:disabled {
+  cursor: default;
+}
+
+.be-input:focus {
+  outline: none;
+  border-color: #2d7de1;
+  box-shadow: 0 0 0 3px rgba(45, 125, 225, 0.18);
+}
+
+.be-input:read-only {
+  background: #f4f7fb;
+  color: #47607e;
+}
+
+.be-primary-btn,
+.be-secondary-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  font-size: 0.94rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.be-primary-btn {
+  background: #0f6fe0;
+  color: #fff;
+}
+
+.be-secondary-btn {
+  background: #d6e7fb;
+  color: #0b4a96;
+}
+
+.be-primary-btn:disabled,
+.be-secondary-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.be-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.8fr;
+  gap: 1rem;
+  background: #edf4fd;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.be-info-col h5,
+.be-passport-col h5 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #213a5a;
+}
+
+.be-passport-box {
+  width: 100%;
+  height: 170px;
+  border: 1px solid #bfd0e4;
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b8099;
+  font-size: 0.92rem;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.be-ledger-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+  align-items: flex-end;
+}
+
+.be-ledger-action {
+  display: flex;
+  justify-content: flex-end;
+  margin: 1rem 0;
+}
+
+.be-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
+}
+
+.be-table-wrap table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.be-table-wrap th {
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: #5a6e89;
+  background: #eef4fb;
+  padding: 0.7rem 0.6rem;
+  border-bottom: 1px solid #d4dfec;
+}
+
+.be-table-wrap td {
+  padding: 0.6rem;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.be-empty-cell {
+  text-align: center;
+  padding: 16px;
+}
+
+.be-debit-value {
+  color: #c21f1f;
+  font-weight: 700;
+}
+
+.be-total-row td {
+  background: #f5f9ff;
+  font-weight: 800;
+  border-top: 2px solid #d6e3f5;
+}
+
+.be-debug {
+  margin-top: 1rem;
+  border: 1px dashed #9fb6d3;
+  border-radius: 10px;
+  background: #f7fbff;
+  padding: 0.8rem;
+}
+
+.be-debug h5 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: #21456d;
+}
+
+.be-debug pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.82rem;
+  color: #163456;
+  max-height: 220px;
+  overflow: auto;
+}
+
+@media (max-width: 72em) {
+  .be-info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .be-passport-col {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 56em) {
+  .be-container {
+    width: 96vw;
+    padding: 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  .be-title-wrap h1 {
+    font-size: clamp(1.3rem, 2vw, 1.8rem);
+  }
+
+  .be-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .be-filter-actions {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .be-filter-actions button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .be-primary-btn,
+  .be-secondary-btn {
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .be-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .be-passport-col {
+    grid-column: auto;
+  }
+
+  .be-ledger-action {
+    justify-content: stretch;
+  }
+
+  .be-info-col h5,
+  .be-passport-col h5 {
+    font-size: 0.9rem;
+  }
+
+  .be-passport-box {
+    height: 140px;
+  }
+
+  .be-table-wrap th,
+  .be-table-wrap td {
+    padding: 0.5rem 0.4rem;
+    font-size: 0.9rem;
+  }
+
+  .be-table-wrap th {
+    font-size: 0.75rem;
+  }
+
+  .be-label {
+    font-size: 0.8rem;
+  }
+
+  .be-input {
+    padding: 0.6rem 0.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 36em) {
+  .be-container {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .be-title-wrap h1 {
+    font-size: 1.2rem;
+  }
+
+  .be-title-wrap p {
+    font-size: 0.9rem;
+  }
+
+  .be-topbar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .be-close-btn {
+    order: -1;
+    align-self: flex-end;
+  }
+
+  .be-dashboard-link {
+    margin-left: 0;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .be-ledger-filters {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+
+  .be-ledger-filters > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .be-filter-actions {
+    grid-column: 1 / -1;
+  }
+
+  .be-filter-actions button {
+    flex: 1;
+    padding: 0.6rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .be-card {
+    padding: 0.8rem;
+    border-radius: 10px;
+  }
+
+  .be-info-grid {
+    padding: 0.8rem;
+    gap: 0.8rem;
+  }
+
+  .be-info-col h5,
+  .be-passport-col h5 {
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .be-passport-box {
+    height: 120px;
+  }
+
+  .be-table-wrap {
+    overflow-x: auto;
+  }
+
+  .be-table-wrap table {
+    font-size: 0.8rem;
+  }
+
+  .be-table-wrap th,
+  .be-table-wrap td {
+    padding: 0.4rem 0.3rem;
+    font-size: 0.75rem;
+  }
+
+  .be-suggestions {
+    max-height: 180px;
+  }
+
+  .be-suggestion-item {
+    padding: 0.5rem;
+  }
+
+  .be-suggestion-item span {
+    font-size: 0.85rem;
+  }
+
+  .be-suggestion-item small {
+    font-size: 0.7rem;
+  }
+}

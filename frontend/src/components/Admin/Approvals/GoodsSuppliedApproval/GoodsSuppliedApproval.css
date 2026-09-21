@@ -1,0 +1,244 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
+.goods-supplied-form-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: "Montserrat", sans-serif;
+  padding: 30px;
+  gap: 30px;
+  border-radius: 10px;
+  background-color: white;
+
+  min-height: fit-content;
+}
+
+.goods-supplied-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Header Fields - 2 fields per row */
+.goods-supplied-header-fields {
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.goods-supplied-field-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.goods-supplied-field-group {
+  flex: 1;
+  min-width: calc(50% - 10px);
+  max-width: calc(50% - 10px);
+}
+
+.goods-supplied-field-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 5px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.goods-supplied-field-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  background-color: #fff;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+}
+
+.goods-supplied-field-input:focus {
+  outline: none;
+  border-color: #0867db;
+}
+
+.goods-supplied-field-input::placeholder {
+  color: #aaa;
+}
+
+/* Table Section */
+.goods-supplied-table-section {
+  margin: 25px 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.goods-supplied-table-header {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr 1.5fr 1fr 1fr 1.5fr;
+  background-color: #0867db;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.goods-supplied-table-header-cell {
+  padding: 12px 15px;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.goods-supplied-table-header-cell:last-child {
+  border-right: none;
+}
+
+.goods-supplied-table-body {
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: #fff;
+}
+
+.goods-supplied-table-row {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr 1.5fr 1fr 1fr 1.5fr;
+  border-bottom: 1px solid #e0e0e0;
+  transition: background-color 0.2s;
+}
+
+.goods-supplied-table-row:hover {
+  background-color: #f8f9fa;
+}
+
+.goods-supplied-table-row:last-child {
+  border-bottom: none;
+}
+
+.goods-supplied-table-cell {
+  padding: 12px 15px;
+  text-align: center;
+  border-right: 1px solid #e0e0e0;
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goods-supplied-table-cell:last-child {
+  border-right: none;
+}
+
+.goods-supplied-empty-row .goods-supplied-table-cell {
+  min-height: 45px;
+  background-color: #fafafa;
+}
+
+/* Action Buttons */
+.goods-supplied-action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
+.goods-supplied-approve-button,
+.goods-supplied-decline-button {
+  padding: 15px 40px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 150px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.goods-supplied-approve-button {
+  background-color: #0867db;
+  color: white;
+}
+
+.goods-supplied-approve-button:hover:not(:disabled) {
+  background-color: #0654b8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(8, 103, 219, 0.3);
+}
+
+.goods-supplied-approve-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.goods-supplied-decline-button {
+  background-color: #fc8a8b;
+  color: white;
+}
+
+.goods-supplied-decline-button:hover:not(:disabled) {
+  background-color: #fb6b6d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(252, 138, 139, 0.3);
+}
+
+.goods-supplied-decline-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .goods-supplied-field-group {
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+  .goods-supplied-table-header,
+  .goods-supplied-table-row {
+    grid-template-columns: repeat(6, 1fr);
+    min-width: 800px;
+  }
+  
+  .goods-supplied-table-section {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .goods-supplied-form-section {
+    padding: 15px 0;
+    gap: 20px;
+  }
+
+  .goods-supplied-title {
+    font-size: 18px;
+  }
+  
+  .goods-supplied-action-buttons {
+    flex-direction: column;
+  }
+  
+  .goods-supplied-approve-button,
+  .goods-supplied-decline-button {
+    width: 100%;
+  }
+}

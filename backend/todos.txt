@@ -1,0 +1,32 @@
+1. when a walk in customer registers a paystack sub-account (wallet) needs to be created, they will be using phone number as account number
+2. search product by name, id, productId etc
+3. search customer by name, id, phoneNumber, accountnumber,  etc
+4. check if generate repayment schedule is working
+5. get order from reference no
+6. calculate loan schedule
+
+1. calculate loan schedule POST /api/sales/loan/calculate-schedule
+2. get order by reference no GET /api/sales/orders/reference/{referenceNo}
+3. expand product search to include id, name etc
+4. expand customer search to include id, these are there already (name, firstname, phoneNumber, lastname, etc)
+5. create account for walkin customer
+
+
+
+1. endpoint that gets all customers that have not completed their payment and the percentage completion
+2. endpoint that gets all customers that have completed their payment and the status
+3. endpoint that enable a customer order reference no to paid (make sure the customer have paid up to 50% before marking as paid)
+4. endpoint to view customer payment details (how many records, times, dates etc)
+5. can you check how the refunds is working, there should be a 10% charge on refunds, so when admin clicks on refunds after a customer have applied
+   the system calculates the total amount the customer have paid, then apply the 10% charge before refunding the rest
+   refund can be done before the goods have been delivered
+6. cancel order is different from refund order, a customer can cancel an order to order for another product
+7. CRUD for account type
+8 study te images in the directory attached, see if you can bring out all the endpoints, then check if they are already been implemented in the codebase, if not implement them 
+
+account type
+1. assets
+2. liabilities
+3. income
+4. expenss
+

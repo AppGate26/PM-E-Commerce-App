@@ -1,0 +1,175 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
+.create-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+  font-family: "Montserrat", sans-serif;
+  gap: 30px;
+}
+
+.create-heading {
+  color: #0867db;
+  font-size: 32px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.create-box {
+  background-color: #ffffff;
+  width: 95%;
+  max-width: 90%;
+  border-radius: 10px;
+  padding: 40px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.create-form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.input-cont {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-cont label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.input-field,
+.select-field {
+  border: 1px solid #cfcfcf;
+  padding: 12px 16px;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 14px;
+  font-family: "Montserrat", sans-serif;
+  color: #333;
+  background-color: #ffffff;
+}
+
+.select-field {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 40px;
+}
+
+.input-field:focus,
+.select-field:focus {
+  outline: none;
+  border-color: #0867db;
+  box-shadow: 0 0 0 1px rgba(8, 103, 219, 0.15);
+}
+
+.password-reminder-section {
+  border: 1px solid #0867db;
+  border-radius: 6px;
+  padding: 20px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #ffffff;
+}
+
+.password-reminder-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0867db;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #0867db;
+}
+
+.btn-cont {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-create {
+  padding: 15px 35px;
+  border-radius: 5px;
+  border: none;
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.3s;
+  background-color: #0867db;
+  color: #ffffff;
+  min-width: 200px;
+}
+
+.btn-create:hover {
+  background-color: #0654b8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(8, 103, 219, 0.3);
+}
+
+.btn-close {
+  padding: 15px 35px;
+  border-radius: 5px;
+  border: none;
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.3s;
+  background-color: #fc8a8b;
+  color: #ffffff;
+  min-width: 150px;
+}
+
+.btn-close:hover {
+  background-color: #fb6b6d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(252, 138, 139, 0.3);
+}
+
+@media (max-width: 968px) {
+  .create-box {
+    padding: 30px 20px;
+  }
+
+  .input-field,
+  .select-field {
+    min-width: 100%;
+  }
+
+  .btn-cont {
+    flex-direction: column;
+  }
+
+  .btn-create,
+  .btn-close {
+    width: 100%;
+  }
+}

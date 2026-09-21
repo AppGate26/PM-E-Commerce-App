@@ -1,0 +1,84 @@
+.account-picker {
+  position: relative;
+  width: 100%;
+}
+
+.account-picker-input {
+  width: 100%;
+  cursor: pointer;
+}
+
+.account-picker-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #c7d2e0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+}
+
+.account-picker-item {
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.account-picker-item:hover,
+.account-picker-item.active {
+  background: #eef4ff;
+}
+
+.account-picker-code {
+  font-weight: 700;
+  color: #0867db;
+  font-variant-numeric: tabular-nums;
+}
+
+.account-picker-name {
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-picker-id {
+  color: #6b7280;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.account-picker-empty {
+  padding: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .account-picker-menu {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  .account-picker-item {
+    border-bottom-color: #374151;
+  }
+  .account-picker-item:hover,
+  .account-picker-item.active {
+    background: #26344a;
+  }
+  .account-picker-name {
+    color: #e5e7eb;
+  }
+}

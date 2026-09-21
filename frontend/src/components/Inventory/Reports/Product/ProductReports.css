@@ -1,0 +1,324 @@
+.inventory-report-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(47, 135, 240, 0.08), transparent 28%),
+    linear-gradient(180deg, #f3f8ff 0%, #eef5ff 100%);
+  padding: 2.4rem;
+}
+
+.inventory-report-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.inventory-report-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.6rem;
+}
+
+.inventory-report-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.inventory-report-logo-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 18px 40px rgba(19, 60, 120, 0.12);
+}
+
+.inventory-report-logo {
+  max-width: 52px;
+  max-height: 52px;
+  object-fit: contain;
+}
+
+.inventory-report-brand h1 {
+  margin: 0 0 0.35rem;
+  color: #114183;
+  font-size: 2rem;
+  font-weight: 800;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-brand p {
+  margin: 0;
+  color: #61728b;
+  font-size: 1.15rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-close {
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1152ae;
+  padding: 0.95rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: "Montserrat", sans-serif;
+  cursor: pointer;
+  box-shadow: 0 14px 34px rgba(19, 60, 120, 0.12);
+}
+
+.inventory-report-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 2.2rem 2.4rem;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #0d56b8 0%, #3290f3 100%);
+  box-shadow: 0 24px 55px rgba(13, 86, 184, 0.24);
+  margin-bottom: 1.8rem;
+}
+
+.inventory-report-kicker {
+  display: inline-flex;
+  margin-bottom: 0.85rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ddebff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-hero h2 {
+  margin: 0 0 0.8rem;
+  color: #ffffff;
+  font-size: 2.4rem;
+  font-weight: 800;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-hero p {
+  max-width: 620px;
+  margin: 0;
+  color: #ebf4ff;
+  font-size: 1.2rem;
+  line-height: 1.8;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  padding: 1rem 1.35rem;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-family: "Montserrat", sans-serif;
+  text-align: center;
+}
+
+.inventory-report-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.6rem;
+}
+
+.inventory-report-stat {
+  background: #ffffff;
+  border: 1px solid #dce8fb;
+  border-radius: 22px;
+  padding: 1.35rem 1.5rem;
+  box-shadow: 0 16px 38px rgba(17, 65, 131, 0.08);
+}
+
+.inventory-report-stat span {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #70819a;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-stat strong {
+  color: #133f7f;
+  font-size: 1.8rem;
+  font-weight: 800;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-card {
+  background: #ffffff;
+  border: 1px solid #dce8fb;
+  border-radius: 28px;
+  padding: 2rem;
+  box-shadow: 0 24px 60px rgba(17, 65, 131, 0.08);
+}
+
+.inventory-report-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.6rem;
+}
+
+.inventory-report-card-header h3 {
+  margin: 0 0 0.45rem;
+  color: #133f7f;
+  font-size: 1.8rem;
+  font-weight: 800;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-card-header p {
+  margin: 0;
+  color: #65768e;
+  font-size: 1.15rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-page-note {
+  color: #5b6d85;
+  font-size: 1.05rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-table-wrap {
+  overflow-x: auto;
+}
+
+.inventory-report-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.inventory-report-table thead th {
+  background: #edf5ff;
+  color: #14458a;
+  padding: 1rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  border-bottom: 1px solid #d5e5fb;
+}
+
+.inventory-report-table thead th:first-child {
+  border-top-left-radius: 18px;
+}
+
+.inventory-report-table thead th:last-child {
+  border-top-right-radius: 18px;
+}
+
+.inventory-report-table tbody td {
+  padding: 1rem 1.1rem;
+  color: #35506f;
+  font-size: 1.08rem;
+  font-family: "Montserrat", sans-serif;
+  border-bottom: 1px solid #e7effb;
+  vertical-align: top;
+}
+
+.inventory-report-table tbody tr:nth-child(even) td {
+  background: #f9fbff;
+}
+
+.inventory-report-table tbody tr:hover td {
+  background: #f2f7ff;
+}
+
+.inventory-report-empty,
+.inventory-report-status {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: #5e6f87;
+  font-size: 1.15rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-error {
+  color: #c63f56;
+}
+
+.inventory-report-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.6rem;
+}
+
+.inventory-report-pagination-info {
+  color: #667890;
+  font-size: 1rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.inventory-report-pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.inventory-report-pagination-buttons button {
+  border: 1px solid #cfe0f7;
+  background: #ffffff;
+  color: #1152ae;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  min-width: 42px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: "Montserrat", sans-serif;
+  cursor: pointer;
+}
+
+.inventory-report-pagination-buttons button.active {
+  background: #1152ae;
+  color: #ffffff;
+  border-color: #1152ae;
+}
+
+.inventory-report-pagination-buttons button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.inventory-report-dot {
+  color: #6c7f98;
+  padding: 0 0.2rem;
+}
+
+@media (max-width: 900px) {
+  .inventory-report-page {
+    padding: 1.25rem;
+  }
+
+  .inventory-report-topbar,
+  .inventory-report-hero,
+  .inventory-report-card-header,
+  .inventory-report-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

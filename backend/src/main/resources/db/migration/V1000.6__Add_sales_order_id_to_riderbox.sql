@@ -1,0 +1,12 @@
+-- ORDERING #4: a walk-in sale's SalesOrder has no mobile Order counterpart
+-- (SalesOrder.mobileOrderId is only ever set for orders mirrored from the mobile app), so
+-- RiderBoxService.assignProduct's requirement of a mobileOrderId meant a walk-in sale could
+-- never be assigned to a rider at all - it always failed with "This order has no linked
+-- delivery record and cannot be assigned to a rider". Add a column to reference the
+-- SalesOrder directly for that case, alongside the existing order_id (mobile Order) column.
+-- Despite the Java entity's @Table(name = "RiderBox"), Spring Boot's default Hibernate
+-- physical naming strategy (SpringPhysicalNamingStrategy) converts it to snake_case for
+-- the actual database - the live table is named rider_box, not RiderBox (confirmed by
+-- Hibernate's own schema-validation error: "missing column [sales_order_id] in table
+-- [rider_box]").
+ALTER TABLE rider_box ADD COLUMN sales_order_id BIGINT NULL;

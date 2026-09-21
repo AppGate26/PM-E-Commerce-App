@@ -1,0 +1,138 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
+.sent-mail-parent {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: #F6FAFF;
+  min-height: 80vh;
+  padding: 20px 60px;
+  gap: 20px;
+  margin-top: 90px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.sent-mail-card-full {
+  width: 100%;
+  background-color: #fff;
+  border-radius: 5px 5px 0px 0px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.sent-mail-header-blue {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: #0867db;
+  padding: 20px 25px;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-height: 7vh;
+}
+
+.sent-mail-list {
+  padding: 0;
+}
+
+.sent-mail-item {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 20px;
+  padding: 20px 40px;
+  border-bottom: 1px solid #e9ecef;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sent-mail-item:hover {
+  background-color: #f8f9fa;
+}
+
+.sent-mail-item.selected {
+  background-color: #e3f2fd;
+}
+
+.sent-mail-sender {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sent-mail-subject {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sent-mail-date {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: right;
+}
+
+/* Detail View */
+.sent-mail-detail {
+  padding: 40px;
+}
+
+.sent-detail-row {
+  display: flex;
+  margin-bottom: 30px;
+  align-items: flex-start;
+}
+
+.sent-detail-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 180px;
+  margin-right: 20px;
+}
+
+.sent-detail-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex: 1;
+}
+
+.sent-detail-row:last-child {
+  flex-direction: column;
+}
+
+.sent-detail-row:last-child .sent-detail-label {
+  margin-bottom: 15px;
+  margin-right: 0;
+}
+
+.sent-detail-message-box {
+  width: 100%;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  line-height: 1.6;
+  text-align: left;
+  background-color: #fff;
+  min-height: 150px;
+  font-family: "Montserrat", sans-serif;
+  text-transform: uppercase;
+}

@@ -1,0 +1,139 @@
+.why-stand-out-section {
+  padding: 80px 20px;
+  background-color: #ffffff;
+}
+
+.section-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #0867db;
+  text-align: center;
+  margin-bottom: 60px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 40px 30px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.feature-card:hover,
+.feature-card.hovered {
+  background-color: #0867db;
+  border-color: #0867db;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(8, 103, 219, 0.3);
+}
+
+.feature-card:hover .feature-title,
+.feature-card.hovered .feature-title {
+  color: #ffffff;
+}
+
+.feature-card:hover .feature-description,
+.feature-card.hovered .feature-description {
+  color: #ffffff;
+}
+
+.feature-card:hover .feature-icon svg rect,
+.feature-card.hovered .feature-icon svg rect {
+  fill: #ffffff;
+}
+
+.feature-card:hover .feature-icon svg path,
+.feature-card.hovered .feature-icon svg path {
+  stroke: #0867db;
+  fill: #0867db;
+}
+
+.feature-card:hover .feature-icon svg circle,
+.feature-card.hovered .feature-icon svg circle {
+  fill: #ffffff;
+  stroke: #ffffff;
+}
+
+.feature-icon {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.feature-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 16px;
+  font-family: "Montserrat", sans-serif;
+  transition: color 0.3s ease;
+}
+
+.feature-description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #666666;
+  font-family: "Montserrat", sans-serif;
+  transition: color 0.3s ease;
+}
+
+@media (max-width: 992px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .section-title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+    margin-bottom: 40px;
+  }
+  
+  .why-stand-out-section {
+    padding: 60px 20px;
+  }
+  
+  .feature-card {
+    padding: 30px 20px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,382 @@
+/* ***********************  */
+/* BELOW 1344PX (FOR SMALLER COMPUTER) */
+/* **************** ********/
+@media (max-width: 84em) {
+  .selected-image-container {
+    left: 7rem;
+  }
+  /*/////////////////////////  */
+  /* SELECTION PRODUCT FORM */
+  /* ///////////////////////////// */
+  .container-selection {
+    margin: 0 3rem;
+    width: fit-content;
+    padding: 0 1rem;
+  }
+  .select-form-bg {
+    padding: 4rem 0;
+  }
+  .product-id-selection,
+  .ul-product-id {
+    width: 56rem;
+  }
+
+  .me-from-box {
+    padding-left: 3rem;
+  }
+}
+
+/* ***********************  */
+/* BELOW 1200PX (LANDSCAPE TABLET) */
+/* **************** ********/
+@media (max-width: 75em) {
+  .selected-image-container {
+    left: 5rem;
+    width: 15%;
+    padding: 0;
+  }
+  .selected-image {
+    object-fit: cover;
+  }
+  .container-selection {
+    margin: 0 1rem;
+    width: fit-content;
+    padding: 0 1rem;
+  }
+  .select-form-bg {
+    padding: 4rem 0 6rem;
+  }
+  .product-id-selection,
+  .ul-product-id {
+    width: 41rem;
+    height: 8vh;
+  }
+  .products-form {
+    width: 34rem;
+    height: 8vh;
+  }
+  .product-form-box {
+    margin: 1.5rem 0;
+  }
+  .me-from-box {
+    padding-left: 1.2rem;
+  }
+  .bg-icon {
+    height: 8vh;
+    width: 17%;
+  }
+}
+
+@media (max-width: 75em) {
+  .product-id-selection,
+  .ul-product-id {
+    width: 37rem;
+  }
+  .products-form {
+    width: 31rem;
+    height: 8vh;
+  }
+  .me-from-box {
+    padding-left: 2rem;
+  }
+  .img_modal-content {
+    max-width: 600px;
+    min-width: 600px;
+  }
+
+  .icon_upload {
+    left: 24rem;
+    top: -11rem;
+  }
+  .change-image-btn {
+    font-size: 18px;
+    margin-top: 10px;
+  }
+  .text-h5 {
+    font-size: 1.8rem;
+  }
+  .del-btn {
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+}
+
+/* ***********************  */
+/* BELOW 724PX (small tablet) */
+/* **************** ********/
+@media (max-width: 48em) {
+  .image-selection-bg {
+    padding: 6rem;
+  }
+  .uploader-file_box {
+    width: 100%;
+    height: 20vh;
+  }
+  .selected-image-container {
+    left: 6rem;
+  }
+  .product-id-selection,
+  .ul-product-id {
+    width: 100%;
+  }
+  .products-form {
+    width: 65rem;
+    height: 8vh;
+  }
+  .product-form-box {
+    margin: 1.5rem 0;
+    width: 74rem;
+  }
+  .me-from-box {
+    padding-left: 0rem;
+  }
+  .icon_upload {
+    left: 17rem;
+    top: -9rem;
+  }
+  .bg-icon {
+    height: 8vh;
+    width: 11%;
+  }
+  .check-icon {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+/* 550 / 16 =34 */
+@media (max-width: 34em) {
+  .edit-nav {
+    padding: 1.6rem 1rem;
+  }
+
+  .edit-txt {
+    font-size: 1.65rem;
+  }
+  .image-selection-bg {
+    padding: 2rem 0.4rem;
+  }
+  .img_modal-content {
+    max-width: 400px;
+    min-width: 400px;
+    padding: 3rem;
+  }
+  .uploader-file_box {
+    width: 100%;
+    height: 20vh;
+  }
+  .change-image-btn {
+    font-size: 12px;
+    margin-top: 0px;
+  }
+
+  /*/////////////////////////  */
+  /* Style for the selected image */
+  /* ///////////////////////////// */
+  .selected-image-container {
+    width: 20%;
+    top: 10rem;
+    border-radius: 0px;
+    left: 0.4rem !important;
+  }
+
+  .selected-image {
+    border-radius: 1px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .text-h5 {
+    font-size: 1.4rem;
+  }
+  .del-btn {
+    font-size: 1.2rem;
+
+    padding: 15px 8px;
+  }
+
+  .selected-image-container {
+    left: 6rem;
+  }
+
+  .products-form {
+    width: 35rem;
+    height: 8vh;
+  }
+  .product-form-box {
+    margin: 1.5rem 0;
+    width: 40rem;
+  }
+  .me-from-box {
+    padding-left: 0rem;
+  }
+  .bg-icon {
+    height: 8vh;
+    width: 11%;
+  }
+  .check-icon {
+    width: 30px;
+    height: 30px;
+    padding: 5px;
+  }
+}
+
+@media (max-width: 25em) {
+  .edit-nav {
+    padding: 1.6rem 0.4rem;
+  }
+
+  .edit-txt {
+    font-size: 1.6rem;
+  }
+  .image-selection-bg {
+    padding: 2rem 0.4rem;
+  }
+  .img_modal-content {
+    max-width: 350px;
+    min-width: 350px;
+    padding: 3rem;
+  }
+  .text-h5 {
+    font-size: 1.3rem;
+  }
+  .del-btn {
+    font-size: 1.1rem;
+
+    padding: 12px 8px;
+  }
+  .change-image-btn {
+    font-size: 12px;
+  }
+
+  /*/////////////////////////  */
+  /* Style for the selected image */
+  /* ///////////////////////////// */
+
+  .products-form {
+    width: 32rem;
+    height: 8vh;
+  }
+  .product-form-box {
+    margin: 1.5rem 0;
+    width: 37rem;
+  }
+
+}
+
+/* RESPONSIVE STYLES FOR PRODUCTS LIST */
+@media (max-width: 84em) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .edit-product-modal-content {
+    max-width: 90%;
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 75em) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .products-filter-section .container {
+    padding: 0 1rem;
+  }
+
+  .products-list-section .container {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 48em) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .product-card-header {
+    min-height: 150px;
+  }
+
+  .product-image-placeholder {
+    height: 150px;
+  }
+
+  .edit-product-modal-content {
+    max-width: 95%;
+    padding: 1.5rem;
+    max-height: 95vh;
+  }
+
+  .edit-modal-title {
+    font-size: 1.8rem;
+  }
+
+  .edit-modal-actions {
+    flex-direction: column;
+  }
+
+  .cancel-edit-btn,
+  .save-edit-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 34em) {
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .products-filter-section {
+    padding: 1.5rem 0;
+  }
+
+  .products-list-section {
+    padding: 2rem 0;
+  }
+
+  .products-count {
+    font-size: 1.4rem;
+  }
+
+  .product-card-body {
+    padding: 1rem;
+  }
+
+  .product-card-footer {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .edit-product-btn,
+  .delete-product-btn {
+    width: 100%;
+  }
+
+  .edit-product-modal-content {
+    padding: 1rem;
+    width: 98%;
+  }
+
+  .edit-modal-title {
+    font-size: 1.6rem;
+  }
+
+  .products-form {
+    width: 100% !important;
+    height: 8vh;
+    padding: 1rem 2rem !important;
+  }
+
+  .clear-filter-btn {
+    margin-top: 1rem;
+  }
+}

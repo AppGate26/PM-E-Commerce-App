@@ -1,0 +1,33 @@
+Get All recovery recovery Officers (GET)
+Get Single recovery Officer (GET)
+Update recovery Officer (PUT)
+Delete recovery Officer (DELETE)
+Suspend recovery Officer (PUT)
+Unsuspend recovery Officer (PUT)
+Get Suspended recovery Officers (GET)
+Search recovery Officers (GET)
+Create Recovery Box Item (POST)
+Get All Recovery Box Items (GET)
+Get Recovery Box Item by ID (GET)
+Update Recovery Box Status (PUT)
+Delete Recovery Box Item (DELETE)
+Get Recovery Box by recovery Officer (GET)
+
+Get All Recovery Notifications (GET)
+Get Recovery Notification by ID (GET)
+
+Get All Loan Notifications (GET)
+Get Loan Notification by ID (GET)
+
+Get Recovery Report (GET)
+Get Loan Report (GET)
+
+Get All Reminders (GET)
+Create Reminder (POST)
+Update Reminder (PUT)
+Delete Reminder (DELETE)
+Mark Reminder as Completed (PUT)
+
+1. yes, it should be linked to goodsrecovery
+2. yes, it is for notifying customer for loan payment
+3. the system creates the reminder

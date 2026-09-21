@@ -1,0 +1,266 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+body.product_active-modal {
+  overflow-y: hidden;
+}
+
+.proforma_modal,
+.proforma_modal-overlay {
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  z-index: 1;
+}
+
+.proforma_modal-overlay {
+  background: rgba(0, 0, 1, 0.6);
+  z-index: -1;
+}
+
+.proforma_modal-content {
+  position: absolute;
+  top: 51%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1.5rem;
+  background: transparent;
+  border-radius: 3px;
+  z-index: 999;
+}
+.proforma-container {
+  min-width: 600px;
+  max-width: 1000px;
+  border-radius: 12px;
+  height: fit-content;
+  background-color: #0867db;
+  padding: 4rem 4rem 1rem;
+}
+.proforma-container label {
+  font-size: 1.6rem;
+  color: white;
+  line-height: 4rem;
+}
+.invoice_input {
+  width: 100%;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 1.6rem;
+}
+.invoice-enter {
+  width: fit-content;
+  background-color: #c6dcf5;
+  color: #0867db;
+  font-size: 1.8rem;
+  padding: 20px;
+  font-weight: 600;
+  margin: 2rem 0 2rem 35rem;
+}
+
+/*////////////////////////////////// 
+SUCCESSFUL  MODAL FORM STYLING
+/////////////////////////////////// */
+.invoice-logo {
+  width: 100px;
+  height: 110px;
+  object-fit: contain;
+  z-index: 20;
+}
+/* SUCCESSFUL MODAL STYLING */
+/* Initial positioning for ModalSuccess */
+
+/* Modal overlay styling */
+.invoice_modal-overlay {
+  background: rgba(0, 0, 1, 0.6);
+}
+.invoice_modal-content::-webkit-scrollbar {
+  width: 0;
+}
+
+/* Hide scrollbar for Firefox */
+.invoice_modal-content {
+  scrollbar-width: none;
+}
+/* Modal content styling */
+.invoice_modal-content {
+  position: absolute;
+  top: 20%;
+  height: 90vh; /* Set a fixed height for the modal content */
+  overflow-y: auto; /* Enable vertical scrolling */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+  background-color: white;
+  border-radius: 3px;
+  max-width: 1000px;
+  min-width: 900px;
+  border-radius: 12px;
+  padding: 3rem;
+}
+.logo-txt h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+.logo-txt h1 {
+  font-weight: 600;
+}
+.invoice-address {
+  display: flex;
+  justify-content: end;
+  font-size: 1.4rem;
+  line-height: 2.5rem;
+  font-weight: 600;
+}
+
+.box-info p {
+  font-size: 13px;
+  font-weight: 600;
+}
+.billed {
+  font-size: 1.2rem;
+  line-height: 2rem;
+  font-weight: 600;
+}
+.txt-h6 {
+  color: #0867db;
+  font-size: 12px;
+  font-weight: 600;
+}
+.line-through {
+  width: 100%;
+  height: 3px;
+  border: none;
+  opacity: 100;
+  background-color: #0867db;
+  margin-top: 3rem;
+}
+.txt-h4 {
+  font-weight: 700;
+}
+
+/* TABLES FOR INVOICE STYLING */
+.invoice_table table {
+  width: 850px;
+
+  border-collapse: collapse;
+}
+.desc-invoice {
+  width: 58%;
+}
+.rate-invoice {
+  width: 18%;
+}
+.invoice_table table th {
+  background-color: #0867db;
+  text-align: left;
+}
+.invoice_table tbody td {
+  text-align: left;
+  padding: 15px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.rowSpan-hidden {
+  visibility: hidden;
+  border: 2px solid white !important;
+}
+.td-border-left {
+  border-left: 1px solid #0867db !important;
+}
+
+.td-border-bottom {
+  border-bottom: 2px solid white !important;
+  font-size: 12px;
+}
+.td-border-top {
+  border-bottom: 2px solid white;
+}
+.deposit-bottom {
+  border-bottom: 4px solid #0867db;
+}
+.terms-condition {
+  margin: 8rem 0 2rem;
+  font-size: 13px;
+  line-height: 2.5rem;
+  padding: 0 4rem;
+  font-weight: 600;
+}
+
+/* Standard redesign */
+.proforma-container {
+  min-width: 640px;
+  max-width: 980px;
+  border-radius: 1.6rem;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.14), transparent 20rem),
+    linear-gradient(135deg, #0f5fd2 0%, #3f95ff 100%);
+  padding: 1.7rem;
+  box-shadow: 0 28px 60px rgba(20, 66, 138, 0.22);
+}
+
+.proforma-hero {
+  margin-bottom: 1.35rem;
+  padding: 1.35rem 1.45rem;
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.proforma-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.76);
+}
+
+.proforma-title {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2rem, 2.5vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.proforma-subtitle {
+  margin: 0.5rem 0 0;
+  color: rgba(255,255,255,0.9);
+  font-size: 0.98rem;
+  line-height: 1.6;
+  max-width: 40rem;
+}
+
+.proforma-container label {
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.92);
+}
+
+.invoice_input {
+  min-height: 3.2rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255,255,255,0.22);
+  font-size: 1rem;
+  padding: 0.9rem 1rem;
+}
+
+.invoice-enter {
+  min-height: 3.1rem;
+  margin: 1.4rem 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 0.96rem;
+  padding: 0.85rem 1.4rem;
+  font-weight: 800;
+  background: #eef4fd;
+  color: #155dc8;
+}

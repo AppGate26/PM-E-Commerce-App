@@ -1,0 +1,118 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+body.product_active-modal {
+  overflow-y: hidden;
+}
+
+.EditSubCat_modal,
+.EditSubCat_modal-overlay {
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  z-index: 1;
+}
+
+.EditSubCat_modal-overlay {
+  background: rgba(0, 0, 1, 0.6);
+  z-index: -1;
+}
+.EditSubCat_modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1.4;
+  background: transparent;
+  border-radius: 3px;
+  z-index: 999;
+}
+.sub-container-box {
+  max-width: 1000px;
+  min-width: 700px;
+  padding: 3rem 6rem;
+  background-color: white;
+  border-radius: 10px;
+  overflow: auto;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+.category-id-dropdown {
+  width: 40rem;
+  background-color: white;
+  height: 10vh;
+  display: flex;
+  align-items: center;
+  font-size: 2rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-family: "Montserrat", sans-serif;
+  justify-content: space-evenly;
+  color: #868e96;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+.cat-select-dropdown {
+  border: 2px solid #dee2e6;
+  margin-top: 4rem;
+  box-shadow: none;
+}
+.cat-select-dropdown:hover {
+  border: 2px solid #dee2e6;
+}
+.container-box {
+  padding: 2rem;
+}
+.id-dropdown-content {
+  width: 40rem;
+}
+.id-dropdown {
+  background-color: white;
+  padding: 2rem 4rem;
+  border-bottom: 5px solid #f8f9fa;
+  font-size: 1.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #868e96;
+  cursor: pointer;
+}
+
+.check-cat_name {
+  background-color: white;
+  width: 90%;
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  margin: 4rem 0;
+  height: 10vh;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  font-weight: 500;
+  color: #868e96;
+  cursor: pointer;
+  padding-left: 3rem;
+}
+.check-cat_desc {
+  height: 20vh;
+}
+.pen-icon {
+  background-color: #fff;
+}
+.pen-icon2 {
+  position: relative;
+  top: -3.8rem;
+  left: 0;
+}
+.sub-btn-save {
+  position: relative;
+  left: 19em;
+  width: 25%;
+  background-color: #0867db;
+  padding: 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 2rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #fff;
+}

@@ -1,0 +1,39 @@
+{
+    "productInfo": {
+        "productName": "Oraimo Powerbank 10,000mAh",
+        "productId": "1",
+        "referenceNo": "",
+        "category": "Gadgets",
+        "subCategory": "powerbanks",
+        "description": "testing the endpoints",
+        "price": 15000,
+        "unitPrice": 15000,
+        "quantity": 1,
+        "discount": 19.94,
+        "coupon": ""
+    },
+    "customerInfo": {
+        "customerName": "orifa princess",
+        "accountNumber": "0000000000",
+        "email": "judeorifa28@gmail.com",
+        "phoneNumber": "08062078495",
+        "address": "adalemo sango ota",
+        "dob": "2026-03-27",
+        "gender": "MALE",
+        "occupation": "java developer",
+        "customerBankAccount": "1234567890"
+    },
+    "loanInfo": {
+        "loanType": "",
+        "productAmount": 0,
+        "repaymentMethod": "",
+        "duration": "",
+        "rate": 0,
+        "interestOnLoan": 0,
+        "principalRepayment": 0,
+        "startDate": "",
+        "expirationDate": "",
+        "officerInCharge": "",
+        "upfrontCharges": 0
+    }
+}

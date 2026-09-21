@@ -1,0 +1,7 @@
+@media(max-width:34em){
+    .rider-display-grid-checkbox{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+}

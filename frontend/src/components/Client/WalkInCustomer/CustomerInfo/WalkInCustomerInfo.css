@@ -1,0 +1,434 @@
+.walkin-info-modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(96vw, 1360px);
+  height: min(90vh, 920px);
+  padding: 26px;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+  border: 1px solid #d7e5f7;
+  border-radius: 22px;
+  box-shadow: 0 26px 70px rgba(7, 40, 100, 0.3);
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.walkin-customer-info-standard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: #133b68;
+}
+
+.walkin-customer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.walkin-customer-branding h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 2vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #0d3f84;
+}
+
+.walkin-customer-eyebrow {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3b7bd6;
+}
+
+.walkin-customer-subtitle {
+  margin: 8px 0 0;
+  max-width: 620px;
+  font-size: 1.35rem;
+  line-height: 1.5;
+  color: #56718f;
+}
+
+.walkin-customer-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.walkin-header-icon-button {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0867db 0%, #4594ff 100%);
+  box-shadow: 0 10px 24px rgba(8, 103, 219, 0.25);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.walkin-header-icon-button.close {
+  background: linear-gradient(135deg, #123d77 0%, #1a5eb5 100%);
+}
+
+.walkin-header-icon-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(8, 103, 219, 0.3);
+}
+
+.walkin-customer-alert {
+  padding: 14px 16px;
+  border: 1px solid #f3c5c8;
+  border-radius: 14px;
+  background: #fff1f2;
+  color: #a12838;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.walkin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.walkin-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid #d9e6f8;
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(12, 62, 120, 0.06);
+}
+
+.walkin-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.8rem;
+  color: #0c58b8;
+  background: linear-gradient(135deg, #deecff 0%, #edf5ff 100%);
+}
+
+.walkin-stat-label {
+  margin: 0 0 4px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #65819e;
+}
+
+.walkin-stat-value {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #133b68;
+}
+
+.walkin-table-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #ffffff;
+  border: 1px solid #d7e5f7;
+  border-radius: 22px;
+  box-shadow: 0 18px 40px rgba(12, 62, 120, 0.08);
+  overflow: hidden;
+}
+
+.walkin-table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid #e5eef9;
+}
+
+.walkin-table-eyebrow {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3b7bd6;
+}
+
+.walkin-table-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #123d77;
+}
+
+.walkin-search-panel {
+  width: min(100%, 360px);
+}
+
+.walkin-search-panel label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #507197;
+}
+
+.walkin-search-input-wrap {
+  position: relative;
+}
+
+.walkin-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: #7a94b3;
+  font-size: 1.3rem;
+}
+
+.walkin-search-input {
+  width: 100%;
+  padding: 13px 16px 13px 42px;
+  border: 1px solid #c7daf3;
+  border-radius: 14px;
+  background: #f8fbff;
+  font-size: 1.4rem;
+  color: #173d69;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.walkin-search-input:focus {
+  background: #ffffff;
+  border-color: #0867db;
+  box-shadow: 0 0 0 4px rgba(8, 103, 219, 0.12);
+}
+
+.walkin-table-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 22px;
+  background: #f8fbff;
+  border-bottom: 1px solid #e5eef9;
+}
+
+.walkin-table-summary p {
+  margin: 0;
+  font-size: 1.28rem;
+  line-height: 1.5;
+  color: #53708f;
+}
+
+.walkin-clear-search-button {
+  border: 0;
+  background: transparent;
+  color: #0867db;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.walkin-table-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.walkin-customer-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.walkin-customer-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 14px 18px;
+  background: #edf4ff;
+  border-bottom: 1px solid #d6e4f5;
+  font-size: 1.18rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #1e5aa5;
+  text-align: left;
+}
+
+.walkin-customer-table tbody td {
+  padding: 16px 18px;
+  border-bottom: 1px solid #edf2f9;
+  font-size: 1.35rem;
+  color: #2b4a6d;
+  vertical-align: middle;
+}
+
+.walkin-customer-table tbody tr:nth-child(even) {
+  background: #fbfdff;
+}
+
+.walkin-customer-table tbody tr:hover {
+  background: #f4f9ff;
+}
+
+.walkin-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.walkin-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0d60cd 0%, #63a5ff 100%);
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.walkin-name-cell p {
+  margin: 0 0 4px;
+  font-weight: 700;
+  color: #163d6c;
+}
+
+.walkin-name-cell span {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #7d94ad;
+}
+
+.walkin-email-cell {
+  color: #587594;
+}
+
+.walkin-account-cell {
+  font-family: "Roboto Mono", "Courier New", monospace;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.walkin-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.walkin-status-pill.active {
+  background: #e7f7ee;
+  color: #18794e;
+}
+
+.walkin-status-pill.pending {
+  background: #fff4dc;
+  color: #9b6a00;
+}
+
+.walkin-status-pill.suspended {
+  background: #ffe6e8;
+  color: #b42332;
+}
+
+.walkin-edit-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #0867db 0%, #3184f5 100%);
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(8, 103, 219, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.walkin-edit-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(8, 103, 219, 0.24);
+}
+
+.walkin-table-state {
+  padding: 52px 20px;
+  text-align: center;
+  font-size: 1.4rem;
+  color: #6884a4;
+}
+
+@media (max-width: 1100px) {
+  .walkin-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .walkin-table-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .walkin-search-panel {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .walkin-info-modal-content {
+    width: 97vw;
+    height: 92vh;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .walkin-customer-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .walkin-customer-header-actions {
+    justify-content: flex-end;
+  }
+
+  .walkin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .walkin-table-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .walkin-customer-table thead th,
+  .walkin-customer-table tbody td {
+    padding: 12px;
+  }
+}

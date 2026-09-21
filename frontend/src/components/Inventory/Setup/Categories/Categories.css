@@ -1,0 +1,325 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+body.product_active-modal {
+  overflow-y: hidden;
+}
+
+.category_modal,
+.category_modal-overlay {
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  z-index: 1;
+}
+
+.category_modal-overlay {
+  background: rgba(0, 0, 1, 0.6);
+  z-index: -1;
+}
+.category_modal-content {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1.4;
+  background: transparent;
+  border-radius: 30px !important;
+  border-radius: 3px;
+  z-index: 999;
+}
+
+.category-header {
+  text-align: center;
+  font-size: 2.3rem;
+  color: #1c73de;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  margin-bottom: 6rem;
+}
+
+label {
+  font-size: 1.4rem;
+  font-weight: 500;
+  font-family: "Montserrat";
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.category-box {
+  max-width: 1200px;
+  min-width: 700px;
+  background-color: white;
+  padding: 2rem 10rem;
+  border-radius: 20px;
+}
+.category-input {
+  width: 60%;
+  height: 7vh;
+  border-radius: 4px;
+  outline: none;
+  font-size: 1.5rem;
+  color: #868e96;
+  font-weight: 500;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  border: 1px solid #ced4da;
+  margin-bottom: 1.6rem;
+  font-family: "Montserrat", sans-serif;
+}
+.message-input {
+  width: 100%;
+  height: 19vh;
+  border-radius: 6px;
+  border: 1px solid #ced4da !important;
+  color: #868e96;
+  padding: 1rem 2rem;
+  font-size: 2rem;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+}
+#add-btn {
+  width: 30%;
+  padding: 1rem 2rem;
+  background-color: #407bff;
+  color: white;
+  font-size: 1.3rem;
+  font-weight: 500;
+  position: relative;
+  left: 26.5em;
+  margin-top: 2rem;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 3px;
+}
+
+/*////////////////////////////////// 
+SUCCESSFUL  MODAL FORM STYLING
+/////////////////////////////////// */
+.cat-success-logo {
+  width: 120px;
+  height: 140px;
+  object-fit: contain;
+  z-index: 20;
+}
+/* SUCCESSFUL MODAL STYLING */
+/* Initial positioning for ModalSuccess */
+.cat-success_modal {
+  position: fixed;
+  top: -10rem;
+  left: 50%;
+}
+
+/* Modal overlay styling */
+.cat-success_modal-overlay {
+  background: rgba(0, 0, 1, 0.6);
+}
+
+/* Modal content styling */
+.cat-success_modal-content {
+  position: absolute;
+  transform: translateX(-50%);
+  line-height: 1.5rem;
+  background-color: white;
+  border-radius: 3px;
+  max-width: 900px;
+  min-width: 520px;
+  height: 30vh;
+  z-index: 2000; /* Adjust z-index to ensure it appears on top */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cat-modal-success-txt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 4rem 0 2rem;
+}
+
+.cat-success-left {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-icon-success {
+  width: 80px;
+  height: 80px;
+}
+
+.delete-x-mark-small {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 30px;
+  height: 30px;
+  background-color: #f3989a;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.cat-success-text {
+  flex: 1;
+  margin-left: 2rem;
+}
+
+.cat-msg-success {
+  font-size: 3rem;
+  color: #0867db;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.cat-text-success {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #212529;
+  font-family: "Montserrat", sans-serif;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+}
+
+.cat-success-check {
+  width: 50px;
+  height: 50px;
+  background-color: #0867db;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checked-icon {
+  background-color: #1c73de;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+/* Standard category redesign */
+.category-standard-shell {
+  padding: 1rem;
+}
+
+.category-standard-card {
+  border: 1px solid rgba(8, 103, 219, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 28px 60px rgba(15, 61, 130, 0.16);
+  padding: 2rem;
+  min-width: 760px;
+}
+
+.category-standard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 1.6rem;
+}
+
+.category-standard-title {
+  max-width: 44rem;
+}
+
+.category-standard-eyebrow {
+  margin: 0 0 0.5rem;
+  color: #0867db;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.category-standard-subtitle {
+  margin: 0.7rem 0 0;
+  color: #66738a;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.category-standard-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.category-standard-link,
+.category-standard-close {
+  border: 1px solid rgba(8, 103, 219, 0.12);
+  background: #f6f9ff;
+  color: #0867db;
+  border-radius: 999px;
+  padding: 0.8rem 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.category-standard-close {
+  width: 3rem;
+  height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.category-standard-form label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #193253;
+  letter-spacing: 0.05em;
+}
+
+.category-standard-form .category-input,
+.category-standard-form .message-input {
+  width: 100%;
+  border: 1px solid #d7e3f3 !important;
+  border-radius: 16px;
+  background: #fbfdff;
+  color: #21324b;
+  font-size: 1.05rem;
+  padding: 1rem 1.1rem;
+}
+
+.category-standard-form .message-input {
+  min-height: 11rem;
+  resize: vertical;
+}
+
+.category-standard-error {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.category-standard-submit-wrap {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.75rem;
+}
+
+.category-standard-submit-wrap #add-btn {
+  position: static;
+  width: auto;
+  min-width: 14rem;
+  border-radius: 999px;
+  padding: 0.95rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}

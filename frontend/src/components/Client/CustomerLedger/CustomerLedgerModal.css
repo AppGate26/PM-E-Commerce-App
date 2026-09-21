@@ -1,0 +1,53 @@
+/* Self-contained modal styling for the Customer Ledger. Previously the JSX used
+   `Csh_modal_*` (underscore) classes whose styles lived only in SalesReport.css as
+   `Csh_modal-*` (hyphen) and were not loaded in the Client module — so the ledger
+   rendered unstyled/"broken". These rules match the JSX class names exactly. */
+
+.Csh_modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.Csh_modal_overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+}
+
+.Csh_modal_content {
+  position: relative;
+  z-index: 9999;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .Csh_modal {
+    padding: 10px;
+  }
+
+  .Csh_modal_content {
+    max-height: 95vh !important;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .Csh_modal {
+    padding: 5px;
+  }
+
+  .Csh_modal_content {
+    max-height: 98vh !important;
+    border-radius: 8px;
+  }
+}

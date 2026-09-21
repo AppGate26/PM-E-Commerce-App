@@ -1,0 +1,613 @@
+/* Pm\src\components\Client\WalkInCustomer\WalkSuspend\WalkInSupCus.css */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
+/* ============================================
+   MODAL WRAPPER - Perfect Centering
+   ============================================ */
+.walkin-sup-modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 9999;
+  display: flex;
+  align-items: center;     /* Vertical center */
+  justify-content: center; /* Horizontal center */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Overlay */
+.walkin-sup-modal-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: transparent;
+}
+
+/* Modal Content - Centered Box */
+.walkin-sup-modal-content {
+  position: relative;
+  width: 65vw;
+  max-width: 1100px;
+  height: 90vh;
+  max-height: 850px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+.walkin-suspend-container {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  font-family: "Montserrat", sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ============================================
+   HEADER WITH CLOSE BUTTON
+   ============================================ */
+.walkin-suspend-header {
+  position: relative;
+  flex-shrink: 0;
+  padding: 20px 30px 0 30px;
+}
+
+.walkin-suspend-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  font-weight: 300;
+  color: #0867db;
+  cursor: pointer;
+  z-index: 20;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.walkin-suspend-close-btn:hover {
+  transform: scale(1.1);
+}
+
+/* ============================================
+   TAB NAVIGATION
+   ============================================ */
+.walkin-suspend-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  padding: 20px 50px 0 50px;
+  flex-shrink: 0;
+}
+
+.walkin-suspend-tab {
+  flex: 1;
+  max-width: 450px;
+  padding: 18px 30px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.walkin-suspend-tab:hover {
+  color: #0867db;
+}
+
+.walkin-suspend-tab.active {
+  color: #0867db;
+  border-bottom-color: #0867db;
+}
+
+/* ============================================
+   SCROLLABLE CONTENT
+   ============================================ */
+.walkin-suspend-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 30px 50px 50px 50px;
+}
+
+.walkin-suspend-scrollable::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+/* ============================================
+   FORM CONTENT
+   ============================================ */
+.walkin-suspend-content {
+  width: 100%;
+  max-width: 950px;
+  margin: 0 auto;
+}
+
+.walkin-suspend-form {
+  background: #f8fbff;
+  padding: 40px 45px;
+  border-radius: 16px;
+  border: 2px solid #d0e1f5;
+}
+
+/* ============================================
+   FORM ROWS
+   ============================================ */
+.walkin-suspend-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 180px;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.walkin-suspend-row-full {
+  margin-bottom: 30px;
+}
+
+/* ============================================
+   FORM GROUPS
+   ============================================ */
+.walkin-suspend-group,
+.walkin-suspend-group-full {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ============================================
+   FORM LABELS
+   ============================================ */
+.walkin-suspend-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #5a6c7d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-left: 2px;
+}
+
+/* ============================================
+   INPUTS & TEXTAREA
+   ============================================ */
+.walkin-suspend-input,
+.walkin-suspend-textarea {
+  padding: 13px 16px;
+  border: 1px solid #d1dce6;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #2c3e50;
+  background-color: #ffffff;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.3s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.walkin-suspend-input:focus,
+.walkin-suspend-textarea:focus {
+  outline: none;
+  border-color: #0867db;
+  box-shadow: 0 0 0 3px rgba(8, 103, 219, 0.08);
+}
+
+.walkin-suspend-input:disabled,
+.walkin-suspend-textarea:disabled {
+  background-color: #f0f4f8;
+  cursor: not-allowed;
+  color: #8b9aab;
+}
+
+.walkin-suspend-textarea {
+  resize: vertical;
+  min-height: 140px;
+  max-height: 200px;
+  line-height: 1.6;
+}
+
+/* ============================================
+   PASSPORT BOX
+   ============================================ */
+.walkin-suspend-passport {
+  width: 100%;
+  height: 140px;
+  border: 2px solid #d1dce6;
+  border-radius: 8px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.walkin-suspend-passport svg {
+  opacity: 0.4;
+}
+
+/* ============================================
+   ACTIONS & BUTTON
+   ============================================ */
+.walkin-suspend-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.walkin-suspend-btn {
+  background-color: #0867db;
+  color: white;
+  border: none;
+  padding: 15px 50px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 1px;
+  min-width: 250px;
+}
+
+.walkin-suspend-btn:hover:not(:disabled) {
+  background-color: #0654b3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(8, 103, 219, 0.3);
+}
+
+.walkin-suspend-btn:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1200px) {
+  .walkin-sup-modal-content {
+    width: 80vw;
+  }
+}
+
+@media (max-width: 992px) {
+  .walkin-sup-modal-content {
+    width: 90vw;
+    height: 92vh;
+  }
+
+  .walkin-suspend-row {
+    grid-template-columns: 1fr;
+  }
+
+  .walkin-suspend-tabs {
+    padding: 20px 30px 0 30px;
+  }
+
+  .walkin-suspend-scrollable {
+    padding: 30px;
+  }
+
+  .walkin-suspend-form {
+    padding: 35px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .walkin-sup-modal-content {
+    width: 95vw;
+    height: 94vh;
+    border-radius: 16px;
+  }
+
+  .walkin-suspend-tabs {
+    flex-direction: column;
+    padding: 15px 20px 0 20px;
+  }
+
+  .walkin-suspend-tab {
+    font-size: 12px;
+    padding: 14px;
+  }
+
+  .walkin-suspend-close-btn {
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+  }
+
+  .walkin-suspend-btn {
+    width: 100%;
+  }
+}
+/* ===== Walk-In Suspend/Unblock Standard Overrides ===== */
+.walkin-sup-modal-content {
+  background: linear-gradient(180deg, #f6fbff 0%, #edf5ff 100%);
+  border: 1px solid #d6e6fb;
+}
+
+.walkin-suspend-header {
+  padding-top: 18px;
+}
+
+.walkin-suspend-tabs {
+  border-bottom: 1px solid #d9e9fb;
+  margin: 0 26px;
+  padding: 8px 0 0;
+}
+
+.walkin-suspend-tab {
+  border-bottom: 3px solid transparent;
+  color: #53709b;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.walkin-suspend-tab.active {
+  color: #0867db;
+  border-bottom-color: #0867db;
+}
+
+.walkin-suspend-scrollable {
+  padding-top: 20px;
+}
+
+.walkin-suspend-form {
+  background: #ffffff;
+  border: 1px solid #d0e1f5;
+  box-shadow: 0 16px 40px rgba(12, 61, 130, 0.1);
+}
+
+.walkin-suspend-input,
+.walkin-suspend-textarea {
+  border-radius: 10px;
+  border-color: #c3d8f3;
+  font-size: 0.93rem;
+}
+
+.walkin-suspend-passport {
+  border-radius: 12px;
+  border-style: dashed;
+  background: linear-gradient(180deg, #f9fcff 0%, #f2f8ff 100%);
+}
+
+.walkin-suspend-btn {
+  background: linear-gradient(90deg, #0a56b3 0%, #0867db 50%, #3f95ff 100%);
+  border-radius: 12px;
+  box-shadow: 0 12px 26px rgba(8, 103, 219, 0.28);
+}
+
+.walkin-suspend-btn-cancel {
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 15px 36px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ===== Standard Suspension Form Redesign ===== */
+.walkin-sup-modal-content {
+  width: min(92vw, 1120px);
+  height: min(90vh, 860px);
+  background: linear-gradient(180deg, #f7fbff 0%, #edf5ff 100%);
+  border: 1px solid #d6e6fb;
+}
+
+.walkin-suspend-header {
+  position: relative;
+  padding: 0;
+  border-bottom: 1px solid #dbe9fb;
+}
+
+.walkin-suspend-brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 84px;
+  padding: 16px 24px;
+  background: linear-gradient(90deg, #0b4ea6 0%, #0867db 52%, #4a9bff 100%);
+}
+
+.walkin-suspend-brand-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.walkin-suspend-brand-logo {
+  width: 48px;
+  height: 48px;
+  padding: 5px;
+  border-radius: 12px;
+  background: #fff;
+  object-fit: contain;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.walkin-suspend-brand-name {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.walkin-suspend-brand-title {
+  margin: 2px 0 0;
+  color: #fff;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.walkin-suspend-close-btn {
+  position: absolute;
+  top: 22px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.walkin-suspend-close-btn:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.walkin-suspend-error,
+.walkin-suspend-success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 24px 8px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.walkin-suspend-error {
+  background: #fdecef;
+  color: #842029;
+  border: 1px solid #f5c2c7;
+}
+
+.walkin-suspend-success {
+  background: #e8f7ec;
+  color: #0f5132;
+  border: 1px solid #b7ebcb;
+}
+
+.walkin-suspend-message-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.walkin-suspend-scrollable {
+  padding: 16px 24px 24px;
+}
+
+.walkin-suspend-content {
+  max-width: 1000px;
+}
+
+.walkin-suspend-hint {
+  margin: 0 0 14px;
+  font-size: 0.84rem;
+  color: #5a6f8f;
+  font-style: italic;
+}
+
+.walkin-suspend-form {
+  background: #fff;
+  border: 1px solid #d0e1f5;
+  border-radius: 14px;
+  padding: 24px 24px 18px;
+}
+
+.walkin-suspend-label {
+  color: #49688f;
+  font-size: 0.68rem;
+}
+
+.walkin-suspend-input,
+.walkin-suspend-textarea {
+  border-radius: 10px;
+  border-color: #c3d8f3;
+}
+
+.walkin-suspend-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.walkin-suspend-actions {
+  margin-top: 20px;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.walkin-suspend-btn,
+.walkin-suspend-btn-cancel {
+  min-width: 190px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 10px;
+}
+
+.walkin-suspend-btn {
+  background: linear-gradient(90deg, #0a56b3 0%, #0867db 50%, #3f95ff 100%);
+}
+
+.walkin-suspend-btn-danger {
+  background: linear-gradient(90deg, #b02a37 0%, #dc3545 60%, #ef6673 100%);
+}
+
+.walkin-suspend-btn-success {
+  background: linear-gradient(90deg, #157347 0%, #198754 60%, #38b27a 100%);
+}
+
+.walkin-suspend-btn-cancel {
+  background: #6c757d;
+}
+
+@media (max-width: 992px) {
+  .walkin-sup-modal-content {
+    width: 95vw;
+    height: 92vh;
+  }
+
+  .walkin-suspend-scrollable {
+    padding: 12px 14px 18px;
+  }
+
+  .walkin-suspend-form {
+    padding: 18px 14px;
+  }
+}

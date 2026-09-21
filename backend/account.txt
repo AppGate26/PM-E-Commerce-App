@@ -1,0 +1,26 @@
+create the following model crud
+
+1. AccountType
+    id
+    name
+
+2. ControlAccount
+    id
+    accountTypeId (foreign key to AccountType)
+    name
+    controlID (format: 103, where 1 = accountTypeId, 03 = id; 2 digits number)
+
+3. ChartOfAccount
+    id
+    accountTypeId
+    controlAccountId
+    description
+    chartOfAccountId (format: 10301, where 1 = accountTypeId, 03 = controlAccountId, 01 = id; 5 digits number)
+
+4. AccountDetails
+    id
+    accountTypeId
+    controlAccountId
+    chartOfAccountId
+    accountDetailsName
+    accountDetailsCode

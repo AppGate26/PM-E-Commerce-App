@@ -1,0 +1,140 @@
+/* Walk-In Customer Report - Standardized */
+
+.walkin-report-modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(96vw, 1400px);
+  height: min(90vh, 920px);
+  padding: 24px;
+  border-radius: 22px;
+  border: 1px solid #d6e6fb;
+  background: linear-gradient(180deg, #f7fbff 0%, #eef5ff 100%);
+  box-shadow: 0 28px 76px rgba(10, 35, 95, 0.32);
+  overflow: hidden;
+  z-index: 10000;
+}
+
+.walkin-report-standard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: "Montserrat", sans-serif;
+  color: #113a66;
+}
+
+.walkin-report-standard .heading {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #d8e7fa;
+}
+
+.walkin-report-standard .heading1 {
+  margin: 0;
+  color: #0b458d;
+  font-size: clamp(1.25rem, 1.8vw, 1.8rem);
+  font-weight: 800;
+}
+
+.walkin-report-standard .p1 {
+  margin: 2px 0;
+  color: #4f6788;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.walkin-report-standard .icon-div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.walkin-report-standard .icon1,
+.walkin-report-standard .icon2 {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  padding: 8px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0867db 0%, #3d93ff 100%);
+}
+
+.walkin-report-standard .search-div {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.walkin-report-standard .search {
+  width: min(100%, 460px);
+  border: 1px solid #b7d1f3;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.94rem;
+  color: #1c3f6a;
+  background: #ffffff;
+}
+
+.walkin-report-standard .search:focus {
+  outline: none;
+  border-color: #0867db;
+  box-shadow: 0 0 0 3px rgba(8, 103, 219, 0.14);
+}
+
+.walkin-report-standard .table-div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #cfe0f7;
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.walkin-report-standard .heading2 {
+  margin: 0;
+  padding: 12px 16px;
+  background: linear-gradient(90deg, #0b4da5 0%, #0867db 50%, #4c9eff 100%);
+  color: #fff;
+  text-align: center;
+  font-size: clamp(0.95rem, 1.3vw, 1.2rem);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.walkin-report-standard .tr1 {
+  display: flex;
+  align-items: center;
+  background: #edf5ff;
+  color: #0f4f9f;
+  border-top: 1px solid #d6e7fb;
+  border-bottom: 1px solid #d6e7fb;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.walkin-report-standard .tr1 > div {
+  padding: 11px 8px;
+}
+
+@media (max-width: 900px) {
+  .walkin-report-modal-content {
+    width: 97vw;
+    height: 92vh;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .walkin-report-standard .heading {
+    grid-template-columns: 1fr auto;
+  }
+
+  .walkin-report-standard .search {
+    width: 100%;
+  }
+}

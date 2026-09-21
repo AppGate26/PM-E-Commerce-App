@@ -1,0 +1,573 @@
+/* CompletedPayments.css */
+
+.cmp-pay-modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cmp-pay-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 9998;
+  animation: cmpPayFadeIn 0.3s ease-out;
+}
+
+.cmp-pay-modal-container {
+  position: relative;
+  z-index: 10000;
+  width: 90%;
+  max-width: 1000px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: cmpPaySlideUp 0.3s ease-out;
+}
+
+@keyframes cmpPayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cmpPaySlideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.cmp-pay-modal-content {
+  background: #f8fbff;
+  border: 1px solid #c5d6ef;
+  border-radius: 18px;
+  box-shadow: 0 20px 45px rgba(18, 57, 110, 0.12);
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.cmp-pay-header-standard {
+  background: linear-gradient(90deg, #103b7a 0%, #1b5cb8 100%) !important;
+  border: 1px solid #114583;
+  border-radius: 12px;
+  margin: 12px;
+  padding: 14px 16px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cmp-pay-header-standard h2 {
+  color: #eef5ff !important;
+  font-size: 1.7rem !important;
+  letter-spacing: 0.05em;
+  margin: 0 !important;
+  text-transform: uppercase;
+}
+
+.cmp-pay-header-left {
+  width: 44px;
+  min-width: 44px;
+  flex: 0 0 44px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.cmp-pay-logo {
+  width: 42px;
+  height: 42px;
+  display: block;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #d7e6ff;
+  padding: 4px;
+}
+
+.cmp-pay-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cmp-pay-header-icon {
+  color: #e8f2ff;
+  font-size: 1.2rem;
+}
+
+.cmp-pay-header-standard .close-btn {
+  background: none;
+  border: none;
+  color: #e8f2ff;
+  font-size: 1rem;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cmp-pay-header-standard .close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.cmp-pay-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.cmp-pay-body .form-group,
+.cmp-pay-body .order-details-card,
+.cmp-pay-body .info-message,
+.cmp-pay-body .action-buttons {
+  margin: 0 12px;
+}
+
+.cmp-pay-body .form-group {
+  background: #ffffff;
+  border: 1px solid #cdddf3;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.cmp-pay-body .form-group label {
+  display: block;
+  font-weight: 700;
+  color: #5e7ca8;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cmp-pay-body .order-select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #c8daf1;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  background-color: white;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.cmp-pay-body .order-select:focus {
+  outline: none;
+  border-color: #0867db;
+}
+
+.cmp-pay-body .helper-text {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: #1b5cb8;
+}
+
+.cmp-pay-body .order-details-card {
+  padding: 1.5rem;
+  border: 1px solid #c9daf2;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(16, 59, 122, 0.08);
+}
+
+.cmp-pay-body .order-details-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cmp-pay-body .order-details-header p {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  color: #5f7598;
+  font-weight: 500;
+}
+
+.cmp-pay-body .order-details-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cmp-pay-body .order-details-card h3 {
+  margin: 0;
+  color: #103b7a;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: 2px solid #1b5cb8;
+  display: inline-block;
+  padding-bottom: 0.4rem;
+}
+
+.cmp-pay-body .customer-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.cmp-pay-body .customer-type-badge.small {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.72rem;
+}
+
+.cmp-pay-body .customer-type-badge.online {
+  background-color: #e7f3ff;
+  color: #0867db;
+  border: 1px solid #b9dcff;
+}
+
+.cmp-pay-body .customer-type-badge.walkin {
+  background-color: #fff3cd;
+  color: #8a5b12;
+  border: 1px solid #ffe4a3;
+}
+
+.cmp-pay-body .customer-type-badge.unknown {
+  background-color: #f0f0f0;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.cmp-pay-body .order-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 1.1rem 0;
+}
+
+.cmp-pay-body .order-summary-box {
+  border: 1px solid #d4e2f7;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+  padding: 10px 12px;
+}
+
+.cmp-pay-body .order-summary-box strong {
+  display: block;
+  color: #12335e;
+  font-size: 1.05rem;
+}
+
+.cmp-pay-body .summary-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #6c88b1;
+}
+
+.cmp-pay-body .order-summary-box.order-summary-paid {
+  border-color: #c4daf8;
+  background: linear-gradient(180deg, #ffffff 0%, #eff5ff 100%);
+}
+
+.cmp-pay-body .order-summary-box.order-summary-paid strong {
+  color: #1b5cb8;
+}
+
+.cmp-pay-body .order-summary-box.order-summary-remaining {
+  border-color: #cfdff4;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
+}
+
+.cmp-pay-body .order-summary-box.order-summary-remaining strong {
+  color: #25599f;
+}
+
+.cmp-pay-body .details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.7rem 1rem;
+  margin: 1.2rem 0;
+}
+
+.cmp-pay-body .detail-item {
+  background: #f7fbff;
+  border: 1px solid #d7e6fb;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+}
+
+.cmp-pay-body .detail-item label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6584ae;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.3rem;
+}
+
+.cmp-pay-body .detail-item p {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 500;
+  color: #1f3658;
+  word-break: break-word;
+}
+
+.cmp-pay-body .detail-item .amount {
+  color: #1b5cb8;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.cmp-pay-body .detail-item .amount.paid {
+  color: #0867db;
+}
+
+.cmp-pay-body .status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.cmp-pay-body .status.completed {
+  background-color: #e7f3ff;
+  color: #1b5cb8;
+}
+
+/* A referenced order need not be paid in full - see getPaymentPercentage in
+   CompletedPayments.jsx. Warm tone so a part-paid order is obvious against the
+   blue "COMPLETED" pill above. */
+.cmp-pay-body .status.partial {
+  background-color: #fff4e0;
+  color: #a15c00;
+}
+
+.cmp-pay-body .view-details-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #f5f9ff;
+  border: 1px solid #c9daf2;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1b5cb8;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cmp-pay-body .view-details-btn:hover {
+  background-color: #eaf2ff;
+}
+
+.cmp-pay-body .payment-history {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #d8e5f7;
+}
+
+.cmp-pay-body .payment-history h4 {
+  margin: 0 0 1rem 0;
+  color: #103b7a;
+  font-size: 1.05rem;
+}
+
+.cmp-pay-body .payment-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  border: 1px solid #cfdef4;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cmp-pay-body .payment-table th,
+.cmp-pay-body .payment-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.cmp-pay-body .payment-table th {
+  background-color: #edf4ff;
+  color: #5378ab;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+}
+
+.cmp-pay-body .payment-table td {
+  color: #244167;
+}
+
+.cmp-pay-body .payment-table tr:hover {
+  background-color: #f3f8ff;
+}
+
+.cmp-pay-body .status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background-color: #e7f3ff;
+  color: #1b5cb8;
+}
+
+.cmp-pay-modal-content .alert {
+  margin: 0.5rem 12px 0;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.cmp-pay-modal-content .alert-error {
+  background-color: #fff4e5;
+  color: #8a5b12;
+  border: 1px solid #ffd9a8;
+}
+
+.cmp-pay-modal-content .alert-success {
+  background-color: #eafaf0;
+  color: #1a7f4b;
+  border: 1px solid #b7ebcc;
+}
+
+.cmp-pay-body .info-message {
+  padding: 1rem;
+  text-align: center;
+  background-color: #eef5ff;
+  border: 1px solid #cfe0f7;
+  border-radius: 8px;
+  color: #1f4f8f;
+  font-weight: 500;
+}
+
+.cmp-pay-body .action-buttons {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #cfdef3;
+  border-radius: 12px;
+  background: #f7fbff;
+  justify-content: flex-end;
+}
+
+.cmp-pay-body .btn-mark-paid {
+  min-width: 180px;
+  padding: 0.85rem 1.6rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: #1b5cb8;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s;
+}
+
+.cmp-pay-body .btn-mark-paid:hover {
+  background-color: #144a94;
+  transform: translateY(-2px);
+}
+
+.cmp-pay-body .btn-send-approval {
+  min-width: 180px;
+  padding: 0.85rem 1.6rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: #1a9d5c;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s;
+}
+
+.cmp-pay-body .btn-send-approval:hover:not(:disabled) {
+  background-color: #147a48;
+  transform: translateY(-2px);
+}
+
+.cmp-pay-body .btn-send-approval:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cmp-pay-body .approval-sent-badge {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  background: #eef5ff;
+  color: #1f4f8f;
+  border: 1px solid #cfe0f7;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cmp-pay-modal-content .loading-state {
+  text-align: center;
+  padding: 3rem;
+}
+
+.cmp-pay-modal-content .spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #0867db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: cmpPaySpin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes cmpPaySpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .cmp-pay-body .details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cmp-pay-body .order-summary-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cmp-pay-body .action-buttons {
+    flex-direction: column;
+  }
+
+  .cmp-pay-body .btn-mark-paid {
+    width: 100%;
+  }
+}

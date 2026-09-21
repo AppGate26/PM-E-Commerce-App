@@ -1,0 +1,147 @@
+/* ***********************  */
+/* BELOW 1200PX (LANDSCAPE TABLET) */
+/* **************** ********/
+@media (max-width: 75em) {
+  .product-input option,
+  .subcategory-input option {
+    font-size: 10px;
+  }
+
+  /* CARD STYLING */
+  .add-product-box {
+    max-width: 1000px;
+    min-width: 800px;
+    height: fit-content;
+    padding: 4rem 1rem;
+  }
+  #save-btn {
+    top: 1rem;
+  }
+  #sm-success-modal {
+    top: -20rem;
+  }
+}
+@media (max-width: 59em) {
+  #product-cancel {
+    left: 60em;
+  }
+}
+/* ***********************  */
+/* BELOW 864PX (small tablet) */
+/* **************** ********/
+@media (max-width: 52em) {
+  /* CARD STYLING */
+  .add-product-box {
+    max-width: 1000px;
+    min-width: 750px;
+    height: fit-content;
+    padding: 4rem 0rem;
+  }
+  #save-btn {
+    left: 28.5em;
+  }
+
+  #sm-success-modal {
+    top: -25rem;
+  }
+  #product-cancel {
+    left: 58em;
+  }
+}
+
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+@media (max-width: 34em) {
+  .product_modal-content {
+    min-width: 410px;
+  }
+  .add-product-box {
+    min-width: 700px !important;
+    height: fit-content;
+    margin-bottom: 0 !important;
+    padding: 2rem 0;
+    border-radius: 10px;
+  }
+
+  .form-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0 2rem;
+  }
+
+  .product_modal-content {
+    width: max-content;
+    max-width: 96%;
+    overflow: auto;
+    background-color: white;
+    padding: 0 0 0 2rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .product-input,
+  .description-input,
+  .image-uploader-box {
+    width: 100%;
+    margin-left: -2rem;
+  }
+  #save-btn {
+    left: 15.5em;
+  }
+  .icon-uploader {
+    left: 17rem;
+  }
+#dashboard-product{
+  top: 2rem !important;
+}
+  /*////////////////////////////////// 
+SUCCESSFUL  MODAL FORM STYLING
+/////////////////////////////////// */
+  #sm-success-logo {
+    width: 100px;
+    height: 140px;
+  }
+  #sm-success-modal-content {
+    max-width: 400px;
+    min-width: 350px;
+  }
+  #sm-modal-txt {
+    gap: 1rem;
+  }
+  #sm-success-modal {
+    position: fixed;
+    top: -40rem;
+    left: 50%;
+  }
+  #msg-succ {
+    font-size: 2.5rem;
+  }
+  #sm-text-success {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #212529 !important;
+  }
+}
+
+@media (max-width: 25em) {
+  #sm-success-modal-content {
+    max-width: 350px;
+    min-width: 370px;
+  }
+  #msg-succ {
+    font-size: 2rem;
+  }
+  .product_modal-content {
+    width: max-content;
+    max-width: 92%;
+    min-width: 80%;
+    padding-left: 1rem;
+  }
+
+  #product-cancel {
+    left: 52em;
+  }
+}

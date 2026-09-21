@@ -1,0 +1,78 @@
+/* ***********************  */
+/* BELOW 1344PX (FOR SMALLER COMPUTER) */
+/* **************** ********/
+@media (max-width: 84em) {
+  /**************************/
+  /* HERO COMPONENT */
+  /**************************/
+
+  .product-ul_dropdown {
+    position: absolute;
+    z-index: 1;
+    margin: 0;
+  }
+}
+
+/* ***********************  */
+/* BELOW 1200PX (LANDSCAPE TABLET) */
+/* **************** ********/
+@media (max-width: 75em) {
+  .inventory-nav {
+    background-color: #0867db;
+    padding: 2rem 1rem;
+  }
+  .invent-ul-link {
+    align-items: start !important;
+  }
+  .setup-li-dropdown,
+  .product_dropdown {
+    font-weight: 600;
+  }
+}
+@media (max-width: 59em) {
+  #Log_Out-btn-sm {
+    margin-top: 1rem;
+  }
+}
+@media (max-width: 50em) {
+
+  .nav-link {
+    font-size: 1.8rem;
+    margin:0 1rem;
+  }
+}
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+/* 550 / 16 =34 */
+@media (max-width: 34em) {
+  .setup-li-dropdown,
+  .product_dropdown,
+  .Edit-li-dropdown,
+  .supplier-ul-dropdown li {
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+  .product-ul_dropdown {
+    left: 2rem;
+  }
+  .product_dropdown {
+    padding: 1rem;
+    width: 60%;
+  }
+  /*////////SET UP DROPDOWN//////*/
+  .setup-ul-dropdown {
+    left: 11.4rem;
+    top: 1rem;
+  }
+  /*///////EDIT DROPDOWN////// */
+  .Edit-ul-dropdown {
+    left: 11.4rem;
+    width: 20rem;
+  }
+
+  /* /////////SUPPLIER////////// */
+  .supplier-ul-dropdown li {
+    padding: 1rem;
+  }
+}

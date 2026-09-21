@@ -1,0 +1,95 @@
+/* ***********************  */
+/*BELOW 1200PX (LANDSCAPE TABLET)*/
+/* **************** ********/
+@media (max-width: 75em) {
+  .cat-success_modal {
+    top: -20rem;
+  }
+}
+/* ***********************  */
+/* BELOW 864PX (small tablet) */
+/* **************** ********/
+@media (max-width: 52em) {
+  .cat-success_modal {
+    top: -25rem;
+  }
+}
+
+@media (max-width: 48em) {
+  .cat-success_modal {
+    top: -15rem;
+  }
+}
+
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+@media (max-width: 34em) {
+  .category-box {
+    max-width: 500px;
+    min-width: 400px;
+    padding: 2rem;
+  }
+  .category-input {
+    width: 90%;
+  }
+  #add-btn {
+    left: 19em;
+  }
+
+  /* Modal content styling */
+  .cat-success_modal-content {
+    max-width: 500px;
+    min-width: 350px;
+  }
+  .cat-modal-success-txt {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .cat-success-logo {
+    width: 100px;
+  }
+
+  .cat-msg-success {
+    font-size: 2.8rem;
+  }
+  .cat-text-success {
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+   #sm-modal-category{
+    left: 26em !important;
+    top: -10.5em !important;
+  }
+ 
+  .category-header{
+    margin-top: 5rem;
+  }
+}
+@media (max-width: 25em) {
+  .category-box {
+    max-width: 500px;
+    min-width: 370px;
+    padding: 2rem;
+  }
+  #add-btn {
+    left: 17em;
+  }
+  /* Modal content styling */
+  .cat-success_modal-content {
+    max-width: 300px;
+    min-width: 370px;
+  }
+  .cat-success-logo {
+    width: 80px;
+  }
+
+  .cat-msg-success {
+    font-size: 2.2rem;
+  }
+  .cat-text-success {
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+ 
+}

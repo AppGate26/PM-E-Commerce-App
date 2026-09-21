@@ -1,0 +1,1062 @@
+.reminder-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f6faff; /* light blue background from design */
+}
+
+.reminder-main-header {
+  background-color: #0867db;
+  padding: 1.2rem 3rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.reminder-main-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.reminder-logo {
+  width: 60px;
+  height: 60px;
+}
+
+.reminder-main-header-center {
+  text-align: center;
+}
+
+.reminder-main-header-center h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+}
+
+.reminder-main-header-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+}
+
+.reminder-back-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 0.2rem 0.6rem;
+}
+
+.reminder-logout-btn {
+  background-color: #ffffff;
+  color: #0867db;
+  border: none;
+  padding: 0.8rem 2.4rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+}
+
+.reminder-body {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 80px);
+}
+
+.reminder-sidebar {
+  width: 260px;
+  background-color: #ffffff;
+  padding: 3rem 0 3rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid #e6eaf0;
+}
+
+.reminder-sidebar-icon {
+  width: 70px;
+  height: 70px;
+  background-color: #0867db;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  margin-bottom: 2rem;
+}
+
+.reminder-sidebar-item {
+  width: 90%;
+  padding: 1.4rem 1.8rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border: none;
+  background-color: #f8f9fb;
+  color: #767676;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  text-align: left;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.reminder-sidebar-item.active {
+  background-color: #ffffff;
+  color: #0867db;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.reminder-sidebar-item:hover {
+  background-color: #eef2f7;
+}
+
+.reminder-main-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 3rem 4rem;
+}
+
+.reminder-card {
+  width: 100%;
+  max-width: 900px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.reminder-card-header {
+  background-color: #0867db;
+  padding: 1.6rem;
+  text-align: center;
+}
+
+.reminder-card-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+}
+
+.reminder-card-body {
+  padding: 2.4rem 3rem 3rem 3rem;
+  background-color: #ffffff;
+}
+
+/* SENT MESSAGE LIST */
+.sent-message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sent-message-item {
+  display: grid;
+  grid-template-columns: 150px 1fr 120px;
+  column-gap: 2rem;
+  align-items: center;
+  background-color: #f8f9fb;
+  padding: 1.6rem 2rem;
+  border-radius: 6px;
+}
+
+.sent-message-name {
+  font-weight: 700;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  color: #333333;
+  font-family: "Montserrat", sans-serif;
+}
+
+.sent-message-text {
+  font-size: 1rem;
+  color: #666666;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+}
+
+.sent-message-date {
+  font-size: 1rem;
+  color: #666666;
+  text-transform: uppercase;
+  text-align: right;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* FORMS (COMPOSE & MULTIPLE MAIL) */
+.compose-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.compose-form-row {
+  display: flex;
+  gap: 1.6rem;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+}
+
+.compose-form-field {
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.compose-form-field-flex {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.compose-label {
+  display: block;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  color: #333333;
+  font-family: "Montserrat", sans-serif;
+}
+
+.compose-input-wrapper {
+  position: relative;
+}
+
+.compose-input {
+  width: 100%;
+  padding: 1rem 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.compose-input:focus {
+  outline: none;
+  border-color: #0867db;
+}
+
+.compose-dropdown-arrow {
+  position: absolute;
+  right: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666666;
+  pointer-events: none;
+}
+
+.compose-days-btn {
+  padding: 1rem 2.4rem;
+  background-color: #0867db;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  white-space: nowrap;
+}
+
+.compose-days-btn:hover {
+  background-color: #0552a5;
+}
+
+.compose-clear-btn {
+  padding: 1rem 2.4rem;
+  background-color: #ff6b6b;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  white-space: nowrap;
+}
+
+.compose-clear-btn:hover {
+  background-color: #e85b5b;
+}
+
+.compose-textarea {
+  width: 100%;
+  min-height: 220px;
+  padding: 1rem 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: "Montserrat", sans-serif;
+  resize: vertical;
+}
+
+.compose-textarea.small {
+  min-height: 140px;
+}
+
+.compose-textarea:focus {
+  outline: none;
+  border-color: #0867db;
+}
+
+@media (max-width: 992px) {
+  .reminder-body {
+    flex-direction: column;
+  }
+
+  .reminder-sidebar {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    padding: 1.4rem;
+    border-right: none;
+    border-bottom: 1px solid #e6eaf0;
+  }
+
+  .reminder-sidebar-icon {
+    margin-bottom: 0;
+    margin-right: 1.6rem;
+  }
+
+  .reminder-sidebar-item {
+    width: auto;
+    margin-bottom: 0;
+  }
+
+  .reminder-main-area {
+    padding: 2rem 1.4rem 3rem 1.4rem;
+  }
+
+  .reminder-card-body {
+    padding: 1.8rem 1.8rem 2.4rem 1.8rem;
+  }
+
+  .compose-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .compose-days-btn,
+  .compose-clear-btn {
+    width: 100%;
+  }
+
+  .sent-message-item {
+    grid-template-columns: 1fr;
+    row-gap: 0.6rem;
+  }
+
+  .sent-message-date {
+    text-align: left;
+  }
+}
+
+.reminder-page {
+  min-height: 100vh;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.reminder-header-bar {
+  background-color: #0867db;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.reminder-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.reminder-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: white;
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+}
+
+.reminder-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.reminder-back-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.reminder-logout-btn {
+  background-color: white;
+  color: #0867db;
+  border: none;
+  padding: 0.8rem 2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+}
+
+.reminder-body {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 80px);
+}
+
+.reminder-sidebar {
+  width: 250px;
+  background-color: white;
+  border-right: 1px solid #e6eaf0;
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.reminder-sidebar-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #0867db;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.reminder-sidebar-item {
+  width: 90%;
+  padding: 1.2rem 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border: none;
+  background-color: #f0f0f0;
+  color: #666;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  text-align: left;
+  transition: all 0.3s;
+  border-radius: 4px;
+}
+
+.reminder-sidebar-item:hover {
+  background-color: #e0e0e0;
+}
+
+.reminder-sidebar-item.active {
+  background-color: #0867db;
+  color: white;
+}
+
+.reminder-main-content {
+  flex: 1;
+  background-color: white;
+  overflow-y: auto;
+}
+
+/* SENT MESSAGE STYLES */
+.sent-message-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sent-message-header {
+  background-color: #0867db;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.sent-message-header h2 {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+}
+
+.sent-message-list {
+  padding: 2rem;
+  flex: 1;
+}
+
+.sent-message-item {
+  display: grid;
+  grid-template-columns: 150px 1fr 120px;
+  gap: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.sent-message-name {
+  font-weight: 700;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  color: #333;
+  font-family: "Montserrat", sans-serif;
+}
+
+.sent-message-text {
+  font-size: 1rem;
+  color: #666;
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+}
+
+.sent-message-date {
+  font-size: 1rem;
+  color: #666;
+  text-transform: uppercase;
+  text-align: right;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* COMPOSE STYLES */
+.compose-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.compose-header-bar {
+  background-color: #0867db;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.compose-header-bar h2 {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+}
+
+.compose-form {
+  padding: 2rem;
+  flex: 1;
+}
+
+.compose-form-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+}
+
+.compose-form-field {
+  margin-bottom: 2rem;
+}
+
+.compose-form-field-flex {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.compose-label {
+  display: block;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-family: "Montserrat", sans-serif;
+}
+
+.compose-input-wrapper {
+  position: relative;
+}
+
+.compose-input {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.compose-input:focus {
+  outline: none;
+  border-color: #0867db;
+}
+
+.compose-dropdown-arrow {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  pointer-events: none;
+}
+
+.compose-days-btn {
+  padding: 1rem 2rem;
+  background-color: #0867db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  white-space: nowrap;
+  height: fit-content;
+}
+
+.compose-days-btn:hover {
+  background-color: #0552a5;
+}
+
+.compose-clear-btn {
+  padding: 1rem 2rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  white-space: nowrap;
+  height: fit-content;
+}
+
+.compose-clear-btn:hover {
+  background-color: #c82333;
+}
+
+.compose-textarea {
+  width: 100%;
+  min-height: 300px;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: "Montserrat", sans-serif;
+  resize: vertical;
+}
+
+.compose-textarea:focus {
+  outline: none;
+  border-color: #0867db;
+}
+
+/* MULTIPLE MAIL STYLES */
+.multiple-mail-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.multiple-mail-header-bar {
+  background-color: #0867db;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.multiple-mail-header-bar h2 {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+}
+
+.multiple-mail-form {
+  padding: 2rem;
+  flex: 1;
+}
+
+.multiple-mail-placeholder-content {
+  text-align: center;
+  color: #666;
+  font-size: 1.2rem;
+  padding: 4rem;
+}
+
+@media (max-width: 768px) {
+  .reminder-body {
+    flex-direction: column;
+  }
+
+  .reminder-sidebar {
+    width: 100%;
+    flex-direction: row;
+    padding: 1rem;
+    border-right: none;
+    border-bottom: 1px solid #e6eaf0;
+  }
+
+  .reminder-sidebar-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 0;
+    margin-right: 1rem;
+  }
+
+  .reminder-sidebar-item {
+    width: auto;
+    flex: 1;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+  }
+
+  .compose-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .compose-days-btn,
+  .compose-clear-btn {
+    width: 100%;
+  }
+
+  .sent-message-item {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .sent-message-date {
+    text-align: left;
+  }
+}
+.reminder-standard-shell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f7fbff 0%, #eef5ff 100%);
+  padding: 16px;
+}
+
+.reminder-standard-header {
+  max-width: 1320px;
+  margin: 0 auto 12px;
+  background: #fff;
+  border: 1px solid #d9e6fb;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.reminder-standard-header h1 {
+  margin: 0;
+  color: #0a3c7e;
+  text-transform: uppercase;
+  font-size: clamp(1.2rem, 2.5vw, 1.9rem);
+  font-weight: 800;
+}
+
+.reminder-standard-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reminder-standard-header-actions button,
+.reminder-standard-header-actions a {
+  border: 0;
+  border-radius: 9px;
+  background: #0867db;
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 12px;
+}
+
+.reminder-standard-main {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 12px;
+}
+
+.reminder-standard-sidebar {
+  background: #fff;
+  border: 1px solid #d9e6fb;
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reminder-standard-sidebar button {
+  border: 1px solid #d1e1fa;
+  background: #f7fbff;
+  color: #305278;
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.reminder-standard-sidebar button.active {
+  background: #0867db;
+  border-color: #0867db;
+  color: #fff;
+}
+
+.reminder-standard-card {
+  background: #fff;
+  border: 1px solid #d9e6fb;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.reminder-standard-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.reminder-standard-card-header h2 {
+  margin: 0;
+  color: #21486f;
+  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.reminder-standard-card-header button {
+  border: 1px solid #c9dbf7;
+  background: #fff;
+  color: #0867db;
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reminder-standard-alert {
+  border-radius: 10px;
+  padding: 9px 11px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.reminder-standard-alert-error {
+  background: #fff2f2;
+  border: 1px solid #f1c4c8;
+  color: #922b39;
+}
+
+.reminder-standard-alert-success {
+  background: #eefcf3;
+  border: 1px solid #b8e8c7;
+  color: #1f6f3b;
+}
+
+.reminder-standard-report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.reminder-standard-report-card {
+  border: 1px solid #d8e7fb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f9fcff;
+}
+
+.reminder-standard-report-card h3 {
+  margin: 0 0 8px;
+  color: #365c84;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.reminder-standard-report-card p {
+  margin: 0 0 8px;
+  color: #0a3c7e;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.reminder-standard-report-card button {
+  border: 0;
+  border-radius: 8px;
+  background: #0867db;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 7px 10px;
+}
+
+.reminder-standard-subtitle {
+  margin: 6px 0 8px;
+  color: #2d567f;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.reminder-standard-table-wrap {
+  overflow-x: auto;
+}
+
+.reminder-standard-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+}
+
+.reminder-standard-table th {
+  background: #eaf2ff;
+  color: #2a4e7a;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 11px 9px;
+}
+
+.reminder-standard-table td {
+  color: #254263;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 11px 9px;
+  border-top: 1px solid #e8effa;
+}
+
+.reminder-standard-empty {
+  text-align: center;
+  color: #5f7fa8;
+  padding: 16px !important;
+}
+
+.reminder-standard-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.reminder-standard-actions button {
+  border: 0;
+  border-radius: 7px;
+  background: #0867db;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 8px;
+}
+
+.reminder-standard-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.reminder-standard-form label {
+  display: block;
+}
+
+.reminder-standard-form label span {
+  display: block;
+  margin-bottom: 5px;
+  color: #3f5f86;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.reminder-standard-form input,
+.reminder-standard-form select,
+.reminder-standard-form textarea {
+  width: 100%;
+  border: 1px solid #c8d9f5;
+  border-radius: 10px;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f3650;
+  outline: none;
+  background: #fff;
+}
+
+.reminder-standard-form .full {
+  grid-column: span 2;
+}
+
+.reminder-standard-form button {
+  grid-column: span 2;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0867db 0%, #0c84f1 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 12px;
+}
+
+@media (max-width: 62em) {
+  .reminder-standard-main {
+    grid-template-columns: 1fr;
+  }
+
+  .reminder-standard-sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .reminder-standard-sidebar button {
+    white-space: nowrap;
+  }
+
+  .reminder-standard-form {
+    grid-template-columns: 1fr;
+  }
+
+  .reminder-standard-form .full,
+  .reminder-standard-form button {
+    grid-column: span 1;
+  }
+}

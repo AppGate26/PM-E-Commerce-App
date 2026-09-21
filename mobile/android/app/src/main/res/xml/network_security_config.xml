@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow all certificates for development (both HTTP and HTTPS with self-signed certs) -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Specific configuration for your server -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">52.14.68.171</domain>
+    </domain-config>
+</network-security-config>

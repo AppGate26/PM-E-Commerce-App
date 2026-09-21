@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed:*)",
+      "Bash(dir \"C:\\Users\\Kings\\Documents\\dev\\AppGate\\pomstores\\figma\\CUSTOMER\\CUSTOMER\" /b)",
+      "Bash(for i in 1 2 3 4 5 6 7)",
+      "Bash(done)",
+      "Bash(for i in 1 2 3 4 5)",
+      "Bash(for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14)",
+      "Bash(rm:*)",
+      "Bash(dir:*)",
+      "Bash(ls:*)",
+      "Bash(xargs:*)",
+      "Bash(find C:UsersKingsDocumentsdevAppGatepomstoressrcmainjavacomappGateconfig -type f -name *.java)",
+      "Bash(find C:UsersKingsDocumentsdevAppGatepomstores -name application*.properties -o -name application*.yml)",
+      "Bash(find /c/Users/Kings/Documents/dev/AppGate/pomstores -type f -name *.java -path *payment* -o -type f -name *Payment*.java -o -type f -name *payment*.java)",
+      "Bash(find '/c/Users/Kings/Documents/dev/AppGate/pomstores/figma/ACCOUNT SETUP' -type f \\\\\\(-iname *.jpeg -o -iname *.jpg -o -iname *.png -o -iname *.gif \\\\\\))",
+      "Bash(grep -r \"@GetMapping\\\\|@PostMapping\\\\|@PutMapping\\\\|@DeleteMapping\\\\|@PatchMapping\" /c/Users/Kings/Documents/dev/AppGate/pomstores/src/main/java/com/appGate/orderingsales/controller/*.java)",
+      "Bash(grep -r \"@GetMapping\\\\|@PostMapping\\\\|@PutMapping\\\\|@DeleteMapping\\\\|@PatchMapping\" /c/Users/Kings/Documents/dev/AppGate/pomstores/src/main/java/com/appGate/account/controller/*.java)",
+      "Bash(grep:*)",
+      "Bash(del \"C:\\\\Users\\\\kings\\\\Documents\\\\dev\\\\AppGate\\\\pomstores\\\\src\\\\main\\\\java\\\\com\\\\appGate\\\\account\\\\enums\\\\AccountType.java\")",
+      "Bash(mvn clean *)",
+      "Bash(Get-ChildItem *)",
+      "Bash(pandoc --version)",
+      "Bash(pip show *)",
+      "Bash(pip install *)",
+      "Bash(python *)",
+      "Bash(Select-Object Name)",
+      "Bash(cat)",
+      "Read(//tmp/**)",
+      "Bash(pkill -f \"tail -f\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Select-Object Name, Mode)",
+      "PowerShell(cd \"C:\\\\Users\\\\kings\\\\Documents\\\\dev\\\\AppGate\\\\pomstores\"; Get-ChildItem -Path \"src\\\\main\\\\java\\\\com\\\\appGate\" -Recurse -File | ForEach-Object { $_.FullName -replace [regex]::Escape\\(\\(Get-Location\\).Path + \"\\\\\"\\), \"\" } | Sort-Object | Select-Object -First 300)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,84 @@
+body{
+    background-color: #f6faff;
+}
+.box{
+    background-color: white;
+    height: 80%;
+    width: 95%;
+    min-height: 70vh;
+    border-radius: 10px;
+    display: flex;
+    padding: 60px 100px;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+}
+.main-cont{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    margin-top: 130px;
+}
+.btn1{
+    padding: 15px 35px;
+    border-radius: 5px;
+    background-color: var(--primary-blue);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.btn1:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+.btn1:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.btn2{
+    padding: 15px 35px;
+    border-radius: 5px;
+    background-color: #fc8a8b;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.btn2:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+.btn2:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.btn-cont{
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+}
+.input-cont{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.form-cont{
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+.input-field{
+    border: 1px solid gray;
+    padding: 10px 20px;
+    min-width: 300px;
+}
+.first-div{
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+}

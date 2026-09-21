@@ -1,0 +1,56 @@
+.branch-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 10px;
+  border-radius: 999px;
+  border: 1px solid #d7dce5;
+  background: #f4f6fa;
+  color: #4a5468;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.branch-switcher svg {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+}
+
+.branch-switcher-label {
+  color: #7a8393;
+  font-weight: 600;
+}
+
+.branch-switcher-select {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  max-width: 180px;
+  padding: 0 2px;
+  outline: none;
+}
+
+.branch-switcher-select:focus-visible {
+  outline: 2px solid #1b4f9c;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* When a specific branch is selected the whole app is filtered to it, so the
+   control is emphasised the same way a pinned branch user's badge is. */
+.branch-switcher--scoped {
+  border-color: #b9d5f6;
+  background: #e8f1fd;
+  color: #1b4f9c;
+}
+
+.branch-switcher--scoped .branch-switcher-label {
+  color: #4a79bf;
+}

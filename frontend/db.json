@@ -1,0 +1,103 @@
+{
+  "users": [
+    {
+      "id": "PM-PD-0001",
+      "product": "ORAIMO POWERBANK",
+      "category": "GARGET",
+      "sub-category": "POWERBANK",
+      "price": "40,000"
+    },
+    {
+      "id": "PM-PD-0002",
+      "product": "LG WASHING MACHINE",
+      "category": "HOME APPLIANCE",
+      "sub-category": "ELECTRONIC",
+      "price": "120,000"
+    },
+    {
+      "id": "PM-PD-0003",
+      "product": "HP ELITE PRO LAPTOP",
+      "category": "COMPUTING",
+      "sub-category": "LAPTOP",
+      "price": "800,000"
+    },
+    {
+      "id": "PM-PD-0004",
+      "product": "PS3 2024",
+      "category": "GAMING",
+      "sub-category": "PLAYSTATION",
+      "price": "400,000"
+    },
+
+    {
+      "id": "PM-PD-0005",
+      "product": "SAMSUNG ULTRA GALAXY",
+      "category": "PHONES",
+      "sub-category": "PHONES & TABS",
+      "price": "120,0000"
+    },
+    {
+      "id": "PM-PD-0006",
+      "product": "NEW AGE EARPIECE",
+      "category": "ACCESSORIES",
+      "sub-category": "EARPHONE",
+      "price": "6,400"
+    },
+    {
+      "id": "PM-PD-0007",
+      "product": "WIRELESS (BTH) EARPHONE",
+      "category": "ACCESSORIES",
+      "sub-category": "EARPHONE",
+      "price": "35,000"
+    },
+    {
+      "id": "PM-PD-0008",
+      "product": "ORAIMO POWERBANK",
+      "category": "GARGETS",
+      "sub-category": "POWERBANK",
+      "price": "40,000"
+    },
+    {
+      "id": "PM-PD-0009",
+      "product": "ADIDAS",
+      "category": "FASHION",
+      "sub-category": "SHOES",
+      "price": "25,000"
+    },
+    {
+      "id": "PM-PD-0010",
+      "product": "PHILIPS CLOTH READY",
+      "category": "HOME APPLIANCE",
+      "sub-category": "IRON",
+      "price": "11,000"
+    },
+    {
+      "id": "PM-PD-0011",
+      "product": "MOUSUF",
+      "category": "PERSONAL CARE",
+      "sub-category": "PERFUME",
+      "price": "33,000"
+    },
+    {
+      "id": "PM-PD-0012",
+      "product": "ROLEX WRIST WATCH",
+      "category": "FASHION",
+      "sub-category": "WRIST WATCH",
+      "price": "50,000"
+    },
+    {
+      "id": "PM-PD-0013",
+      "product": "NEVIA",
+      "category": "PERSONAL CARE",
+      "sub-category": "ROLLON",
+      "price": "6,000"
+    },
+    {
+      "id": "PM-PD-0014",
+      "product": "ITEL P37",
+      "category": "PHONES & TABS",
+      "sub-category": "PHONE",
+      "price": "35,000"
+    }
+  ]
+}

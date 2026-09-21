@@ -1,0 +1,16 @@
+.notification table {
+  width: 100%;
+  margin-bottom: 8rem;
+}
+
+.notification table th {
+  font-size: 18px;
+  text-transform: uppercase;
+  padding: 1.6rem 1rem;
+}
+.s-n {
+  width: 2%;
+}
+.action {
+  width: 10%;
+}

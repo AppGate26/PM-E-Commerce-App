@@ -1,0 +1,80 @@
+/* ============================================
+   VIEW USER - Table Container
+   ============================================ */
+
+   .tb-cont {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+  }
+  
+  /* ============================================
+     VIEW USER - Main Table
+     ============================================ */
+  
+  .tb {
+    margin-top: 130px;
+    width: 95%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* ============================================
+     VIEW USER - Table Header Row
+     ============================================ */
+  
+  .tr-head {
+    display: flex;
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 18px 30px;
+    font-size: 2rem;
+    border-radius: 5px 5px 0px 0px;
+  }
+
+  .tr-head th {
+    flex: 1;
+    text-align: left;
+  }
+  
+  /* Center the SELECT column header */
+  .tr-head th:last-child {
+    text-align: center;
+  }
+
+  /* ============================================
+     VIEW USER - Table Body Rows
+     ============================================ */
+  
+  .tr-body,
+  .tr-body1 {
+    width: 100%;
+    display: flex;
+    font-size: 1.6rem;
+    font-weight: 500;
+    margin-bottom: 5px;
+    padding: 10px 30px;
+  }
+
+  .tr-body td,
+  .tr-body1 td {
+    flex: 1;
+  }
+
+  /* Center the checkbox inside the SELECT column */
+  .tr-body td:last-child,
+  .tr-body1 td:last-child {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .tr-body {
+    background-color: white;
+  }
+  
+  .tr-body1 {
+    background-color: #f6faff;
+  }
+  

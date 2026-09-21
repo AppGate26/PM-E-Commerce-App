@@ -1,0 +1,34 @@
+@media (max-width: 59em) {
+  .stock-cancel_delete {
+    left: 46em;
+  }
+}
+/* ***********************  */
+/* BELOW 724PX (small tablet) */
+/* **************** ********/
+@media (max-width: 50em) {
+  .delete_stock {
+    margin-left: 15em;
+  }
+}
+
+/* ***********************  */
+/* BELOW 544PX (phone) */
+/* **************** ********/
+@media (max-width: 34em) {
+  #stock_setup-content {
+    min-width: 96%;
+    scrollbar-width: none;
+  }
+  .delete-stock-h1 {
+    margin-left: 12rem !important;
+    width: 100%;
+  }
+  .stock-edit__grid {
+    gap: 2rem;
+    min-width: max-content;
+  }
+  .stock-cancel_delete {
+    left: 34em;
+  }
+}

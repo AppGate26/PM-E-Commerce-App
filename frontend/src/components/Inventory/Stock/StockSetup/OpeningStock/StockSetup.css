@@ -1,0 +1,117 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+body.product_active-modal {
+  overflow-y: hidden;
+}
+.stock_setup_modal-content {
+  scrollbar-width: thin;
+}
+.stock_setup_modal,
+.stock_setup_modal-overlay {
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  z-index: 1;
+}
+
+.stock_setup_modal-overlay {
+  background: rgba(0, 0, 1, 0.6);
+  z-index: -1;
+}
+#open-stock-close{
+  left: 68em ;
+}
+.stock_setup_modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90%;
+  max-height: 90vh;
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: auto;
+}
+
+.stock_setup-container {
+  max-width: 1000px;
+  min-width: 900px;
+  border-radius: 12px;
+  height: fit-content;
+  padding: 0 20px 20px;
+  background-color: white;
+  padding: 0 4rem;
+}
+.stock-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10rem;
+}
+.stock_setup-container h1 {
+  font-size: 2.8rem;
+  text-transform: uppercase;
+  color: #0867db;
+  text-align: center;
+  font-weight: 700;
+  margin: 3rem 0;
+}
+.stock-date {
+  width: 100%;
+  height: 5vh;
+  border-radius: 5px;
+  font-size: 1.4rem;
+  border: 1px solid #c0c0c0;
+  font-weight: 500;
+  justify-content: center;
+  display: flex;
+}
+#stock-sup {
+  width: 100%;
+  height: 7.2vh;
+  margin-top: 2rem;
+  text-transform: uppercase;
+  outline: none;
+  font-size: 1.4rem;
+  padding-left: 2rem;
+  border-radius: 5px;
+  font-weight: 500;
+  border: 1px solid #c0c0c0;
+}
+#stock-sup::placeholder {
+  font-size: 12px;
+}
+.stock-insert_btn {
+  width: 40%;
+  padding: 1.2rem;
+  text-transform: uppercase;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: #0867db;
+  color: #fff;
+  border-radius: 2px;
+  margin: 3rem 0rem 2rem 28em;
+}
+
+.stock_table table {
+  width: 100%;
+  text-transform: uppercase;
+}
+.stock_table table tbody tr td {
+  padding: 1rem 0;
+}
+#stock-user {
+  width: 50%;
+  height: 7vh;
+  margin: 8rem 0;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  border: 1px solid #c0c0c0;
+  outline: none;
+  border-radius: 5px;
+}

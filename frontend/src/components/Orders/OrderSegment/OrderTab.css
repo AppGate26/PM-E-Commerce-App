@@ -1,0 +1,472 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+body {
+  background-color: #f6faff;
+    font-family: "Montserrat", sans-serif;
+}
+
+.order_links {
+  font-size: 1.16rem;
+  font-weight: 700;
+  text-transform: none;
+  color: #fff;
+  font-family: "Montserrat", sans-serif;
+  cursor: pointer;
+  margin: 0;
+  position: relative;
+}
+.arrow-down {
+  width: 14px;
+  height: 14px;
+  fill: #fff;
+}
+.order-log-out {
+  margin-left: 0;
+}
+.order-txt {
+  word-spacing: 0.8rem;
+  font-size: 2rem;
+}
+
+.bi-bell-fill{
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.order-notification-wrapper {
+  position: relative;
+}
+
+.order-bell-btn {
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.order-bell-badge {
+  position: absolute;
+  top: -0.7rem;
+  right: -0.8rem;
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  padding: 0 0.5rem;
+  background: #ef4444;
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 2rem;
+  font-weight: 700;
+  text-align: center;
+  border: 2px solid #0d6efd;
+}
+
+.order-notification-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 1rem);
+  width: 24rem;
+  background: #fff;
+  border: 1px solid #d6e4f7;
+  border-radius: 10px;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.16);
+  z-index: 1000;
+  display: none;
+  overflow: hidden;
+}
+
+.order-notification-dropdown.show {
+  display: block;
+}
+
+.order-notification-item {
+  width: 100%;
+  border: none;
+  background: #fff;
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #27446b;
+  cursor: pointer;
+  border-bottom: 1px solid #edf3fb;
+}
+
+.order-notification-item:last-child {
+  border-bottom: none;
+}
+
+.order-notification-item:hover {
+  background: #f4f8ff;
+}
+
+.order-notification-item-count {
+  min-width: 2rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: #1b5cb8;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.order-mobile-notification-wrap {
+  position: relative;
+}
+
+.order-bell-btn-mobile .bi-bell-fill {
+  color: #0d6efd !important;
+}
+
+.order-notification-dropdown-mobile {
+  top: calc(100% + 0.8rem);
+  right: 0;
+  width: 100%;
+}
+/*////////SALES DROPDOWN//////*/
+.module-nav-links > li {
+  position: relative;
+}
+
+.sales-ul-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  min-width: 240px;
+  background-color: white;
+  list-style: none;
+  text-align: left;
+  padding: 0.55rem;
+  margin: 0;
+  visibility: hidden;
+  opacity: 0;
+  box-shadow: 0 22px 40px rgba(8, 47, 105, 0.16);
+  cursor: pointer;
+  z-index: 1000;
+  border-radius: 18px;
+  border: 1px solid #d7e7fb;
+  transform: translateY(8px);
+  transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+}
+
+.walk-ul-dropdown {
+  list-style: none;
+  position: absolute;
+  left: calc(100% + 10px) !important;
+  top: 0;
+  min-width: 220px;
+  visibility: hidden;
+  opacity: 0;
+  padding: 0.55rem;
+  margin: 0;
+  box-shadow: 0 22px 40px rgba(8, 47, 105, 0.16);
+  text-align: left;
+  z-index: 1001;
+  background: white;
+  border: 1px solid #d7e7fb;
+  border-radius: 18px;
+  transform: translateX(8px);
+  transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+}
+.walk-li-dropdown {
+  font-size: 1.06rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background-color: white;
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid #edf3fb;
+  color: #5a6f8e;
+  border-radius: 12px;
+}
+/* Walk in / Online sales flyouts are click-driven only (via the .show class
+   below) - hover-to-open was removed because the gap between the trigger
+   row and its flyout made the menu close before a click landed. */
+
+/*////////ORDER DROPDOWN//////*/
+.order_ul-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  min-width: 250px;
+  background-color: white;
+  list-style: none;
+  text-align: left;
+  padding: 0.55rem;
+  margin: 0;
+  visibility: hidden;
+  opacity: 0;
+  box-shadow: 0 22px 40px rgba(8, 47, 105, 0.16);
+  cursor: pointer;
+  z-index: 1000;
+  border-radius: 18px;
+  border: 1px solid #d7e7fb;
+  transform: translateY(8px);
+  transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+}
+.sales-ul-dropdown li,
+.order_ul-dropdown li,
+.order-report-li {
+  border-bottom: 1px solid #edf3fb;
+}
+.sales-li-dropdown,
+.order_li-dropdown {
+  padding: 0.95rem 1rem;
+  font-size: 1.06rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #5a6f8e;
+  border-radius: 12px;
+}
+.order_li-dropdown,
+.sales-li-dropdown {
+  /* Anchors its own flyout (.order-ul-dropdown / .walk-ul-dropdown /
+     .online-ul-dropdown) to itself instead of the grandparent dropdown box,
+     which is what put sibling submenus on top of each other. */
+  position: relative;
+}
+.sales-li-dropdown:hover,
+.order_li-dropdown:hover,
+.report_li-dropdown:hover {
+  color: #0867db;
+  background: #f4f8ff;
+}
+#sales-drop:hover,
+#order_drop:hover,
+#report_drop:hover {
+  color: inherit;
+}
+#sales-drop:hover .sales-ul-dropdown,
+#order_drop:hover .order_ul-dropdown {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sales-ul-dropdown.show,
+.order_ul-dropdown.show,
+.report_ul-dropdown.show {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/*SIDE BAR DROPDOWN FOR EACH  LINKS  */
+.walk-ul-dropdown {
+  list-style: none;
+  position: absolute;
+  width: 220px;
+  top: 0;
+}
+
+.walk-li-dropdown {
+  padding: 2rem;
+}
+.walk-li-dropdown:last-child,
+.order-li-dropdown:last-child,
+.order-report-li:last-child {
+  border-bottom: none;
+}
+
+/* ONLINE SALE */
+.online-ul-dropdown {
+  list-style: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: calc(100% + 10px) !important;
+  background-color: white;
+  visibility: hidden;
+  opacity: 0;
+  padding: 0.55rem;
+  margin: 0;
+  box-shadow: 0 22px 40px rgba(8, 47, 105, 0.16);
+  text-align: left;
+  z-index: 1001;
+  border: 1px solid #d7e7fb;
+  border-radius: 18px;
+  transform: translateX(8px);
+  transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+}
+.online-li-dropdown {
+  width: 250px;
+  padding: 0.95rem 1rem;
+  font-size: 1.06rem;
+  font-weight: 700;
+  color: #5a6f8e;
+  text-transform: uppercase;
+  border-radius: 12px;
+  border-bottom: 1px solid #edf3fb;
+}
+
+.walk-ul-dropdown.show,
+.online-ul-dropdown.show,
+.order-ul-dropdown.show {
+  visibility: visible;
+  opacity: 1;
+  cursor: pointer;
+  transform: translateX(0);
+}
+
+/* ORDER LINKS */
+.order-ul-dropdown {
+  list-style: none;
+  position: absolute;
+  left: calc(100% + 10px);
+  background-color: white;
+  visibility: hidden;
+  opacity: 0;
+  top: 0;
+  padding: 0.55rem;
+  margin: 0;
+  box-shadow: 0 22px 40px rgba(8, 47, 105, 0.16);
+  text-align: left;
+  z-index: 1001;
+  transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+  border: 1px solid #d7e7fb;
+  border-radius: 18px;
+  min-width: 240px;
+  transform: translateX(8px);
+}
+#order-action-ul {
+  top: calc(100% + 8px);
+  left: calc(100% + 10px);
+  width: 240px;
+}
+#order-not-ul {
+  top: calc(100% + 8px);
+  left: calc(100% + 10px);
+}
+.order-li-dropdown {
+  padding: 0.95rem 1rem;
+  font-size: 1.06rem;
+  font-weight: 700;
+  color: #5a6f8e;
+  border-radius: 12px;
+  border-bottom: 1px solid #edf3fb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.order-not-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.order-not-badge-total,
+.order-li-count {
+  min-width: 1.7rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: none;
+  line-height: 1.3;
+}
+
+.order-not-badge-total {
+  background: #ef4444;
+}
+
+.order-li-count {
+  background: #1b5cb8;
+}
+
+.order-not-mobile-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+/* Order action / Order notification flyouts are click-driven only (via the
+   .show class below) - hover-to-open was removed because the gap between
+   the trigger row and its flyout made the menu close before a click landed. */
+
+/* REPORT LINK */
+.report_ul-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  min-width: 220px;
+  background-color: white;
+  list-style: none;
+  text-align: left;
+  padding: 0.55rem;
+  margin: 0;
+  visibility: hidden;
+  opacity: 0;
+  box-shadow: 0 22px 40px rgba(8, 47, 105, 0.16);
+  cursor: pointer;
+  z-index: 1000;
+  border-radius: 18px;
+  border: 1px solid #d7e7fb;
+  transform: translateY(8px);
+  transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+}
+
+.report_li-dropdown {
+  font-size: 1.06rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background-color: white;
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid #edf3fb;
+  color: #5a6f8e;
+  border-radius: 12px;
+}
+#report_drop:hover .report_ul-dropdown {
+  visibility: visible;
+  cursor: pointer;
+  opacity: 1;
+  transform: translateY(0);
+}
+/* .order-report-ul{
+  background-color:white;
+  left: -15em;
+  top: 3.4em;
+  padding: 0;
+  list-style: none;
+  position: absolute;
+  box-shadow: 0 20px 45px #00000020;
+
+} */
+.order-report-li {
+  padding: 2rem;
+}
+
+.order-report-ul {
+  list-style: none;
+  position: absolute;
+  left: calc(100% + 10px);
+  background-color: white;
+  visibility: hidden;
+  top: calc(100% + 8px);
+  padding: 0.55rem;
+  box-shadow: 0 22px 40px rgba(8, 47, 105, 0.16);
+  text-align: left;
+  z-index: 1001;
+  border: 1px solid #d7e7fb;
+  border-radius: 18px;
+}
+.order-li-dropdown {
+  padding: 2rem;
+}
+
+#order-report:hover .order-report-ul {
+  visibility: visible;
+  cursor: pointer;
+}
+
+/* body */
+.order-container {
+  margin: 0rem 2rem;
+}

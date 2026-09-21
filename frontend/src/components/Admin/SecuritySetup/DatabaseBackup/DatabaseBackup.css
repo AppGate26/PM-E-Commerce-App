@@ -1,0 +1,244 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
+.backup-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+  font-family: "Montserrat", sans-serif;
+  gap: 30px;
+}
+
+.backup-heading {
+  color: #0867db;
+  font-size: 32px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.backup-box {
+  background-color: #ffffff;
+  width: 95%;
+  max-width: 90%;
+  border-radius: 10px;
+  padding: 40px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.backup-form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.backup-form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  flex: 1;
+}
+
+.backup-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  border: 1px solid #0867db;
+  border-radius: 4px;
+  padding: 20px;
+  background-color: #ffffff;
+}
+
+.backup-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0; 
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.radio-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #0867db;
+}
+
+.radio-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
+.input-cont {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-cont label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.input-field {
+  border: 1px solid #cfcfcf;
+  padding: 12px 16px;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 14px;
+  font-family: "Montserrat", sans-serif;
+  color: #333;
+  background-color: #ffffff;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #0867db;
+  box-shadow: 0 0 0 1px rgba(8, 103, 219, 0.15);
+}
+
+.backup-upload-box {
+  position: relative;
+  border: 1px dashed #0867db;
+  border-radius: 6px;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fbff;
+  width: 100%;
+}
+
+.backup-upload-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.backup-upload-placeholder {
+  pointer-events: none;
+  color: #0867db;
+}
+
+.backup-upload-icon {
+  font-size: 32px;
+}
+
+.btn-cont {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-backup {
+  padding: 15px 35px;
+  border-radius: 5px;
+  border: none;
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.3s;
+  background-color: #0867db;
+  color: #ffffff;
+  min-width: 300px;
+}
+
+.btn-backup:hover {
+  background-color: #0654b8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(8, 103, 219, 0.3);
+}
+
+.btn-cancel {
+  padding: 15px 35px;
+  border-radius: 5px;
+  border: none;
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.3s;
+  background-color: #fc8a8b;
+  color: #ffffff;
+  min-width: 150px;
+}
+
+.btn-cancel:hover {
+  background-color: #fb6b6d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(252, 138, 139, 0.3);
+}
+
+.backup-logs {
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.backup-log-item {
+  font-size: 14px;
+  color: #333;
+  font-family: "Montserrat", sans-serif;
+  line-height: 1.6;
+}
+
+@media (max-width: 968px) {
+  .backup-box {
+    padding: 30px 20px;
+  }
+
+  .backup-form-row {
+    flex-direction: column;
+  }
+
+  .input-field {
+    min-width: 100%;
+  }
+
+  .btn-cont {
+    flex-direction: column;
+  }
+
+  .btn-backup,
+  .btn-cancel {
+    width: 100%;
+  }
+}

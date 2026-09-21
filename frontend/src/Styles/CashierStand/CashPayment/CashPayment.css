@@ -1,0 +1,432 @@
+/* Modal shell */
+.CPay_modal-content::-webkit-scrollbar {
+  width: 0;
+}
+
+.CPay_modal-content {
+  scrollbar-width: thin;
+}
+
+body.product_active-modal {
+  overflow-y: hidden;
+}
+
+.CPay_modal,
+.CPay_modal-overlay {
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  z-index: 1;
+}
+
+.CPay_modal-overlay {
+  background: rgba(12, 18, 33, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: -1;
+}
+
+.CPay_modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow-y: auto;
+  background: #f7fafd;
+  box-shadow: 0 25px 55px rgba(7, 31, 67, 0.2);
+  border-radius: 18px;
+}
+
+.cPay-shell {
+  background: radial-gradient(circle at top right, #d5e8ff, #f7fafd 42%);
+  border-radius: 18px;
+}
+
+.CPay-container {
+  width: min(1080px, 94vw);
+  min-width: 0;
+  border-radius: 18px;
+  background: transparent;
+  padding: 2rem;
+  font-size: 1.05rem;
+}
+
+.cPay-header {
+  margin-bottom: 1rem;
+}
+
+.cPay-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cPay-dashboard-link {
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: #0f6fe0;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-left: auto;
+}
+
+.cPay-dashboard-link:hover {
+  background: #0b57b0;
+}
+
+.cash-payment-cancel {
+  border: none;
+  background: #e4edf8;
+  color: #223450;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.cPay-title-wrap {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.cash-payment-h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 2.5vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #0f2f5a;
+  text-transform: uppercase;
+}
+
+.cPay-subtitle {
+  margin: 0;
+  color: #506680;
+  font-size: 1.05rem;
+}
+
+.cPay-total-chip {
+  width: fit-content;
+  margin-top: 0.3rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  background: #0f6fe0;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.cPay-till-chip {
+  width: fit-content;
+  margin-top: 0.35rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  background: #dff0ff;
+  color: #0f4f96;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  font-size: 1.25rem;
+}
+
+.cPay-section {
+  border: 1px solid #d8e3f0;
+  background: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cPay-section-title {
+  margin: 0;
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #163964;
+  text-transform: uppercase;
+}
+
+.cPay-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.cPay-grid-compact {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.cPay-grid label {
+  display: inline-block;
+  margin-bottom: 0.45rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4d6280;
+}
+
+.cPay-input {
+  width: 100%;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  padding: 0.85rem 0.7rem;
+  border: 1px solid #bfd0e4;
+  background: #fdfefe;
+  margin: 0;
+}
+
+.cPay-input:focus {
+  outline: none;
+  border-color: #2d7de1;
+  box-shadow: 0 0 0 3px rgba(45, 125, 225, 0.18);
+}
+
+.cPay-table-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.9rem;
+}
+
+.cPay-product {
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  text-transform: uppercase;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #0f6fe0, #0a5ab8);
+}
+
+.cPay-product:hover {
+  filter: brightness(1.05);
+}
+
+.cPay-table {
+  overflow-x: auto;
+}
+
+.cPay-table table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.cPay-table tr th {
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: #5a6e89;
+  background: #eef4fb;
+  padding: 0.7rem 0.6rem;
+  border-bottom: 1px solid #d4dfec;
+}
+
+.cPay-table td {
+  padding: 0.5rem 0.45rem;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 1rem;
+}
+
+.cPay-table-input {
+  width: 100%;
+  border: 1px solid #d2dceb;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-size: 1rem;
+}
+
+.cPay-table-input:focus {
+  outline: none;
+  border-color: #2d7de1;
+}
+
+.cPay-remove-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  background: #ef4545;
+  color: #fff;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.cPay-remove-btn:hover {
+  background: #d73737;
+}
+
+.cPay-submit {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.cPay-save,
+.cPay-gen {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 0.9rem 1.3rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  min-width: 230px;
+  transition: transform 0.16s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+}
+
+.cPay-save {
+  background: linear-gradient(135deg, #eaf2ff, #cfe2ff);
+  color: #0b4a96;
+  border-color: #b5ceef;
+  box-shadow: 0 8px 18px rgba(23, 74, 140, 0.14);
+}
+
+.cPay-gen {
+  background: linear-gradient(135deg, #0f6fe0, #0a5ab8);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(15, 111, 224, 0.28);
+}
+
+.cPay-save:hover:not(:disabled),
+.cPay-gen:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.cPay-save:disabled,
+.cPay-gen:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Payment dropdown */
+.custom-dropdown {
+  width: 100%;
+  font-size: 1.02rem;
+  position: relative;
+}
+
+.custom-dropdown-button,
+.custom-menu-item,
+.custom-submenu-item {
+  width: 100%;
+  padding: 0.72rem 0.8rem;
+  cursor: pointer;
+}
+
+.custom-menu,
+.custom-submenu {
+  box-shadow: 0 10px 30px rgba(17, 41, 75, 0.18);
+}
+
+.custom-menu-item:hover,
+.custom-submenu-item:hover {
+  background-color: #eaf3ff;
+}
+
+.custom-dropdown-button,
+.custom-submenu-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.custom-dropdown-button > span {
+  color: #1f3550;
+}
+
+.custom-dropdown-button {
+  border-radius: 10px;
+  background-color: #fff;
+  border: 1px solid #bfd0e4;
+}
+
+.method-list-cash {
+  color: #243f62;
+  text-decoration: none;
+}
+
+.custom-icon {
+  color: #0f6fe0;
+  transition: 0.25s ease;
+}
+
+.custom-dropdown-button.open > .custom-icon {
+  transform: rotate(180deg);
+}
+
+.custom-menu,
+.custom-submenu {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 10px;
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.custom-menu {
+  width: 100%;
+  transform: translateY(-10px);
+}
+
+.custom-menu.open {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(8px);
+}
+
+.custom-submenu {
+  width: 180px;
+  top: 0;
+  left: 100%;
+  transform: translateX(-12px);
+}
+
+.custom-menu-item:hover > .custom-submenu-toggle + .custom-submenu,
+.custom-submenu.open {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(8px);
+}
+
+@media (max-width: 64em) {
+  .CPay-container {
+    width: 96vw;
+    padding: 1.2rem;
+  }
+
+  .cPay-grid,
+  .cPay-grid-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .cPay-submit {
+    justify-content: stretch;
+  }
+
+  .cPay-save,
+  .cPay-gen {
+    width: 100%;
+    min-width: 0;
+  }
+}

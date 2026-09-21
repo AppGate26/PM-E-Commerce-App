@@ -1,0 +1,155 @@
+@import url("https://fonts.googleapis.com/css2?family=Armata&family=Encode+Sans:wght@200&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:wght@300;400;500;700;900&display=swap");
+
+/* MODAL STYLING FOR REPORTS */
+
+.checkbox_modal-content::-webkit-scrollbar {
+  width: 0;
+}
+
+/* Hide scrollbar for Firefox */
+.checkbox_modal-content {
+  scrollbar-width: thin ;
+}
+
+.checkbox_modal,
+.checkbox_modal-overlay {
+  /* width: auto; */
+  /* height: 100vh; */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  z-index: 1;
+}
+
+.checkbox_modal-overlay {
+  background: rgba(0, 0, 1, 0.6);
+  z-index: -1;
+}
+/* 
+.checkbox_modal-content {
+  overflow-y: auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+} */
+
+.check-container {
+  max-width: 1200px;
+  min-width: 900px;
+  border-radius: 12px;
+  height: fit-content;
+  background-color: #f6faff;
+  padding: 4rem;
+  text-align: center;
+}
+/* TABLE TABS  */
+.check-title {
+  font-size: 3rem;
+  color: #0867db;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2rem 0;
+}
+/* .tabs-nav:focus {
+  border-bottom: 4px solid #0867db !important;
+} */
+.box-border {
+  border: 2px solid #0867db;
+  margin: 4rem 0 0;
+  border-radius: 4px;
+  padding: 3rem 0 6rem;
+  background-color: white;
+}
+.p-border-box {
+  padding: 3rem 0 6rem !important;
+}
+.my-check-box {
+  margin: 1rem 0;
+}
+.box-border h3 {
+  color: #0867db;
+  text-transform: uppercase;
+  font-size: 2.1rem;
+  font-weight: 700;
+}
+.box-border h5 {
+  color: #868e96;
+  text-transform: uppercase;
+  font-size: 16px;
+  font-weight: 500;
+}
+.on-report-header h2 {
+  font-size: 2rem;
+  color: white;
+  background-color: #0867db;
+  margin: 2rem 0 4rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 1rem 0;
+}
+.online-report-table table {
+  width: 98%;
+  margin: auto;
+}
+.online-report-table tr th {
+  color: #c6dcf5;
+  background-color: #0867db;
+  border: none;
+  padding: 12px 0;
+
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.online-report-table td {
+  border: 1px solid #c6dcf5;
+}
+
+@media (max-width: 59em) {
+  .checkbox_modal-content{
+    scrollbar-width: none !important;
+  }
+  .check-container {
+    width: 130vw;
+    min-width: max-content;
+    border-radius: 12px;
+    overflow-y: auto;
+    scrollbar-width: none !important;
+    height: 69.8vh;
+    padding: 4rem;
+    text-align: center;
+  }
+  /* .online-report-table {
+    background-color: gold;
+    width: auto;
+  } */
+
+  .online-report-table tr th {
+    padding: 12px 8px;
+
+    white-space: nowrap;
+  }
+}
+@media (max-width: 59em){
+   .check-container {
+    width: 140vw;}
+}
+@media (max-width: 34em) {
+
+  .check-container {
+    width: 300vw;
+    min-width: max-content;
+    border-radius: 12px;
+    overflow-y: hidden;
+    scrollbar-width: none !important;
+    height: fit-content;
+    padding: 4rem;
+    text-align: center;
+  }
+  /* .online-report-table {
+    background-color: gold;
+    width: auto;
+  } */
+
+ 
+}
