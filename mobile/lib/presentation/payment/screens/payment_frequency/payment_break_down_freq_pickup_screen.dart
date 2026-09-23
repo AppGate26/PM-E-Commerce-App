@@ -329,6 +329,9 @@ class _PaymentBreakDownFreqPickupScreenState
         userId: plan.userId,
         frequency: plan.frequency,
         durationInMonths: plan.durationInMonths,
+        // Pickup: no delivery leg, so the plan is priced with no delivery fee and the
+        // first payment is the down payment alone.
+        fulfillmentType: 'PICKUP',
       );
       persistedPlan = plan.copyWith(
         planId: createdPlan.planId,

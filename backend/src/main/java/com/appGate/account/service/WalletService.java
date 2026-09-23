@@ -34,6 +34,7 @@ public class WalletService {
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
     private final PaymentGatewayService paymentGatewayService;
+    private final GlPostingService glPostingService;
     private final com.appGate.rbac.repository.UserRepository userRepository;
     private final com.appGate.account.repository.CompanyCardRepository companyCardRepository;
 
@@ -129,6 +130,52 @@ public class WalletService {
                         .status(HttpStatus.NOT_FOUND.value())
                         .message("Wallet not found")
                         .build());
+    }
+
+    /**
+     * The ledger reference a Paystack funding credit is recorded under. Derived from the
+     * payment reference (not random) so the credit is naturally once-only: the column is
+     * unique, and both the webhook and the verify endpoint check for it before crediting.
+     * Without this the two raced and the customer was credited twice for one payment.
+     */
+    public static String fundingTransactionReference(String paymentReference) {
+        return "FUND-" + paymentReference;
+    }
+
+    /** True when this Paystack payment has already been credited to a wallet. */
+    public boolean fundingAlreadyCredited(String paymentReference) {
+        return paymentReference != null
+                && transactionRepository.findByTransactionReference(
+                        fundingTransactionReference(paymentReference)).isPresent();
+    }
+
+    /** Credits a Paystack wallet funding exactly once. Returns false when it was already credited. */
+    @Transactional
+    public boolean creditWalletForFundingOnce(Long userId, Double amount, String paymentReference,
+                                              String description) {
+        if (fundingAlreadyCredited(paymentReference)) {
+            return false;
+        }
+        Wallet wallet = walletRepository.findByUserIdForUpdate(userId)
+                .orElseThrow(() -> new RuntimeException("Wallet not found for user: " + userId));
+
+        Double balanceBefore = wallet.getBalance();
+        Double balanceAfter = balanceBefore + amount;
+        wallet.setBalance(balanceAfter);
+        walletRepository.save(wallet);
+
+        Transaction transaction = new Transaction();
+        transaction.setUserId(userId);
+        transaction.setTransactionReference(fundingTransactionReference(paymentReference));
+        transaction.setType(TransactionType.CREDIT);
+        transaction.setAmount(amount);
+        transaction.setBalanceBefore(balanceBefore);
+        transaction.setBalanceAfter(balanceAfter);
+        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setDescription(description);
+        transaction.setTransactionDate(LocalDateTime.now());
+        transactionRepository.save(transaction);
+        return true;
     }
 
     @Transactional
@@ -267,7 +314,9 @@ public class WalletService {
     @Transactional
     public BaseResponse debitWallet(Long userId, Double amount, String description) {
         try {
-            Wallet wallet = walletRepository.findByUserId(userId)
+            // Locked read: the balance check and the write must not interleave with another
+            // debit, or two concurrent payments both "afford" the same money.
+            Wallet wallet = walletRepository.findByUserIdForUpdate(userId)
                     .orElseThrow(() -> new RuntimeException("Wallet not found"));
 
             if (wallet.getBalance() < amount) {
@@ -377,8 +426,12 @@ public class WalletService {
                     Long userId = payment.getUserId();
                     Double amount = payment.getAmount();
 
-                    // Credit wallet
-                    creditWallet(userId, amount, "Wallet funded via Paystack - Ref: " + paymentReference);
+                    // Credit once: the webhook may already have credited this same payment.
+                    boolean credited = creditWalletForFundingOnce(userId, amount, paymentReference,
+                            "Wallet funded via Paystack - Ref: " + paymentReference);
+                    if (credited) {
+                        glPostingService.postWalletFunding(amount, paymentReference, userId);
+                    }
 
                     return BaseResponse.builder()
                             .status(HttpStatus.OK.value())

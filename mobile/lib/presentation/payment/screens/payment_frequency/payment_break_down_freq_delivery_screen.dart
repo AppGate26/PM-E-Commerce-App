@@ -19,6 +19,14 @@ class _PaymentBreakDownFreqDeliveryScreenState
     extends ConsumerState<PaymentBreakDownFreqDeliveryScreen> {
   bool isChecked = false;
   Map<String, dynamic> _extraData = {};
+
+  /// Location ids arrive as either an int or a String depending on which screen
+  /// put them in `extra`; the API wants a number.
+  static int? _asId(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    return int.tryParse(value.toString());
+  }
   InstallmentPlan? _plan;
   bool _extraRead = false;
   bool _isCreatingPlan = false;
@@ -325,6 +333,12 @@ class _PaymentBreakDownFreqDeliveryScreenState
         userId: plan.userId,
         frequency: plan.frequency,
         durationInMonths: plan.durationInMonths,
+        // Carry the destination so the plan's delivery fee is priced server-side and
+        // shown as part of the first payment, instead of quietly appearing on the charge.
+        fulfillmentType: 'DELIVERY',
+        deliveryAddress: _extraData['deliveryAddress']?.toString(),
+        deliveryStateId: _asId(_extraData['deliveryStateId']),
+        deliveryLgaId: _asId(_extraData['deliveryLgaId']),
       );
       persistedPlan = plan.copyWith(
         planId: createdPlan.planId,

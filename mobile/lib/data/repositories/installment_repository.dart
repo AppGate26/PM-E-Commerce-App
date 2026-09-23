@@ -81,14 +81,25 @@ class InstallmentRepository {
     required int userId,
     required String frequency,
     required int durationInMonths,
+    String? fulfillmentType,
+    String? deliveryAddress,
+    int? deliveryStateId,
+    int? deliveryLgaId,
   }) async {
     try {
       print('✅ [API 1b] Create Installment Plan - Starting');
       final normalizedUrl = ApiConstants.normalizeUrl(ApiConstants.installments);
+      // The delivery destination has to travel with the plan: without it the backend
+      // prices delivery at 0, yet still charges the order's real delivery fee with the
+      // down payment — so the customer was quoted less than they were charged.
       final requestBody = <String, dynamic>{
         'userId': userId,
         'frequency': frequency.toUpperCase(),
         'durationInMonths': durationInMonths,
+        if (fulfillmentType != null) 'fulfillmentType': fulfillmentType,
+        if (deliveryAddress != null) 'deliveryAddress': deliveryAddress,
+        if (deliveryStateId != null) 'deliveryStateId': deliveryStateId,
+        if (deliveryLgaId != null) 'deliveryLgaId': deliveryLgaId,
       };
 
       print('💳 [INSTALLMENT REPO] URL: POST $normalizedUrl');

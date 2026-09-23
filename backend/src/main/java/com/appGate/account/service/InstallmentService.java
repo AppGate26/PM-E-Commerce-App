@@ -44,6 +44,7 @@ public class InstallmentService {
     private final OrderService orderService;
     private final com.appGate.orderingsales.service.MobileSalesOrderSyncService mobileSalesOrderSyncService;
     private final com.appGate.orderingsales.service.DeliveryFeeQuoteService deliveryFeeQuoteService;
+    private final GlPostingService glPostingService;
 
     // Insurance rate (10%)
     private static final Double INSURANCE_RATE = 0.10;
@@ -371,9 +372,11 @@ public class InstallmentService {
             // throw UnexpectedRollbackException instead - masking the real cause and
             // skipping this method's own error response. Rethrow in that case so Spring
             // rolls back cleanly and the actual error reaches the client.
-            if (TransactionAspectSupport.currentTransactionStatus().isRollbackOnly()) {
-                throw e;
-            }
+            // Always rethrow: by this point the wallet may already have been debited in
+            // this same transaction, and returning a friendly error response instead lets
+            // that debit COMMIT while the customer is told the payment failed - they then
+            // pay again. Rethrowing rolls the debit back with everything else.
+            throw e;
             return BaseResponse.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .message("Failed to process installment payment: " + e.getMessage())
@@ -404,9 +407,15 @@ public class InstallmentService {
                         .build();
             }
 
-            Installment nextInstallment = installmentRepository
-                    .findByInstallmentPlanIdAndStatus(planId, InstallmentStatus.PENDING)
-                    .stream()
+            BaseResponse notStarted = rejectIfCheckoutNotCompleted(plan);
+            if (notStarted != null) {
+                return notStarted;
+            }
+
+            // OVERDUE rows are still owed, so they queue ahead of PENDING ones - taking only
+            // PENDING would let a customer pay "the next installment" while skipping a
+            // missed one, and eventually report a plan as settled that was not.
+            Installment nextInstallment = collectableInstallments(planId).stream()
                     .min(Comparator.comparing(Installment::getInstallmentNumber))
                     .orElse(null);
 
@@ -420,9 +429,11 @@ public class InstallmentService {
             return payInstallmentInternal(nextInstallment, userId);
         } catch (RuntimeException e) {
             // See the matching catch in payInstallment for why this check is needed.
-            if (TransactionAspectSupport.currentTransactionStatus().isRollbackOnly()) {
-                throw e;
-            }
+            // Always rethrow: by this point the wallet may already have been debited in
+            // this same transaction, and returning a friendly error response instead lets
+            // that debit COMMIT while the customer is told the payment failed - they then
+            // pay again. Rethrowing rolls the debit back with everything else.
+            throw e;
             return BaseResponse.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .message("Failed to process installment payment: " + e.getMessage())
@@ -454,9 +465,15 @@ public class InstallmentService {
                         .build();
             }
 
-            List<Installment> pending = installmentRepository
-                    .findByInstallmentPlanIdAndStatus(planId, InstallmentStatus.PENDING)
-                    .stream()
+            BaseResponse notStarted = rejectIfCheckoutNotCompleted(plan);
+            if (notStarted != null) {
+                return notStarted;
+            }
+
+            // Everything still owed, PENDING and OVERDUE alike. Taking only PENDING while
+            // then declaring the whole plan settled below wrote off missed installments
+            // that were never charged.
+            List<Installment> pending = collectableInstallments(planId).stream()
                     .sorted(Comparator.comparing(Installment::getInstallmentNumber))
                     .collect(java.util.stream.Collectors.toList());
 
@@ -489,7 +506,14 @@ public class InstallmentService {
             payment.setPaymentReference("INST-FULL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
             payment.setPaidAt(LocalDateTime.now());
             payment.setIsInstallmentPayment(true);
+            // Link it to the plan and the branch, not just the order: without these a
+            // repayment cannot be traced back to its plan, and branch-scoped payment
+            // reporting simply does not see it.
+            payment.setInstallmentPlanId(plan.getId());
+            payment.setBranchId(orderBranchId(plan.getOrderId()));
             paymentRepository.save(payment);
+            glPostingService.postWalletPurchase(orderBranchId(plan.getOrderId()), totalDue,
+                    payment.getPaymentReference(), userId);
 
             // Mark every remaining installment paid against that same payment
             LocalDate today = LocalDate.now();
@@ -501,42 +525,62 @@ public class InstallmentService {
             }
             installmentRepository.saveAll(pending);
 
-            // Update installment plan - this settles it, so it's always complete
-            plan.setCompletedInstallments(plan.getNumberOfInstallments());
+            // Update installment plan. This charged every row that was still owed, so the
+            // plan is settled - but count what was actually paid rather than asserting the
+            // full number: a row parked in some other state (CANCELLED, say) was never
+            // charged here, and writing it off as paid would be money recorded, not
+            // collected. If anything is left, the plan stays ACTIVE and says so.
+            long stillOwed = installmentRepository.findByInstallmentPlanId(plan.getId()).stream()
+                    .filter(row -> row.getStatus() != InstallmentStatus.PAID)
+                    .count();
+            plan.setCompletedInstallments((int) installmentRepository.findByInstallmentPlanId(plan.getId()).stream()
+                    .filter(row -> row.getStatus() == InstallmentStatus.PAID)
+                    .count());
             if (plan.getCompletedInstallments() >= 2) {
                 plan.setEarlyShipmentEligible(true);
             }
-            plan.setStatus(InstallmentStatus.COMPLETED);
-            plan.setCompletionDate(today);
+            if (stillOwed == 0) {
+                plan.setStatus(InstallmentStatus.COMPLETED);
+                plan.setCompletionDate(today);
+            }
+            refreshPlanProgress(plan);
             installmentPlanRepository.save(plan);
 
             // Reflect final payoff on the linked order so it stops showing as awaiting payment.
             if (plan.getOrderId() != null) {
-                orderRepository.findById(plan.getOrderId()).ifPresent(order -> {
-                    order.setIsPaid(true);
-                    order.setOrderStatus(com.appGate.orderingsales.enums.OrderStatus.PAYMENT_CONFIRMED);
-                    orderRepository.save(order);
-                });
+                if (stillOwed == 0) {
+                    orderRepository.findById(plan.getOrderId()).ifPresent(order -> {
+                        order.setIsPaid(true);
+                        order.setOrderStatus(com.appGate.orderingsales.enums.OrderStatus.PAYMENT_CONFIRMED);
+                        orderRepository.save(order);
+                    });
+                }
 
                 // Mirror each settled installment onto the admin-facing SalesOrder/LoanDetails
                 // shadow one at a time, same as payInstallmentInternal - its repayment-entry
                 // lookup matches by installment number, so it can't be collapsed into one call.
+                // Rows that were just paid are mirrored whether or not the plan is finished.
                 for (int i = 0; i < pending.size(); i++) {
-                    boolean isLast = i == pending.size() - 1;
+                    boolean isLast = stillOwed == 0 && i == pending.size() - 1;
                     mobileSalesOrderSyncService.syncInstallmentPaid(plan.getOrderId(), pending.get(i), isLast);
                 }
             }
 
             return BaseResponse.builder()
                     .status(HttpStatus.OK.value())
-                    .message("Installment plan paid in full and wallet debited successfully")
+                    .message(stillOwed == 0
+                            ? "Installment plan paid in full and wallet debited successfully"
+                            : "Outstanding installments paid, but " + stillOwed
+                                    + " installment(s) on this plan need attention before it can be closed")
                     .data(InstallmentPlanResponseDto.from(plan))
                     .build();
         } catch (RuntimeException e) {
             // See the matching catch in payInstallment for why this check is needed.
-            if (TransactionAspectSupport.currentTransactionStatus().isRollbackOnly()) {
-                throw e;
-            }
+            // Always rethrow: by this point the wallet may already have been debited in
+            // this same transaction, and returning a friendly error response instead lets
+            // that debit COMMIT while the customer is told the payment failed - they then
+            // pay again. Rethrowing rolls the debit back with everything else.
+            throw e;
             return BaseResponse.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .message("Failed to process full installment payment: " + e.getMessage())
@@ -547,6 +591,61 @@ public class InstallmentService {
                     .message("Failed to process full installment payment: " + e.getMessage())
                     .build();
         }
+    }
+
+    /**
+     * Recomputes what the plan still owes and when the next payment falls due.
+     *
+     * <p>Both fields were written once when the plan was built and never touched again, so
+     * every consumer of the plan endpoints saw a balance that never moved no matter how
+     * much the customer had paid.
+     */
+    private void refreshPlanProgress(InstallmentPlan plan) {
+        List<Installment> rows = installmentRepository.findByInstallmentPlanId(plan.getId());
+        double outstanding = rows.stream()
+                .filter(row -> row.getStatus() != InstallmentStatus.PAID)
+                .mapToDouble(row -> row.getAmountDue() != null ? row.getAmountDue() : 0.0)
+                .sum();
+        plan.setRemainingBalance(outstanding);
+        plan.setNextPaymentDate(rows.stream()
+                .filter(row -> row.getStatus() != InstallmentStatus.PAID)
+                .min(Comparator.comparing(Installment::getInstallmentNumber))
+                .map(Installment::getDueDate)
+                .orElse(null));
+    }
+
+    /**
+     * Everything still owed on a plan: PENDING plus OVERDUE. A missed installment does not
+     * stop being owed because a scheduler relabelled it.
+     */
+    private List<Installment> collectableInstallments(Long planId) {
+        List<Installment> owed = new java.util.ArrayList<>(
+                installmentRepository.findByInstallmentPlanIdAndStatus(planId, InstallmentStatus.PENDING));
+        owed.addAll(installmentRepository.findByInstallmentPlanIdAndStatus(planId, InstallmentStatus.OVERDUE));
+        return owed;
+    }
+
+    /**
+     * Repayments only make sense once checkout has created the order. A plan with no order
+     * still has installment #1 PENDING - the down payment - so paying "the next installment"
+     * would collect the down payment here without setting downPaymentPaid, and checkout
+     * would then charge it a second time. It would also leave the Payment with no orderId,
+     * invisible to every admin screen.
+     */
+    private BaseResponse rejectIfCheckoutNotCompleted(InstallmentPlan plan) {
+        if (plan.getOrderId() == null) {
+            return BaseResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("This plan has no order yet - complete checkout and its first payment before paying installments")
+                    .build();
+        }
+        return null;
+    }
+
+    /** The branch the plan's order belongs to; null (posted as Head Office) when there is no order. */
+    private Long orderBranchId(Long orderId) {
+        return orderId == null ? null
+                : orderRepository.findById(orderId).map(order -> order.getBranchId()).orElse(null);
     }
 
     private BaseResponse payInstallmentInternal(Installment installment, Long userId) {
@@ -578,7 +677,13 @@ public class InstallmentService {
         payment.setPaymentReference("INST-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         payment.setPaidAt(LocalDateTime.now());
         payment.setIsInstallmentPayment(true);
+        // See payFullInstallmentPlanByWallet: link the plan, the installment and the branch.
+        payment.setInstallmentPlanId(installment.getInstallmentPlan().getId());
+        payment.setInstallmentId(installment.getId());
+        payment.setBranchId(orderBranchId(installment.getInstallmentPlan().getOrderId()));
         paymentRepository.save(payment);
+        glPostingService.postWalletPurchase(orderBranchId(installment.getInstallmentPlan().getOrderId()),
+                installment.getAmountDue(), payment.getPaymentReference(), userId);
 
         // Mark installment as paid
         installment.setStatus(InstallmentStatus.PAID);
@@ -603,6 +708,7 @@ public class InstallmentService {
             plan.setCompletionDate(LocalDate.now());
         }
 
+        refreshPlanProgress(plan);
         installmentPlanRepository.save(plan);
 
         // Reflect final payoff on the linked order so it stops showing as awaiting payment.

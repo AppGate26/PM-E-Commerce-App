@@ -28,6 +28,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -42,6 +47,15 @@ public class PaymentGatewayService {
 
     @Value("${paystack.secret.key:sk_test_xxx}")
     private String paystackSecretKey;
+
+    // Static so Lombok's @RequiredArgsConstructor does not try to inject it.
+    private static final com.fasterxml.jackson.databind.ObjectMapper webhookMapper =
+            new com.fasterxml.jackson.databind.ObjectMapper();
+
+    // Set paystack.webhook.verify-signature=false ONLY for local testing with hand-made
+    // webhook calls; in any deployed environment this must stay true.
+    @Value("${paystack.webhook.verify-signature:true}")
+    private boolean verifyWebhookSignature;
 
     @Value("${paystack.base.url:https://api.paystack.co}")
     private String paystackBaseUrl;
@@ -67,6 +81,9 @@ public class PaymentGatewayService {
     private final com.appGate.account.repository.CompanyCardRepository companyCardRepository;
     private final com.appGate.orderingsales.service.MobileSalesOrderSyncService mobileSalesOrderSyncService;
     private final com.appGate.orderingsales.service.DeliveryFeeQuoteService deliveryFeeQuoteService;
+    private final com.appGate.rbac.service.BranchScopeService branchScopeService;
+    private final com.appGate.orderingsales.repository.CartRepository cartRepository;
+    private final GlPostingService glPostingService;
 
     /** Amount + installment flag returned by {@link #resolveOrderChargeAmount}. */
     private static class OrderCharge {
@@ -132,9 +149,66 @@ public class PaymentGatewayService {
      * exists yet). Relying on paidAt alone used to make every path here refuse outright
      * once a pre-paid plan was linked to an order, leaving that order's delivery fee -
      * never included in the pre-checkout charge - uncollected forever.
+     *
+     * <p>Only a payment that actually settled counts. A Payment row is created at
+     * <em>initialize</em> time with status PENDING, so counting every row here refused
+     * a retry after any abandoned, failed or cancelled attempt - the customer was told
+     * "Order has already been paid" for an order nobody had paid, with no way out but a
+     * brand-new order (which re-decrements stock). PROCESSING counts too: that money is
+     * in flight and charging again would double-bill.
      */
+    /**
+     * Retires earlier, still-PENDING attempts on the same order when a new one is started.
+     *
+     * <p>Every initialize mints a fresh reference and row, so without this an order can
+     * carry several live Paystack transactions at once and the customer can be charged
+     * twice for it. Cancelling the old rows does not make their money vanish: if a
+     * superseded attempt is nevertheless completed, the webhook still records it (it only
+     * skips rows already COMPLETED) and {@link #markOrderPaid} flags the duplicate.
+     */
+    private void supersedePendingOrderPayments(Long orderId, Long keepPaymentId) {
+        if (orderId == null) {
+            return;
+        }
+        paymentRepository.findByOrderId(orderId).stream()
+                .filter(existing -> existing.getStatus() == PaymentStatus.PENDING)
+                .filter(existing -> !existing.getId().equals(keepPaymentId))
+                .forEach(existing -> {
+                    existing.setStatus(PaymentStatus.CANCELLED);
+                    existing.setFailureReason("Superseded by a newer payment attempt on this order");
+                    paymentRepository.save(existing);
+                });
+    }
+
+    /**
+     * True when the signed-in caller is paying an order that is not theirs. The order id
+     * comes straight off the URL, so without this anyone could start a charge against
+     * somebody else's order. Unauthenticated callers (the webhook) are not judged here.
+     */
+    private boolean isSomeoneElsesOrder(Order order) {
+        return isSomeoneElsesUserId(order.getUserId());
+    }
+
+    /**
+     * True when a request body claims to act for a different user than the signed-in one.
+     *
+     * <p>Staff are exempt: a cashier funding a walk-in customer's wallet, or an admin
+     * settling an order, is legitimately acting for somebody else. This only stops one
+     * shopper from paying against another shopper's order or payment.
+     */
+    private boolean isSomeoneElsesUserId(Long claimedUserId) {
+        if (branchScopeService.isUnrestricted() || branchScopeService.isBranchScoped()) {
+            return false;
+        }
+        Long callerId = branchScopeService.getCurrentUser().map(User::getId).orElse(null);
+        return callerId != null && claimedUserId != null && !claimedUserId.equals(callerId);
+    }
+
     private boolean orderPaymentAlreadyCollected(Order order) {
-        return Boolean.TRUE.equals(order.getIsPaid()) || !paymentRepository.findByOrderId(order.getId()).isEmpty();
+        return Boolean.TRUE.equals(order.getIsPaid())
+                || paymentRepository.findByOrderId(order.getId()).stream()
+                        .anyMatch(payment -> payment.getStatus() == PaymentStatus.COMPLETED
+                                || payment.getStatus() == PaymentStatus.PROCESSING);
     }
 
     /**
@@ -150,15 +224,21 @@ public class PaymentGatewayService {
      * card, the same class of bug INSTALLMENT_DOWN_PAYMENT_FLOW.md documents for the
      * installment down payment.
      * <p>
-     * Also without an orderId: see {@link #matchDownPaymentDeliveryFee} - if this looks
-     * unambiguously like an installment plan's down payment, a cached delivery-fee quote
-     * is folded into dto.getAmount() before it's sent to Paystack, and the Payment is
-     * eagerly linked to that plan.
+     * Without an orderId this is a wallet top-up or a direct payment. It is charged for
+     * exactly dto.getAmount() and left unlinked: it is never guessed onto an order or an
+     * installment plan, and no delivery fee is folded into it.
      */
     @Transactional
     public BaseResponse initializeCardPayment(InitializePaymentDto dto) {
         try {
             // Get user email from database
+            if (isSomeoneElsesUserId(dto.getUserId())) {
+                return BaseResponse.builder()
+                        .status(HttpStatus.FORBIDDEN.value())
+                        .message("You may only pay as yourself")
+                        .build();
+            }
+
             User user = userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getUserId()));
 
@@ -187,25 +267,14 @@ public class PaymentGatewayService {
                 deliveryFeeAmount = charge.deliveryFeeAmount;
             }
 
-            // WORKAROUND (see matchDownPaymentDeliveryFee's javadoc): no orderId means this
-            // might be the mobile app's installment down-payment charge, still sent via this
-            // generic endpoint instead of the dedicated pay-down-payment/card one - fold in a
-            // cached delivery-fee quote when this looks unambiguously like that.
-            Long matchedInstallmentPlanId = null;
-            if (order == null) {
-                DownPaymentDeliveryFeeMatch match = matchDownPaymentDeliveryFee(dto.getUserId(), amount);
-                if (match.installmentPlanId != null) {
-                    matchedInstallmentPlanId = match.installmentPlanId;
-                    amount = amount + match.deliveryFee;
-                    deliveryFeeAmount = match.deliveryFee;
-                    isInstallmentPayment = true;
-                }
-            }
+            // With no orderId this is a wallet top-up or a direct payment, and it stays
+            // exactly that: it is never guessed onto an installment plan, and no delivery
+            // fee is folded into it. A purchase always arrives with its orderId.
 
             // Create payment record
             Payment payment = new Payment();
             payment.setOrderId(order != null ? order.getId() : null);
-            payment.setInstallmentPlanId(matchedInstallmentPlanId);
+            payment.setInstallmentPlanId(null);
             payment.setUserId(dto.getUserId());
             payment.setAmount(amount);
             payment.setDeliveryFeeAmount(deliveryFeeAmount);
@@ -216,6 +285,7 @@ public class PaymentGatewayService {
             payment.setInstallmentId(null);
 
             Payment savedPayment = paymentRepository.save(payment);
+            supersedePendingOrderPayments(savedPayment.getOrderId(), savedPayment.getId());
 
             // Initialize Paystack payment
             HttpHeaders headers = new HttpHeaders();
@@ -294,6 +364,13 @@ public class PaymentGatewayService {
     @Transactional
     public BaseResponse initializeBankTransferPayment(InitializePaymentDto dto) {
         try {
+            if (isSomeoneElsesUserId(dto.getUserId())) {
+                return BaseResponse.builder()
+                        .status(HttpStatus.FORBIDDEN.value())
+                        .message("You may only pay as yourself")
+                        .build();
+            }
+
             User user = userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getUserId()));
 
@@ -322,21 +399,12 @@ public class PaymentGatewayService {
                 deliveryFeeAmount = charge.deliveryFeeAmount;
             }
 
-            // WORKAROUND - see matchDownPaymentDeliveryFee's javadoc (same as initializeCardPayment).
-            Long matchedInstallmentPlanId = null;
-            if (order == null) {
-                DownPaymentDeliveryFeeMatch match = matchDownPaymentDeliveryFee(dto.getUserId(), amount);
-                if (match.installmentPlanId != null) {
-                    matchedInstallmentPlanId = match.installmentPlanId;
-                    amount = amount + match.deliveryFee;
-                    deliveryFeeAmount = match.deliveryFee;
-                    isInstallmentPayment = true;
-                }
-            }
+            // No orderId means a wallet top-up / direct payment - never guessed onto an
+            // installment plan, and never given a delivery fee (see initializeCardPayment).
 
             Payment payment = new Payment();
             payment.setOrderId(order != null ? order.getId() : null);
-            payment.setInstallmentPlanId(matchedInstallmentPlanId);
+            payment.setInstallmentPlanId(null);
             payment.setUserId(dto.getUserId());
             payment.setAmount(amount);
             payment.setDeliveryFeeAmount(deliveryFeeAmount);
@@ -347,6 +415,7 @@ public class PaymentGatewayService {
             payment.setInstallmentId(null);
 
             Payment savedPayment = paymentRepository.save(payment);
+            supersedePendingOrderPayments(savedPayment.getOrderId(), savedPayment.getId());
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + paystackSecretKey);
@@ -419,6 +488,13 @@ public class PaymentGatewayService {
     @Transactional
     public BaseResponse initializeBankPayment(InitializePaymentDto dto) {
         try {
+            if (isSomeoneElsesUserId(dto.getUserId())) {
+                return BaseResponse.builder()
+                        .status(HttpStatus.FORBIDDEN.value())
+                        .message("You may only pay as yourself")
+                        .build();
+            }
+
             User user = userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getUserId()));
 
@@ -447,21 +523,12 @@ public class PaymentGatewayService {
                 deliveryFeeAmount = charge.deliveryFeeAmount;
             }
 
-            // WORKAROUND - see matchDownPaymentDeliveryFee's javadoc (same as initializeCardPayment).
-            Long matchedInstallmentPlanId = null;
-            if (order == null) {
-                DownPaymentDeliveryFeeMatch match = matchDownPaymentDeliveryFee(dto.getUserId(), amount);
-                if (match.installmentPlanId != null) {
-                    matchedInstallmentPlanId = match.installmentPlanId;
-                    amount = amount + match.deliveryFee;
-                    deliveryFeeAmount = match.deliveryFee;
-                    isInstallmentPayment = true;
-                }
-            }
+            // No orderId means a wallet top-up / direct payment - never guessed onto an
+            // installment plan, and never given a delivery fee (see initializeCardPayment).
 
             Payment payment = new Payment();
             payment.setOrderId(order != null ? order.getId() : null);
-            payment.setInstallmentPlanId(matchedInstallmentPlanId);
+            payment.setInstallmentPlanId(null);
             payment.setUserId(dto.getUserId());
             payment.setAmount(amount);
             payment.setDeliveryFeeAmount(deliveryFeeAmount);
@@ -472,6 +539,7 @@ public class PaymentGatewayService {
             payment.setInstallmentId(null);
 
             Payment savedPayment = paymentRepository.save(payment);
+            supersedePendingOrderPayments(savedPayment.getOrderId(), savedPayment.getId());
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + paystackSecretKey);
@@ -549,6 +617,13 @@ public class PaymentGatewayService {
             Order order = orderRepository.findById(orderId)
                     .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
 
+            if (isSomeoneElsesOrder(order)) {
+                return BaseResponse.builder()
+                        .status(HttpStatus.FORBIDDEN.value())
+                        .message("This order does not belong to the requesting user")
+                        .build();
+            }
+
             if (orderPaymentAlreadyCollected(order)) {
                 return BaseResponse.builder()
                         .status(HttpStatus.BAD_REQUEST.value())
@@ -580,6 +655,7 @@ public class PaymentGatewayService {
             payment.setInstallmentId(null);
 
             Payment savedPayment = paymentRepository.save(payment);
+            supersedePendingOrderPayments(savedPayment.getOrderId(), savedPayment.getId());
 
             // Initialize Paystack payment
             HttpHeaders headers = new HttpHeaders();
@@ -686,6 +762,13 @@ public class PaymentGatewayService {
                 return BaseResponse.builder()
                         .status(HttpStatus.BAD_REQUEST.value())
                         .message("The down payment for this plan has already been paid")
+                        .build();
+            }
+
+            if (isSomeoneElsesUserId(dto.getUserId())) {
+                return BaseResponse.builder()
+                        .status(HttpStatus.FORBIDDEN.value())
+                        .message("You may only pay as yourself")
                         .build();
             }
 
@@ -808,6 +891,13 @@ public class PaymentGatewayService {
                 return BaseResponse.builder()
                         .status(HttpStatus.BAD_REQUEST.value())
                         .message("The down payment for this plan has already been paid")
+                        .build();
+            }
+
+            if (isSomeoneElsesUserId(dto.getUserId())) {
+                return BaseResponse.builder()
+                        .status(HttpStatus.FORBIDDEN.value())
+                        .message("You may only pay as yourself")
                         .build();
             }
 
@@ -975,6 +1065,16 @@ public class PaymentGatewayService {
     @Transactional
     public BaseResponse verifyPayment(String reference) {
         try {
+            // Verifying settles the payment and can mark an order paid, so it is not a
+            // read-only lookup: a signed-in caller may only verify their own payments.
+            Payment existing = paymentRepository.findByPaymentReference(reference).orElse(null);
+            if (existing != null && isSomeoneElsesUserId(existing.getUserId())) {
+                return BaseResponse.builder()
+                        .status(HttpStatus.FORBIDDEN.value())
+                        .message("This payment does not belong to the requesting user")
+                        .build();
+            }
+
             Payment payment = doVerifyPayment(reference);
             if (payment == null) {
                 return BaseResponse.builder()
@@ -1030,21 +1130,31 @@ public class PaymentGatewayService {
             Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
             String status = (String) data.get("status");
 
+            // Paystack's verify reports the transaction's CURRENT state, which for a
+            // charge still in flight is "ongoing"/"pending"/"abandoned"/"queued" - not a
+            // failure. Marking those FAILED (as this used to) was terminal: the app saw
+            // FAILED and showed an error, while the charge went on to succeed and pay the
+            // order via the webhook seconds later. Only an explicit failure is FAILED; an
+            // in-flight charge is left PENDING so the caller can verify again.
             if ("success".equals(status)) {
                 payment.setStatus(PaymentStatus.COMPLETED);
                 payment.setPaidAt(LocalDateTime.now());
                 payment.setGatewayReference((String) data.get("reference"));
                 payment.setGatewayResponse(responseBody.toString());
-            } else {
+            } else if (isFinalPaystackFailure(status)) {
                 payment.setStatus(PaymentStatus.FAILED);
-                payment.setFailureReason("Payment verification failed");
+                payment.setFailureReason("Payment verification failed: " + status);
+            } else if (payment.getStatus() != PaymentStatus.COMPLETED) {
+                payment.setStatus(PaymentStatus.PENDING);
             }
 
             paymentRepository.save(payment);
 
             if (payment.getStatus() == PaymentStatus.COMPLETED) {
-                resolveOrphanedDownPaymentPlan(payment);
-                resolveOrphanedOrderPayment(payment);
+                // No orphan-adoption guesswork here any more: the mobile app is order-first,
+                // so a purchase always carries its orderId (or installmentPlanId) from
+                // initialize. A payment that reaches here with neither is a wallet top-up or a
+                // direct payment, and must NOT be attached to anybody's order.
                 // If this payment was for an order (goods bought), reflect it on the order.
                 if (payment.getOrderId() != null) {
                     markOrderPaid(payment);
@@ -1118,6 +1228,51 @@ public class PaymentGatewayService {
         return null;
     }
 
+    /**
+     * Entry point for Paystack's webhook. The endpoint is public, so the signature is the
+     * only thing standing between a stranger and "mark any order paid": without this check
+     * anyone who learns a payment reference can POST a charge.success for it.
+     *
+     * <p>Paystack signs the raw request body with HMAC-SHA512 keyed on the secret key and
+     * sends the hex digest in {@code x-paystack-signature}. An unsigned or mis-signed call
+     * is ignored (and still answered 200 - a webhook must never look retryable to Paystack
+     * because a forgery failed).
+     */
+    public void handleWebhook(String rawPayload, String signature) {
+        if (verifyWebhookSignature && !hasValidPaystackSignature(rawPayload, signature)) {
+            System.err.println("Rejected webhook with missing/invalid x-paystack-signature");
+            return;
+        }
+        try {
+            Map<String, Object> payload = webhookMapper.readValue(rawPayload, Map.class);
+            handleWebhook(payload);
+        } catch (Exception e) {
+            System.err.println("Webhook payload could not be parsed: " + e.getMessage());
+        }
+    }
+
+    private boolean hasValidPaystackSignature(String rawPayload, String signature) {
+        if (rawPayload == null || signature == null || signature.isBlank()) {
+            return false;
+        }
+        try {
+            Mac mac = Mac.getInstance("HmacSHA512");
+            mac.init(new SecretKeySpec(paystackSecretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA512"));
+            byte[] digest = mac.doFinal(rawPayload.getBytes(StandardCharsets.UTF_8));
+            StringBuilder expected = new StringBuilder(digest.length * 2);
+            for (byte b : digest) {
+                expected.append(String.format("%02x", b));
+            }
+            // Constant-time compare so a forger cannot tune a signature byte by byte.
+            return MessageDigest.isEqual(
+                    expected.toString().getBytes(StandardCharsets.UTF_8),
+                    signature.trim().toLowerCase().getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            System.err.println("Webhook signature check failed: " + e.getMessage());
+            return false;
+        }
+    }
+
     @Transactional
     public void handleWebhook(Map<String, Object> payload) {
         try {
@@ -1150,9 +1305,8 @@ public class PaymentGatewayService {
                         creditWalletAfterPayment(payment.getUserId(), payment.getAmount(), reference);
                     }
 
-                    resolveOrphanedDownPaymentPlan(payment);
-                    resolveOrphanedOrderPayment(payment);
-
+                    // See doVerifyPayment: an unlinked payment is a wallet top-up, never a
+                    // purchase, so nothing is adopted onto an order or a plan here.
                     // If this payment was for an order (goods bought), mark the order paid.
                     if (payment.getOrderId() != null) {
                         markOrderPaid(payment);
@@ -1166,21 +1320,6 @@ public class PaymentGatewayService {
         } catch (Exception e) {
             // Log error but don't throw - webhooks should always return 200
             System.err.println("Webhook processing error: " + e.getMessage());
-        }
-    }
-
-    /** Non-null installmentPlanId means "fold deliveryFee into the charge and eagerly link to this plan". */
-    private static class DownPaymentDeliveryFeeMatch {
-        final Long installmentPlanId;
-        final double deliveryFee;
-
-        private DownPaymentDeliveryFeeMatch(Long installmentPlanId, double deliveryFee) {
-            this.installmentPlanId = installmentPlanId;
-            this.deliveryFee = deliveryFee;
-        }
-
-        static DownPaymentDeliveryFeeMatch none() {
-            return new DownPaymentDeliveryFeeMatch(null, 0.0);
         }
     }
 
@@ -1204,8 +1343,7 @@ public class PaymentGatewayService {
      *       short-TTL cache. Callers that omit fulfillmentType (the mobile app, which
      *       quotes delivery on the checkout screen but doesn't carry that quote into the
      *       down-payment call) used to charge 0 here and leave the fee uncollected
-     *       forever - this is the same recovery {@link #matchDownPaymentDeliveryFee}
-     *       already applies to the generic payment-initialize endpoints.</li>
+     *       forever.</li>
      *   <li>the fee an earlier, still-uncompleted down-payment attempt for this same plan
      *       already priced - see {@link #previouslyQuotedDeliveryFee}. The cache entry
      *       above is single-use, so without this a customer who abandons Paystack and
@@ -1268,239 +1406,6 @@ public class PaymentGatewayService {
                 .orElse(java.math.BigDecimal.ZERO);
     }
 
-    // WORKAROUND - the mobile app's installment down-payment charge is observed in
-    // production still calling the generic, order-less POST /api/payments/card/initialize
-    // (and its bank-transfer/USSD siblings) instead of the dedicated
-    // POST /api/installments/{planId}/pay-down-payment/card|bank-transfer (see
-    // initializeDownPaymentCard/BankTransfer) - those generic calls never carry a delivery
-    // address (no order exists yet to hang one on), so the delivery fee was never part of
-    // what got sent to Paystack at all. Can't fix the mobile app directly, so this recovers
-    // the fee from DeliveryFeeQuoteService's cache of the user's most recent
-    // calculate-delivery-fee quote (the mobile app does call that, moments earlier, to show
-    // the customer a total) and folds it into the amount actually charged.
-    //
-    // Deliberately conservative, same spirit as resolveOrphanedDownPaymentPlan below: only
-    // acts when there is exactly one open (unlinked, down-payment-not-yet-paid)
-    // InstallmentPlan for this user whose downPayment matches the client-supplied amount
-    // (the same heuristic resolveOrphanedDownPaymentPlan uses, just run proactively here
-    // instead of retroactively at verify time), and only when a fee for it can actually be
-    // determined - the plan's own quoted deliveryFee for preference, else a usable cached
-    // quote. Any ambiguity or missing data leaves the charge untouched - exactly the
-    // pre-existing behaviour.
-    //
-    // Note the matching is by plan.downPayment, i.e. the FINANCED first period alone: a
-    // caller that already added the delivery fee to the amount it sends (an app rendering
-    // InstallmentPlanResponseDto.firstPaymentAmount, as it should) matches nothing here and
-    // is left untouched, which is correct - the fee is already in its charge.
-    //
-    // The match is also used to eagerly set Payment.installmentPlanId before Paystack is
-    // even called: once this charge includes the delivery fee, its amount no longer equals
-    // plan.getDownPayment() exactly, so resolveOrphanedDownPaymentPlan's own amount-match
-    // at verify time would fail to find it - linking it now (which makes that method's
-    // "already linked" guard skip it later) avoids that regression entirely.
-    private DownPaymentDeliveryFeeMatch matchDownPaymentDeliveryFee(Long userId, Double clientSuppliedAmount) {
-        if (userId == null || clientSuppliedAmount == null) {
-            return DownPaymentDeliveryFeeMatch.none();
-        }
-        List<InstallmentPlan> matches = installmentPlanRepository.findByUserId(userId).stream()
-                .filter(plan -> plan.getOrderId() == null)
-                .filter(plan -> !Boolean.TRUE.equals(plan.getDownPaymentPaid()))
-                .filter(plan -> plan.getDownPayment() != null
-                        && Math.abs(plan.getDownPayment() - clientSuppliedAmount) < 0.01)
-                .collect(java.util.stream.Collectors.toList());
-        if (matches.size() != 1) {
-            return DownPaymentDeliveryFeeMatch.none();
-        }
-        InstallmentPlan matchedPlan = matches.get(0);
-
-        // No notBefore gate here: in practice the customer quotes delivery (browsing the
-        // cart/checkout screen) BEFORE choosing to pay by installment, which is what
-        // actually creates the plan - gating the quote to "taken at or after
-        // plan.getCreatedAt()" therefore rejected every real installment down payment,
-        // since the quote is always older than the plan by construction. Staleness is
-        // instead bounded by DeliveryFeeQuoteService's short TTL plus this call popping the
-        // entry (single-use, so it can never be reapplied to a second payment attempt) -
-        // and OrderService.checkout()'s refund safety net (see there) still catches the
-        // remaining PICKUP edge case: a stale DELIVERY quote wrongly folded in here for an
-        // order that turns out to be PICKUP gets refunded the moment the real fulfillment
-        // type is known.
-        // Prefer the fee quoted onto the plan itself (InstallmentService.buildPlan) - it's
-        // persisted and exact, unlike anything recovered from the cache below.
-        if (matchedPlan.getDeliveryFee() != null && matchedPlan.getDeliveryFee() > 0) {
-            deliveryFeeQuoteService.consumeRecentDeliveryFee(userId, null); // keep the cache single-use
-            System.out.println("Folding installment plan " + matchedPlan.getId() + "'s quoted delivery fee "
-                    + matchedPlan.getDeliveryFee() + " into down payment charge " + clientSuppliedAmount
-                    + " (user " + userId + ") - generic payment-initialize endpoint.");
-            return new DownPaymentDeliveryFeeMatch(matchedPlan.getId(), matchedPlan.getDeliveryFee());
-        }
-
-        java.util.Optional<java.math.BigDecimal> recentQuote =
-                deliveryFeeQuoteService.consumeRecentDeliveryFee(userId, null);
-        // The cache entry is single-use, so a customer who abandoned Paystack and came
-        // back already popped it - fall back to what that first attempt priced rather
-        // than charging this retry a down payment with no delivery fee in it. Only when
-        // there's no cached quote at all: a cached ZERO is a real PICKUP quote (see
-        // resolveDownPaymentDeliveryFee) and must not be overridden by an older attempt.
-        java.math.BigDecimal resolvedFee = recentQuote
-                .orElseGet(() -> previouslyQuotedDeliveryFee(matchedPlan.getId()));
-        if (resolvedFee.compareTo(java.math.BigDecimal.ZERO) <= 0) {
-            return DownPaymentDeliveryFeeMatch.none();
-        }
-
-        double deliveryFee = resolvedFee.doubleValue();
-        System.out.println("WORKAROUND: folding cached delivery fee " + deliveryFee
-                + " into down payment charge " + clientSuppliedAmount + " for installment plan "
-                + matchedPlan.getId() + " (user " + userId + ") - generic payment-initialize endpoint.");
-        return new DownPaymentDeliveryFeeMatch(matchedPlan.getId(), deliveryFee);
-    }
-
-    // TEMPORARY WORKAROUND - remove once the mobile app switches its down-payment card
-    // charge from the generic POST /api/payments/card/initialize to
-    // POST /api/installments/{planId}/pay-down-payment/card (see initializeDownPaymentCard).
-    // The generic endpoint never links Payment.installmentPlanId/orderId, so a payment
-    // that reaches here with BOTH null would otherwise be permanently orphaned - Paystack
-    // charged the card, but no plan/order ever finds out (see INSTALLMENT_DOWN_PAYMENT_FLOW.md).
-    //
-    // Links such a payment to the InstallmentPlan it most likely belongs to: among every
-    // open plan for this user (no order yet, down payment not yet collected -
-    // InstallmentService.createInstallmentPlan is now idempotent so this should normally be
-    // at most one), prefer an exact downPayment-amount match; if several match (a plan
-    // created before idempotency was added, or two genuinely different in-progress carts),
-    // or if none match at all (e.g. the mobile app's own down-payment amount calculation
-    // has drifted from what buildPlan computes), always fall back to the single most
-    // recently created open plan rather than refusing to guess - a customer paying a down
-    // payment overwhelmingly means the checkout they most recently started. This is
-    // explicitly a best-effort guess, not an explicit reference; every branch below logs
-    // clearly so a wrong guess is diagnosable.
-    private void resolveOrphanedDownPaymentPlan(Payment payment) {
-        if (payment.getOrderId() != null || payment.getInstallmentPlanId() != null) {
-            return; // already linked - not an orphan, nothing to resolve
-        }
-        try {
-            List<InstallmentPlan> openPlans = installmentPlanRepository.findByUserId(payment.getUserId()).stream()
-                    .filter(plan -> plan.getOrderId() == null)
-                    .filter(plan -> !Boolean.TRUE.equals(plan.getDownPaymentPaid()))
-                    .collect(java.util.stream.Collectors.toList());
-
-            if (openPlans.isEmpty()) {
-                System.err.println("TEMP WORKAROUND: no open installment plan at all for user "
-                        + payment.getUserId() + " to link orphaned payment " + payment.getPaymentReference()
-                        + " (amount " + payment.getAmount() + ") to - left unlinked.");
-                return;
-            }
-
-            List<InstallmentPlan> amountMatches = openPlans.stream()
-                    .filter(plan -> plan.getDownPayment() != null
-                            && Math.abs(plan.getDownPayment() - payment.getAmount()) < 0.01)
-                    .collect(java.util.stream.Collectors.toList());
-
-            List<InstallmentPlan> candidates = !amountMatches.isEmpty() ? amountMatches : openPlans;
-            InstallmentPlan match = candidates.stream()
-                    .max(Comparator.comparing(InstallmentPlan::getId))
-                    .orElseThrow();
-
-            if (amountMatches.isEmpty()) {
-                System.err.println("TEMP WORKAROUND: payment " + payment.getPaymentReference()
-                        + " (amount " + payment.getAmount() + ") didn't match any open plan's downPayment for user "
-                        + payment.getUserId() + " - linking to the most recently created open plan anyway (plan "
-                        + match.getId() + ", downPayment " + match.getDownPayment() + ").");
-            } else if (amountMatches.size() > 1) {
-                System.err.println("TEMP WORKAROUND: payment " + payment.getPaymentReference()
-                        + " matched " + amountMatches.size() + " open plans by amount for user "
-                        + payment.getUserId() + " - linking to the most recently created one (plan "
-                        + match.getId() + ").");
-            }
-
-            payment.setInstallmentPlanId(match.getId());
-            // A payment adopted onto a plan here IS that plan's down payment, so it must carry
-            // the same flag the dedicated initializeDownPaymentCard/BankTransfer paths set.
-            // Left false (the Payment default), it read as a full payment to every later
-            // consumer - markOrderPaid in particular branches on exactly this flag, so if such
-            // a payment ever also got an orderId (resolveOrphanedOrderPayment, or a retry that
-            // does pass one) it would mark the whole order paid off on one installment.
-            // Observed on production payment PM-A7FEBE98 (plan 2, 2026-09-10).
-            payment.setIsInstallmentPayment(true);
-            paymentRepository.save(payment);
-            System.err.println("TEMP WORKAROUND: linked orphaned payment " + payment.getPaymentReference()
-                    + " to installment plan " + match.getId()
-                    + " - mobile should be sending planId directly instead.");
-        } catch (Exception e) {
-            System.err.println("TEMP WORKAROUND: failed to resolve orphaned down payment for "
-                    + payment.getPaymentReference() + ": " + e.getMessage());
-        }
-    }
-
-    // TEMPORARY WORKAROUND - same root cause/class as resolveOrphanedDownPaymentPlan: the
-    // mobile app pays for a one-off (FULL_PAYMENT) order via the generic
-    // POST /api/payments/card/initialize without ever passing orderId, so Payment.orderId is
-    // never set and markOrderPaid never runs. Confirmed against production data (2026-09-09):
-    // every FULL_PAYMENT mobile order tested stayed isPaid=false/PENDING on both the real
-    // Order and its SalesOrder mirror indefinitely, even though Paystack had genuinely
-    // charged the customer - it never showed up in "Completed sales" (needs isPaid=true).
-    //
-    // Runs after resolveOrphanedDownPaymentPlan and is a no-op if that already linked the
-    // payment. Deliberately restricted to FULL_PAYMENT orders (never INSTALLMENT): an
-    // INSTALLMENT order also sits unpaid/PENDING right after checkout, and a payment against
-    // it (e.g. a down payment paid post-checkout via this same generic endpoint) must go
-    // through resolveOrphanedDownPaymentPlan/markDownPaymentPaid instead - linking it here and
-    // running markOrderPaid would wrongly flag the whole plan paid off on just one instalment.
-    //
-    // Same best-effort policy as resolveOrphanedDownPaymentPlan: prefer an exact grandTotal
-    // match, but always fall back to the most recently created open order rather than
-    // refusing to guess. Every non-trivial branch logs clearly so a wrong guess is
-    // diagnosable.
-    private void resolveOrphanedOrderPayment(Payment payment) {
-        if (payment.getOrderId() != null || payment.getInstallmentPlanId() != null) {
-            return; // already linked - not an orphan, nothing to resolve
-        }
-        try {
-            List<Order> openOrders = orderRepository.findByUserId(payment.getUserId(), Pageable.unpaged())
-                    .getContent().stream()
-                    .filter(order -> order.getPaymentType() != com.appGate.orderingsales.enums.PaymentType.INSTALLMENT)
-                    .filter(order -> !Boolean.TRUE.equals(order.getIsPaid()))
-                    .filter(order -> order.getOrderStatus() != OrderStatus.CANCELLED
-                            && order.getOrderStatus() != OrderStatus.FAILED)
-                    .collect(java.util.stream.Collectors.toList());
-
-            if (openOrders.isEmpty()) {
-                System.err.println("TEMP WORKAROUND: no open one-off order at all for user "
-                        + payment.getUserId() + " to link orphaned payment " + payment.getPaymentReference()
-                        + " (amount " + payment.getAmount() + ") to - left unlinked.");
-                return;
-            }
-
-            List<Order> amountMatches = openOrders.stream()
-                    .filter(order -> order.getGrandTotal() != null
-                            && Math.abs(order.getGrandTotal() - payment.getAmount()) < 0.01)
-                    .collect(java.util.stream.Collectors.toList());
-
-            List<Order> candidates = !amountMatches.isEmpty() ? amountMatches : openOrders;
-            Order match = candidates.stream()
-                    .max(Comparator.comparing(Order::getId))
-                    .orElseThrow();
-
-            if (amountMatches.isEmpty()) {
-                System.err.println("TEMP WORKAROUND: payment " + payment.getPaymentReference()
-                        + " (amount " + payment.getAmount() + ") didn't match any open order's grandTotal for user "
-                        + payment.getUserId() + " - linking to the most recently created open order anyway (order "
-                        + match.getId() + ", grandTotal " + match.getGrandTotal() + ").");
-            } else if (amountMatches.size() > 1) {
-                System.err.println("TEMP WORKAROUND: payment " + payment.getPaymentReference()
-                        + " matched " + amountMatches.size() + " open orders by amount for user "
-                        + payment.getUserId() + " - linking to the most recently created one (order "
-                        + match.getId() + ").");
-            }
-
-            payment.setOrderId(match.getId());
-            paymentRepository.save(payment);
-            System.err.println("TEMP WORKAROUND: linked orphaned payment " + payment.getPaymentReference()
-                    + " to order " + match.getId()
-                    + " - mobile should be sending orderId directly instead.");
-        } catch (Exception e) {
-            System.err.println("TEMP WORKAROUND: failed to resolve orphaned order payment for "
-                    + payment.getPaymentReference() + ": " + e.getMessage());
-        }
-    }
 
     /**
      * Marks the order tied to a completed payment as paid and confirmed. Idempotent: a second call
@@ -1509,7 +1414,27 @@ public class PaymentGatewayService {
     private void markOrderPaid(Payment payment) {
         try {
             Order order = orderRepository.findById(payment.getOrderId()).orElse(null);
-            if (order == null || Boolean.TRUE.equals(order.getIsPaid())) {
+            if (order == null) {
+                return;
+            }
+            if (Boolean.TRUE.equals(order.getIsPaid())) {
+                // Money collected against an order that was already settled: two attempts
+                // both went through. Say so loudly - it is a refund, not a no-op.
+                if (payment.getPaymentReference() != null
+                        && !payment.getPaymentReference().equals(order.getPaymentReference())) {
+                    System.err.println("DUPLICATE PAYMENT: order " + order.getId() + " was already paid by "
+                            + order.getPaymentReference() + " but " + payment.getPaymentReference()
+                            + " (amount " + payment.getAmount() + ") also completed. Needs refund review.");
+                }
+                return;
+            }
+
+            // Idempotency for an INSTALLMENT order, whose isPaid stays false by design (see
+            // below) and so cannot act as the "already settled" flag: without this, every
+            // repeat verify - and the app polls every few seconds - re-ran the whole body,
+            // re-posting GL and re-accumulating the plan's collected delivery fee.
+            if (payment.getPaymentReference() != null
+                    && payment.getPaymentReference().equals(order.getPaymentReference())) {
                 return;
             }
 
@@ -1524,6 +1449,16 @@ public class PaymentGatewayService {
             order.setPaymentReference(payment.getPaymentReference());
             order.setOrderStatus(isInstallmentPayment ? OrderStatus.PENDING : OrderStatus.PAYMENT_CONFIRMED);
             orderRepository.save(order);
+
+            // Dr the order branch's Paystack GL, Cr its Sales GL (online orders are Head Office).
+            glPostingService.postPaystackSale(order.getBranchId(), payment.getAmount(),
+                    payment.getPaymentReference(), payment.getUserId());
+
+            // Checkout deliberately leaves the cart alone (an abandoned payment must not
+            // cost the customer their basket), so settlement is what clears it. Done
+            // against the repository rather than OrderService, which depends on this
+            // service - injecting it back would be a dependency cycle.
+            clearPaidCart(order.getUserId());
 
             // An order-level installment charge (see resolveOrderChargeAmount) is the down
             // payment the very first time it runs - a plan whose down payment was already
@@ -1566,6 +1501,9 @@ public class PaymentGatewayService {
         try {
             InstallmentPlan plan = installmentPlanRepository.findById(payment.getInstallmentPlanId()).orElse(null);
             applyDownPaymentCollected(plan, payment);
+            // No order exists yet, so this online down payment belongs to Head Office.
+            glPostingService.postPaystackSale(null, payment.getAmount(),
+                    payment.getPaymentReference(), payment.getUserId());
         } catch (Exception e) {
             System.err.println("Down payment plan update error: " + e.getMessage());
         }
@@ -1595,8 +1533,14 @@ public class PaymentGatewayService {
         // already guarded upstream against charging the same order/plan twice
         // (orderPaymentAlreadyCollected, hasOrderLevelPayment, downPaymentPaid on the
         // pre-checkout flow), so accumulating here is always safe, not just idempotent.
+        // ...but only ONCE per charge. This used to accumulate on every call, and since a
+        // repeat verify re-entered here (markOrderPaid's isPaid guard never fires for an
+        // installment order), plan.downPaymentDeliveryFee grew on each poll - inflating a
+        // figure that later tells the system how much delivery was already collected.
+        boolean alreadyAppliedThisCharge = payment.getPaymentReference() != null
+                && payment.getPaymentReference().equals(plan.getDownPaymentReference());
         double deliveryFeeInThisPayment = payment.getDeliveryFeeAmount() != null ? payment.getDeliveryFeeAmount() : 0.0;
-        if (deliveryFeeInThisPayment > 0) {
+        if (deliveryFeeInThisPayment > 0 && !alreadyAppliedThisCharge) {
             double existingDeliveryFee = plan.getDownPaymentDeliveryFee() != null ? plan.getDownPaymentDeliveryFee() : 0.0;
             plan.setDownPaymentDeliveryFee(existingDeliveryFee + deliveryFeeInThisPayment);
             installmentPlanRepository.save(plan);
@@ -1627,6 +1571,15 @@ public class PaymentGatewayService {
 
         installmentPlanRepository.save(plan);
 
+        // A single-period plan (MONTHLY, 1 month) is settled outright by its down payment:
+        // no Installment row is left, so InstallmentService.payInstallmentInternal - which
+        // normally marks the order paid on the final installment - can never run for it.
+        // Without this the customer pays in full and the order sits "awaiting payment"
+        // forever, with both repayment endpoints refusing to help.
+        if (plan.getStatus() == InstallmentStatus.COMPLETED) {
+            markPlanOrderFullyPaid(plan, payment);
+        }
+
         installmentRepository.findByInstallmentPlanIdAndInstallmentNumber(plan.getId(), 1)
                 .ifPresent(firstInstallment -> {
                     firstInstallment.setStatus(InstallmentStatus.PAID);
@@ -1639,8 +1592,18 @@ public class PaymentGatewayService {
 
     private void creditWalletAfterPayment(Long userId, Double amount, String reference) {
         try {
+            // The verify endpoint credits the same payment (WalletService.verifyAndFundWallet)
+            // and the app calls it while this webhook is in flight. The funding credit is
+            // recorded under a reference derived from the payment reference, and that column
+            // is unique, so checking for it here is what stops a double credit.
+            String fundingReference = WalletService.fundingTransactionReference(reference);
+            if (transactionRepository.findByTransactionReference(fundingReference).isPresent()) {
+                System.out.println("Wallet funding " + reference + " already credited - skipping");
+                return;
+            }
+
             // Get or create wallet
-            Wallet wallet = walletRepository.findByUserId(userId)
+            Wallet wallet = walletRepository.findByUserIdForUpdate(userId)
                     .orElseThrow(() -> new RuntimeException("Wallet not found for user: " + userId));
 
             Double balanceBefore = wallet.getBalance();
@@ -1650,7 +1613,7 @@ public class PaymentGatewayService {
             // Create transaction record
             Transaction transaction = new Transaction();
             transaction.setUserId(userId);
-            transaction.setTransactionReference("TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+            transaction.setTransactionReference(fundingReference);
             transaction.setType(TransactionType.CREDIT);
             transaction.setAmount(amount);
             transaction.setBalanceBefore(balanceBefore);
@@ -1659,6 +1622,8 @@ public class PaymentGatewayService {
             transaction.setDescription("Wallet funded via Paystack - Ref: " + reference);
             transaction.setTransactionDate(LocalDateTime.now());
             transactionRepository.save(transaction);
+
+            glPostingService.postWalletFunding(amount, reference, userId);
 
             System.out.println("Wallet credited: User " + userId + ", Amount: " + amount);
         } catch (Exception e) {
@@ -2081,6 +2046,7 @@ public class PaymentGatewayService {
         creditWalletForFunding(funding);
         funding.setStatus("COMPLETED");
         cashierWalletFundingRepository.save(funding);
+        glPostingService.postWalletFunding(funding.getAmount(), reference, funding.getCustomerId());
     }
 
     // Stores the reusable Paystack authorization (and card details) on the company card so future
@@ -2203,6 +2169,56 @@ public class PaymentGatewayService {
                 .message("Wallet funded successfully")
                 .data(data)
                 .build();
+    }
+
+    /**
+     * Whether a Paystack transaction status is a settled failure, as opposed to a charge
+     * still in flight. Only "failed" and "reversed" are terminal; "abandoned", "ongoing",
+     * "pending", "processing" and "queued" can all still turn into a success, so they
+     * leave the payment PENDING for the next verify or the webhook to resolve.
+     */
+    private boolean isFinalPaystackFailure(String paystackStatus) {
+        return "failed".equalsIgnoreCase(paystackStatus) || "reversed".equalsIgnoreCase(paystackStatus);
+    }
+
+    /**
+     * Marks a plan's order fully paid once the plan itself is settled, mirroring
+     * {@code InstallmentService.payInstallmentInternal}'s final-installment block. Only
+     * reached when the down payment alone completes the plan (a one-period plan).
+     */
+    private void markPlanOrderFullyPaid(InstallmentPlan plan, Payment payment) {
+        Long orderId = plan.getOrderId() != null ? plan.getOrderId() : payment.getOrderId();
+        if (orderId == null) {
+            return;
+        }
+        orderRepository.findById(orderId).ifPresent(order -> {
+            if (Boolean.TRUE.equals(order.getIsPaid())) {
+                return;
+            }
+            order.setIsPaid(true);
+            order.setPaidAt(order.getPaidAt() != null ? order.getPaidAt() : LocalDateTime.now());
+            order.setOrderStatus(OrderStatus.PAYMENT_CONFIRMED);
+            orderRepository.save(order);
+            mobileSalesOrderSyncService.syncFullPaymentCollectedIsolated(order.getId());
+        });
+    }
+
+    /** Empties the customer's active cart once their order is paid. Safe to call twice. */
+    private void clearPaidCart(Long userId) {
+        if (userId == null) {
+            return;
+        }
+        try {
+            List<com.appGate.orderingsales.models.Cart> activeItems =
+                    cartRepository.findByUserIdAndStatus(userId, true);
+            if (activeItems.isEmpty()) {
+                return;
+            }
+            activeItems.forEach(item -> item.setStatus(false));
+            cartRepository.saveAll(activeItems);
+        } catch (Exception e) {
+            System.err.println("Could not clear cart for user " + userId + ": " + e.getMessage());
+        }
     }
 
     private String generatePaymentReference() {

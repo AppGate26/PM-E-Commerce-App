@@ -83,6 +83,7 @@ public class OrderService {
     private final InstallmentPlanRepository installmentPlanRepository;
     private final InstallmentRepository installmentRepository;
     private final MobileSalesOrderSyncService mobileSalesOrderSyncService;
+    private final com.appGate.account.service.GlPostingService glPostingService;
 
     /**
      * OrderDto.from(order) alone only knows about columns on Order itself, so an
@@ -143,6 +144,24 @@ public class OrderService {
      * branch fulfills the order -- deliveries are dispatched from Head Office, not from
      * whichever branch's stock was decremented.
      */
+    /**
+     * Empties the customer's active cart once their order is paid. Public because
+     * {@code PaymentGatewayService.markOrderPaid} settles the Paystack paths and needs the
+     * same behaviour; both are safe to call twice.
+     */
+    @Transactional
+    public void clearPaidCart(Long userId) {
+        if (userId == null) {
+            return;
+        }
+        List<Cart> activeItems = cartRepository.findByUserIdAndStatus(userId, true);
+        if (activeItems.isEmpty()) {
+            return;
+        }
+        activeItems.forEach(item -> item.setStatus(false));
+        cartRepository.saveAll(activeItems);
+    }
+
     private Branch resolveOriginBranch() {
         return branchRepository.findByHeadOfficeTrue()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Head Office branch not found"));
@@ -288,7 +307,9 @@ public class OrderService {
             order.setOrderStatus(OrderStatus.PENDING);
             order.setDeliveryStatus(DeliveryStatus.NOT_SHIPPED);
             order.setFulfillmentType(fulfillmentType);
-            order.setBranchId(branchId); // tag to the chosen branch
+            // Online orders (shoppers, Head Office staff) have no branch of their own; they
+            // belong to Head Office, whose GLs their payments post to (see GlPostingService).
+            order.setBranchId(branchId != null ? branchId : resolveOriginBranch().getId());
 
             // Delivery information - left null/unset for PICKUP orders
             order.setDeliveryAddress(checkoutDto.getDeliveryAddress());
@@ -489,9 +510,11 @@ public class OrderService {
                 reflectPreCheckoutPayment(savedOrder, checkoutDto.getNotes());
             }
 
-            // 6. Clear cart
-            cartItems.forEach(item -> item.setStatus(false));
-            cartRepository.saveAll(cartItems);
+            // 6. The cart is NOT cleared here. Checkout happens before any money moves, so
+            // clearing it at this point meant a customer who abandoned the payment screen
+            // lost their basket as well as the stock it was holding. The cart is cleared
+            // when the order is actually paid - see clearPaidCart, called from
+            // payOrderByWallet and PaymentGatewayService.markOrderPaid.
 
             Map<String, Object> response = new HashMap<>();
             response.put("order", toOrderDto(savedOrder));
@@ -584,6 +607,8 @@ public class OrderService {
         }
 
         mobileSalesOrderSyncService.syncFullPaymentCollected(order.getId());
+        glPostingService.postPaystackSale(order.getBranchId(), payment.getAmount(),
+                payment.getPaymentReference(), payment.getUserId());
         log.info("Adopted pre-checkout payment {} ({}) onto order {} and marked it paid.",
                 reference, payment.getAmount(), order.getId());
     }
@@ -626,7 +651,13 @@ public class OrderService {
             // payment (see checkout()'s installmentPlan.getDownPaymentPaid() branch), which
             // used to make this method refuse outright and leave the delivery fee portion of
             // an installment order's down-payment-stage charge never collected at all.
-            boolean hasOrderLevelPayment = !paymentRepository.findByOrderId(orderId).isEmpty();
+            // Only a charge that actually settled blocks this. Counting every row - including
+            // the PENDING one an abandoned card attempt leaves behind - locked the customer
+            // out of paying by wallet at all, on an order nobody had paid. Mirrors
+            // PaymentGatewayService.orderPaymentAlreadyCollected.
+            boolean hasOrderLevelPayment = paymentRepository.findByOrderId(orderId).stream()
+                    .anyMatch(existing -> existing.getStatus() == com.appGate.account.enums.PaymentStatus.COMPLETED
+                            || existing.getStatus() == com.appGate.account.enums.PaymentStatus.PROCESSING);
             if (hasOrderLevelPayment) {
                 return new BaseResponse(HttpStatus.BAD_REQUEST.value(), "Down payment has already been collected for this order", null);
             }
@@ -681,6 +712,13 @@ public class OrderService {
             order.setPaymentReference(payment.getPaymentReference());
             order.setOrderStatus(isInstallmentPayment ? OrderStatus.PENDING : OrderStatus.PAYMENT_CONFIRMED);
             Order updatedOrder = orderRepository.save(order);
+
+            // Dr Head Office Customer Wallet GL, Cr the order branch's Sales GL.
+            glPostingService.postWalletPurchase(order.getBranchId(), amountToDebit,
+                    payment.getPaymentReference(), order.getUserId());
+
+            // Paid for, so the basket is now spent (checkout no longer clears it).
+            clearPaidCart(order.getUserId());
 
             if (isInstallmentPayment) {
                 // This is the down payment the very first time it's collected - a plan

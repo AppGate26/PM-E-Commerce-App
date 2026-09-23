@@ -173,9 +173,18 @@ export const mapAccountDetailFromApi = (item = {}, fallbackIndex = 0) => {
       pickFirstValue(item, ["chartOfAccountName", "chartOfAccount.description", "chart_of_account.description"]) || ""
     ),
     accountDetailsName,
+    branchId: pickFirstValue(item, ["branchId", "branch_id"]) ?? null,
+    glPurpose: pickFirstValue(item, ["glPurpose", "gl_purpose"]) || "",
     raw: item,
   };
 };
+
+// Roles an Account Details GL can play in automatic Paystack / wallet postings.
+export const GL_PURPOSE_OPTIONS = [
+  { value: "PAYSTACK", label: "Paystack" },
+  { value: "SALES_REVENUE", label: "Sales Revenue" },
+  { value: "CUSTOMER_WALLET", label: "Customer Wallet (Head Office)" },
+];
 
 export const getAccountTypes = async ({ page = 0, size = 1000 } = {}) => {
   const payload = await withAccountingPermissionMessage(
@@ -289,6 +298,8 @@ export const createAccountDetail = async ({
   chartOfAccountId,
   accountDetailsCode,
   accountDetailsName,
+  branchId,
+  glPurpose,
 }) => {
   const payload = await apiRequest(
     "/account-details",
@@ -299,17 +310,20 @@ export const createAccountDetail = async ({
       chartOfAccountId: Number(chartOfAccountId),
       accountDetailsCode: String(accountDetailsCode),
       accountDetailsName,
+      // Only honoured for admin / Head Office users; the backend pins branch users to their own branch.
+      branchId: branchId ? Number(branchId) : null,
+      glPurpose: glPurpose || null,
     },
     true
   );
   return mapAccountDetailFromApi(unwrapItem(payload), 0);
 };
 
-export const updateAccountDetail = async (id, { accountDetailsName }) => {
+export const updateAccountDetail = async (id, { accountDetailsName, glPurpose }) => {
   const payload = await apiRequest(
     `/account-details/${id}`,
     "PUT",
-    { accountDetailsName },
+    { accountDetailsName, glPurpose: glPurpose || null },
     true
   );
   return mapAccountDetailFromApi(unwrapItem(payload), 0);

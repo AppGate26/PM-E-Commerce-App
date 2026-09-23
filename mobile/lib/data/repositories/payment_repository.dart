@@ -253,6 +253,81 @@ class PaymentRepository {
     };
   }
 
+  // ============================================================
+  // 🏦 ORDER-FIRST BANK / BANK TRANSFER PURCHASE
+  // Backend: POST /api/payments/bank/initialize | /bank-transfer/initialize
+  // with `orderId` set. Same Paystack hosted checkout as the card path, only
+  // opened on the bank or transfer channel. Because orderId is set, the backend
+  // charges the order's own server-computed amount and links the Payment to the
+  // order — `amount` below is sent only to satisfy request validation and is
+  // ignored (see PaymentGatewayService.initializeBankPayment).
+  // ============================================================
+  Future<Map<String, dynamic>> initializeOrderPaymentByChannel({
+    required String endpoint,
+    required int orderId,
+    required int userId,
+    required String email,
+    required String callbackUrl,
+    double amount = 1,
+  }) async {
+    _validateOrderId(orderId);
+    if (callbackUrl.isEmpty) {
+      throw Exception('Invalid callback URL');
+    }
+
+    final secureUserId = await _getSecureUserId(userId);
+    final url = ApiConstants.normalizeUrl(endpoint);
+
+    final response = await _apiClient.dio.post(
+      url,
+      data: {
+        'userId': secureUserId,
+        'orderId': orderId,
+        'amount': amount > 0 ? amount : 1,
+        'email': email,
+        'callbackUrl': callbackUrl,
+      },
+      options: Options(
+        contentType: 'application/json',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      ),
+    );
+
+    // Business failures arrive as HTTP 200 with the real status in the body —
+    // same shape as payOrderByCard above.
+    _validateResponse(response);
+    final body = response.data;
+    final int? bodyStatus =
+        body is Map ? (body['status'] as num?)?.toInt() : null;
+    if (bodyStatus != null && bodyStatus != 200 && bodyStatus != 201) {
+      throw Exception((body is Map ? body['message']?.toString() : null) ??
+          'Failed to initialize payment');
+    }
+
+    final responseData = body['response'] ?? body['data'] ?? body;
+    final authorizationUrl = responseData['authorizationUrl']?.toString() ??
+        responseData['authorization_url']?.toString() ??
+        responseData['url']?.toString();
+    final paymentReference = responseData['paymentReference']?.toString() ??
+        responseData['payment_reference']?.toString();
+
+    if (authorizationUrl == null || authorizationUrl.isEmpty) {
+      throw Exception('No payment URL received. Response: $body');
+    }
+    if (paymentReference == null || paymentReference.isEmpty) {
+      throw Exception('No payment reference received. Response: $body');
+    }
+
+    return {
+      'authorizationUrl': authorizationUrl,
+      'paymentReference': paymentReference,
+      'data': responseData,
+    };
+  }
+
 // ============================================================
 // ✅ VERIFY CARD PAYMENT - WITH EXTENSIVE LOGGING
 // ============================================================
@@ -610,7 +685,12 @@ class PaymentRepository {
         body is Map ? (body['status'] as num?)?.toInt() : null;
     final String apiMessage =
         (body is Map ? body['message']?.toString() : null) ?? '';
-    final dynamic apiData = body is Map ? body['data'] : null;
+    // The ordering module answers under `response`, the account module under `data`.
+    // Only `data` was read, so the wallet order payment's own result — the server's
+    // authoritative amount debited — always came back null and the UI fell back to its
+    // own estimate.
+    final dynamic apiData =
+        body is Map ? (body['data'] ?? body['response']) : null;
     return {'status': apiStatus, 'message': apiMessage, 'data': apiData};
   }
 

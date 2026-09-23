@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -102,6 +103,64 @@ public class JournalEntryService {
             return new BaseResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Error creating journal entry: " + e.getMessage(), null);
         }
+    }
+
+    /**
+     * Posts a journal on behalf of the system (Paystack webhook, wallet flows) rather than a user.
+     *
+     * <p>Unlike {@link #createJournalEntry}, the branch is taken as given instead of being
+     * resolved from the request's branch scope, because these postings often run with no
+     * logged-in user (e.g. the Paystack webhook). Entries are approved on creation, which
+     * also locks them against edits and deletion. Failures throw so the caller's transaction
+     * rolls back cleanly.
+     *
+     * @return true when posted; false when an entry with the same reference already exists
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean createSystemJournalEntry(CreateJournalEntryDto dto, Long branchId) {
+        String reference = dto.getJournalReference();
+        if (journalEntryRepository.findByJournalReference(reference).isPresent()) {
+            return false;
+        }
+
+        BigDecimal totalDebit = BigDecimal.ZERO;
+        BigDecimal totalCredit = BigDecimal.ZERO;
+        for (JournalLineDto lineDto : dto.getJournalLines()) {
+            totalDebit = totalDebit.add(lineDto.getDebit() != null ? lineDto.getDebit() : BigDecimal.ZERO);
+            totalCredit = totalCredit.add(lineDto.getCredit() != null ? lineDto.getCredit() : BigDecimal.ZERO);
+        }
+        if (totalDebit.compareTo(totalCredit) != 0) {
+            throw new IllegalArgumentException(
+                    "Debit and credit amounts must be equal. Debit: " + totalDebit + ", Credit: " + totalCredit);
+        }
+
+        JournalEntry journalEntry = new JournalEntry();
+        journalEntry.setJournalReference(reference);
+        journalEntry.setJournalType(dto.getJournalType());
+        journalEntry.setTransactionDate(dto.getTransactionDate());
+        journalEntry.setDescription(dto.getDescription());
+        journalEntry.setIsApproved(true);
+        journalEntry.setBranchId(branchId);
+
+        for (JournalLineDto lineDto : dto.getJournalLines()) {
+            Account account = accountRepository.findById(lineDto.getAccountId())
+                    .orElseThrow(() -> new IllegalStateException("Account not found: " + lineDto.getAccountId()));
+
+            JournalLine journalLine = new JournalLine();
+            journalLine.setJournalEntry(journalEntry);
+            journalLine.setAccount(account);
+            journalLine.setDescription(lineDto.getDescription());
+            journalLine.setDebit(lineDto.getDebit() != null ? lineDto.getDebit() : BigDecimal.ZERO);
+            journalLine.setCredit(lineDto.getCredit() != null ? lineDto.getCredit() : BigDecimal.ZERO);
+            journalLine.setUserId(lineDto.getUserId());
+            journalLine.setReferenceNo(lineDto.getReferenceNo());
+            journalEntry.getJournalLines().add(journalLine);
+
+            updateAccountBalance(account, journalLine.getDebit(), journalLine.getCredit());
+        }
+
+        journalEntryRepository.save(journalEntry);
+        return true;
     }
 
     public BaseResponse getAllJournalEntries() {

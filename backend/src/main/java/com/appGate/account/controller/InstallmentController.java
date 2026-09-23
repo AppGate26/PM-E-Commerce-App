@@ -1,10 +1,8 @@
 package com.appGate.account.controller;
 
-import com.appGate.account.dto.InitializeDownPaymentDto;
 import com.appGate.account.dto.InstallmentPlanDto;
 import com.appGate.account.response.BaseResponse;
 import com.appGate.account.service.InstallmentService;
-import com.appGate.account.service.PaymentGatewayService;
 import com.appGate.rbac.util.JwtUtils;
 import com.appGate.rbac.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 public class InstallmentController {
 
     private final InstallmentService installmentService;
-    private final PaymentGatewayService paymentGatewayService;
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
 
@@ -45,45 +42,12 @@ public class InstallmentController {
         return installmentService.createInstallmentPlan(dto);
     }
 
-    /**
-     * Pay a plan's up-front down payment by bank transfer, before the plan has an
-     * order attached. This is how the mobile checkout flow actually works for
-     * installment orders: pay the down payment first (against the plan id returned by
-     * POST /installments), then call POST /api/orders/checkout with that same
-     * installmentPlanId - checkout() picks up the already-collected down payment and
-     * reflects it on the new order immediately.
-     * <p>
-     * The delivery fee is charged here in full, on top of the down payment - it is never
-     * spread across the plan's installments. Pass fulfillmentType +
-     * deliveryAddress/deliveryStateId/deliveryLgaId in the body (same shape as
-     * POST /orders/calculate-delivery-fee) so it can be priced from this request; if you
-     * don't, the fee the customer was quoted moments earlier is used instead (see
-     * PaymentGatewayService.resolveDownPaymentDeliveryFee).
-     * POST /api/installments/{planId}/pay-down-payment/bank-transfer
-     */
-    @PostMapping("/installments/{planId}/pay-down-payment/bank-transfer")
-    public BaseResponse payDownPaymentByBankTransfer(
-            @PathVariable Long planId,
-            @Valid @RequestBody InitializeDownPaymentDto dto) {
-        return paymentGatewayService.initializeDownPaymentBankTransfer(planId, dto);
-    }
-
-    /**
-     * Same pre-checkout down payment flow, restricted to Paystack's "card" channel
-     * instead of "bank_transfer". Use this (never the generic
-     * POST /api/payments/card/initialize) for a card-paid down payment - the generic
-     * endpoint never links Payment.installmentPlanId, so verifying it can never mark
-     * the plan's down payment as collected even though Paystack charges the card.
-     * Same optional delivery-fee fields as pay-down-payment/bank-transfer above.
-     * POST /api/installments/{planId}/pay-down-payment/card
-     */
-    @PostMapping("/installments/{planId}/pay-down-payment/card")
-    public BaseResponse payDownPaymentByCard(
-            @PathVariable Long planId,
-            @Valid @RequestBody InitializeDownPaymentDto dto) {
-        return paymentGatewayService.initializeDownPaymentCard(planId, dto);
-    }
-
+    // The pre-checkout down-payment endpoints (pay-down-payment/bank-transfer and
+    // /card) were removed: the app is order-first now, so the down payment is collected
+    // against the order like any other charge (POST /orders/{id}/pay/card, /pay/wallet,
+    // or the bank/bank-transfer initialize endpoints with an orderId). They were dead
+    // client-side but still open, still moved money, and priced the delivery fee by a
+    // different set of rules than the live path.
     /**
      * Get installment plan details
      * GET /api/installments/{planId}
@@ -120,27 +84,12 @@ public class InstallmentController {
         return installmentService.getUpcomingPayments(userId);
     }
 
-    /**
-     * Record installment payment (legacy - no wallet deduction)
-     * Deprecated: Use /pay/wallet instead for proper wallet deduction
-     * POST /api/installments/{installmentId}/pay
-     */
-    @PostMapping("/installments/{installmentId}/pay")
-    public BaseResponse payInstallment(@PathVariable Long installmentId,
-                                      @RequestHeader(value = "Authorization", required = false) String token) {
-        // Extract userId from Authorization header if available, otherwise from installment plan's userId
-        Long userId = null;
-        if (token != null && !token.isEmpty()) {
-            userId = extractUserIdFromToken(token);
-        }
-        if (userId == null) {
-            return BaseResponse.builder()
-                    .status(400)
-                    .message("Authorization header required or userId must be provided")
-                    .build();
-        }
-        return installmentService.payInstallment(installmentId, userId);
-    }
+
+    // The legacy POST /installments/{installmentId}/pay was removed. It was documented as
+    // "no wallet deduction" but called exactly the same service method as /pay/wallet - it
+    // DID debit the wallet - and being keyed on an installment id meant a plan id passed by
+    // mistake would pay an unrelated row. Use /pay/wallet, or the plan-keyed
+    // /pay-next/wallet and /pay-full/wallet.
 
     /**
      * Pay installment from wallet with proper wallet deduction.

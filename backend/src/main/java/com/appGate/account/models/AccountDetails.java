@@ -1,5 +1,7 @@
 package com.appGate.account.models;
 
+import com.appGate.account.enums.GlPurpose;
+import com.appGate.rbac.context.BranchOwned;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class AccountDetails extends BaseEntity {
+public class AccountDetails extends BaseEntity implements BranchOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +34,13 @@ public class AccountDetails extends BaseEntity {
 
     @Column(name = "account_details_code", unique = true)
     private String accountDetailsCode;
+
+    /** The branch this GL belongs to. Head Office GLs carry the Head Office branch id. */
+    @Column(name = "branch_id")
+    private Long branchId;
+
+    /** Optional role this GL plays in automatic postings; unique per branch. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gl_purpose", length = 40)
+    private GlPurpose glPurpose;
 }
