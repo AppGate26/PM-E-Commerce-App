@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pm_e_commerce_app/core/constants/api_constants.dart';
 import 'package:pm_e_commerce_app/core/routes/routes_name.dart';
 import 'package:pm_e_commerce_app/core/theme/app_colors.dart';
 import 'package:pm_e_commerce_app/data/models/installment_models.dart';
@@ -73,9 +74,13 @@ class PaymentOptionScreenState extends ConsumerState<PaymentOptionScreen> {
               InstallmentDisplayUtils.buildDisplaySchedule(plan);
           if (extra['totalAmount'] == null) {
             if (displaySchedule.isNotEmpty) {
-              amount = displaySchedule.first.amountToPay;
+              // First installment PLUS the delivery fee: delivery is never financed
+              // across the plan, and the server charges it in full with payment #1.
+              // Quoting the installment alone under-stated this charge, which on the
+              // wallet path meant confirming one figure and being debited another.
+              amount = InstallmentDisplayUtils.firstPaymentAmount(plan);
               print(
-                  '📦 [PaymentOption] Using FIRST installment amount = $amount');
+                  '📦 [PaymentOption] Using FIRST payment amount (installment + delivery) = $amount');
             } else {
               amount = plan.totalAmount;
               print(
@@ -114,7 +119,13 @@ class PaymentOptionScreenState extends ConsumerState<PaymentOptionScreen> {
         await _payWithCard();
         break;
       case 1:
+        await _payWithBank();
+        break;
+      case 2:
         await _payWithWallet();
+        break;
+      case 3:
+        await _payWithBankTransfer();
         break;
     }
   }
@@ -135,13 +146,22 @@ class PaymentOptionScreenState extends ConsumerState<PaymentOptionScreen> {
 
     // Reuse a matching pending order instead of creating a duplicate
     // stock-holding one if the user retries after an abandoned payment.
+    //
+    // For a one-off order the match must also agree on the amount: reusing "any pending
+    // FULL_PAYMENT order" meant a customer who abandoned one basket and shopped again
+    // paid the OLD basket's total, and then had the new cart cleared on success. An
+    // installment order is identified by its plan instead, which is already exact.
+    final double cartTotal =
+        ((checkoutData['totalAmount'] as num?) ?? 0).toDouble();
     try {
       final orders = await _orderRepository.getUserOrders(user.id);
       final pendingOrder = orders.firstWhere(
         (order) =>
             order.status == 'PENDING' &&
             order.paymentType == wantedType &&
-            (!isInstallment || order.installmentPlanId == plan?.planId),
+            (isInstallment
+                ? order.installmentPlanId == plan?.planId
+                : cartTotal > 0 && (order.grandTotal - cartTotal).abs() < 0.01),
         orElse: () => throw Exception('No matching pending order'),
       );
       print(
@@ -287,6 +307,122 @@ class PaymentOptionScreenState extends ConsumerState<PaymentOptionScreen> {
       }
     } catch (e, st) {
       print('🔴 [Payment Option] _payWithCard failed: $e\n$st');
+      if (!mounted) return;
+      setState(() => _isProcessing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // ============================================================
+  // 🏦 PAY WITH BANK / BANK TRANSFER — order-first, same as card: checkout()
+  // first, then initialize with the orderId so the backend charges the order's
+  // own amount and links the Payment to it. Paystack opens on the requested
+  // channel; the WebView then verifies exactly as it does for a card.
+  // ============================================================
+  Future<void> _payWithBank() => _payWithGatewayChannel(
+        endpoint: ApiConstants.initializeBankPayment,
+        label: 'Bank',
+      );
+
+  Future<void> _payWithBankTransfer() => _payWithGatewayChannel(
+        endpoint: ApiConstants.initializeBankTransferPayment,
+        label: 'Bank transfer',
+      );
+
+  Future<void> _payWithGatewayChannel({
+    required String endpoint,
+    required String label,
+  }) async {
+    final resolved = _resolvePaymentContext();
+    final Map<String, dynamic> checkoutData =
+        resolved['checkoutData'] as Map<String, dynamic>;
+    final bool isInstallment = resolved['isInstallment'] as bool;
+    final InstallmentPlan? plan = resolved['plan'] as InstallmentPlan?;
+    final double amount = resolved['amount'] as double;
+
+    print('🏦 [Payment Option] $label payment called, isInstallment=$isInstallment');
+    if (_isProcessing) return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final authState = ref.read(authProvider);
+      final user = authState.hasValue ? authState.value : null;
+
+      if (user == null) {
+        setState(() => _isProcessing = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please login to continue'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      final orderId = await _ensureOrderExists(
+        checkoutData: checkoutData,
+        isInstallment: isInstallment,
+        plan: plan,
+        user: user,
+      );
+
+      final response = await _paymentRepository.initializeOrderPaymentByChannel(
+        endpoint: endpoint,
+        orderId: orderId,
+        userId: user.id,
+        email: user.email,
+        callbackUrl: 'pomstores://payment-callback',
+        amount: amount,
+      );
+
+      final authorizationUrl = response['authorizationUrl']?.toString();
+      final paymentReference = response['paymentReference']?.toString();
+
+      if (authorizationUrl == null || authorizationUrl.isEmpty) {
+        throw 'No payment URL received from server. Response: $response';
+      }
+      if (paymentReference == null || paymentReference.isEmpty) {
+        throw 'No payment reference received from server. Response: $response';
+      }
+
+      if (!mounted) return;
+      setState(() => _isProcessing = false);
+
+      final result = await context.push<Map<String, dynamic>?>(
+        AppRoutes.paymentWebView,
+        extra: {
+          'paymentUrl': authorizationUrl,
+          'paymentReference': paymentReference,
+          'verificationType': PaymentVerificationType.cardPurchase,
+          'orderId': orderId,
+        },
+      );
+
+      if (!mounted) return;
+
+      if (result != null && result['success'] == true) {
+        context.go(AppRoutes.history);
+      } else if (result != null && result['success'] == false) {
+        final errorMessage = result['error'];
+        if (errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e, st) {
+      print('🔴 [Payment Option] $label payment failed: $e\n$st');
       if (!mounted) return;
       setState(() => _isProcessing = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -740,9 +876,21 @@ class PaymentOptionScreenState extends ConsumerState<PaymentOptionScreen> {
                 ),
                 const SizedBox(height: 16),
                 _buildPaymentOption(
-                  title: 'PAY FROM PM WALLET',
+                  title: 'PAY WITH BANK',
                   value: 1,
+                  icon: Icons.account_balance,
+                ),
+                const SizedBox(height: 16),
+                _buildPaymentOption(
+                  title: 'PAY FROM PM WALLET',
+                  value: 2,
                   icon: Icons.account_balance_wallet,
+                ),
+                const SizedBox(height: 16),
+                _buildPaymentOption(
+                  title: 'PAY WITH BANK TRANSFER',
+                  value: 3,
+                  icon: Icons.swap_horiz,
                 ),
                 const Spacer(),
                 SizedBox(

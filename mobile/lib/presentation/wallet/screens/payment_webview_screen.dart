@@ -53,6 +53,7 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
   bool _isVerifying = false;
   bool _isVerificationComplete = false;
   String? _errorMessage;
+  String? _lastFailureMessage;
   bool _pageLoaded = false;
   Timer? _progressTimer;
   int _progress = 0;
@@ -60,6 +61,19 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
   int _retryCount = 0;
   static const int _maxRetries = 3;
   Timer? _retryTimer;
+
+  // Paystack's return trip to the app cannot be trusted on its own: the callback
+  // is a custom scheme the WebView cannot load, 3-D-Secure adds hops of its own,
+  // and the customer often just stays on Paystack's "Payment Successful" page.
+  // So we also ask OUR backend what the payment's state is, every few seconds,
+  // until it settles. GET /payments/verify is read-only and idempotent, so this
+  // is safe to repeat. Wallet funding deliberately does NOT poll — its verify
+  // endpoint credits the wallet as a side effect.
+  Timer? _statusPollTimer;
+  bool _pollInFlight = false;
+  int _statusPollCount = 0;
+  static const Duration _statusPollInterval = Duration(seconds: 5);
+  static const int _maxStatusPolls = 120; // ~10 minutes
 
   @override
   void initState() {
@@ -73,6 +87,10 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
     print('=' * 80);
 
     _initializeWebView();
+
+    if (widget.verificationType == PaymentVerificationType.cardPurchase) {
+      _startStatusPolling();
+    }
 
     _progressTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (_isLoading && _progress < 95) {
@@ -92,6 +110,7 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
   void dispose() {
     _progressTimer?.cancel();
     _retryTimer?.cancel();
+    _statusPollTimer?.cancel();
     print('🔵 [PaymentWebView] Disposed');
     super.dispose();
   }
@@ -163,6 +182,12 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
             print('🔵 [PaymentWebView] URL: ${request.url}');
             print('=' * 80);
             _checkPaymentStatus(request.url);
+            // The callback is a custom scheme (pomstores://payment-callback) the
+            // WebView cannot load — letting it through only produces a resource
+            // error page. Handling it above is enough.
+            if (Uri.tryParse(request.url)?.scheme == 'pomstores') {
+              return NavigationDecision.prevent;
+            }
             return NavigationDecision.navigate;
           },
           onUrlChange: (UrlChange change) {
@@ -425,6 +450,101 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
     }
   }
 
+  // ============================================================
+  // ✅ BACKGROUND STATUS POLLING (card purchases)
+  // ============================================================
+  void _startStatusPolling() {
+    _statusPollTimer?.cancel();
+    _statusPollTimer = Timer.periodic(_statusPollInterval, (timer) {
+      _pollPaymentStatus();
+    });
+  }
+
+  Future<void> _pollPaymentStatus() async {
+    // _pollInFlight matters because Timer.periodic keeps firing while a request
+    // is still awaiting — without it two ticks could both verify and both
+    // complete the purchase.
+    if (!mounted || _isVerificationComplete || _isVerifying || _pollInFlight) {
+      return;
+    }
+    _pollInFlight = true;
+
+    _statusPollCount++;
+    if (_statusPollCount > _maxStatusPolls) {
+      print('ℹ️ [PaymentWebView] Status polling gave up after $_statusPollCount tries');
+      _statusPollTimer?.cancel();
+      _pollInFlight = false;
+      return;
+    }
+
+    try {
+      final status = await _fetchPaymentStatus();
+      print('🔵 [PaymentWebView] Poll #$_statusPollCount status: $status');
+      if (status == 'COMPLETED' && mounted && !_isVerificationComplete) {
+        _statusPollTimer?.cancel();
+        setState(() {
+          _isVerifying = true;
+        });
+        await _onPurchasePaymentVerified();
+      }
+    } catch (e) {
+      // A settled failure or a transient network error. Either way, keep the
+      // customer on Paystack's page rather than interrupting them; they can
+      // still finish or retry the charge there.
+      print('ℹ️ [PaymentWebView] Poll #$_statusPollCount could not verify: $e');
+    } finally {
+      _pollInFlight = false;
+    }
+  }
+
+  /// The payment's status according to our backend. Anything other than
+  /// COMPLETED means "not settled yet" — the charge may still be in flight.
+  Future<String> _fetchPaymentStatus() async {
+    final result =
+        await _paymentRepository.verifyCardPayment(widget.paymentReference);
+    final status = (result['status'] ?? '').toString().toUpperCase();
+    // A backend error envelope ({status: 500, ...}) unwraps to the envelope itself, so
+    // `status` comes back as an HTTP code. Treating that as a payment state would have
+    // us report "not settled yet" for ten minutes while the real problem went unseen.
+    if (RegExp(r'^\d+$').hasMatch(status)) {
+      throw Exception('Payment status could not be read (server returned $status)');
+    }
+    return status;
+  }
+
+  /// Verifies a few times before giving up, because Paystack can still report a
+  /// charge as in-flight for a moment after the customer sees "Successful".
+  Future<bool> _verifyCardUntilSettled({int attempts = 4}) async {
+    for (var attempt = 0; attempt < attempts; attempt++) {
+      final status = await _fetchPaymentStatus();
+      if (status == 'COMPLETED') return true;
+      print('⏳ [PaymentWebView] Not settled yet (status: $status), attempt ${attempt + 1}/$attempts');
+      if (attempt < attempts - 1) {
+        await Future.delayed(const Duration(seconds: 3));
+      }
+    }
+    return false;
+  }
+
+  /// True only for the trip back to the app, not for Paystack's own pages. The
+  /// old check matched any URL containing "reference"/"trxref"/"callback", so a
+  /// 3-D-Secure hop fired verification while the charge was still in flight.
+  bool _looksLikeFinalCallback(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return false;
+
+    // Our own callback deep link (pomstores://payment-callback).
+    if (uri.scheme == 'pomstores') return true;
+
+    final host = uri.host.toLowerCase();
+    final isGatewayPage = host.contains('paystack');
+    final params = uri.queryParameters;
+    final carriesReference =
+        params.containsKey('trxref') || params.containsKey('reference');
+
+    return carriesReference && !isGatewayPage;
+  }
+
   Future<void> _checkPaymentStatus(String url) async {
     print('=' * 80);
     print('🔵 [PaymentWebView] ===== CHECKING PAYMENT STATUS =====');
@@ -435,29 +555,20 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
     print('🔵 [PaymentWebView] Is Dialog Showing: $_isDialogShowing');
     print('=' * 80);
 
-    // ✅ Skip if already processing or complete
-    if (_isVerifying || _isVerificationComplete || _isDialogShowing) {
+    // ✅ Skip if already processing or complete. A dialog being on screen must
+    // NOT skip: doing that used to latch the screen shut — one premature error
+    // dialog and the real success callback that followed was ignored forever.
+    if (_isVerifying || _isVerificationComplete) {
       print('ℹ️ [PaymentWebView] Skipping - already processing or complete');
       return;
     }
 
-    // ✅ Check for success indicators
-    final isSuccess = url.contains('callback') ||
-        url.contains('trxref') ||
-        url.contains('reference') ||
-        url.contains('paid') ||
-        url.contains('success') ||
-        url.contains('completed') ||
-        url.contains('charge.success') ||
-        url.contains('transaction=success');
+    // ✅ Only the trip back to the app counts as "done" (see _looksLikeFinalCallback)
+    final isSuccess = _looksLikeFinalCallback(url);
 
-    final isError = url.contains('error') ||
-        url.contains('failed') ||
-        url.contains('cancel') ||
-        url.contains('cancelled') ||
-        url.contains('charge.error') ||
-        url.contains('status=failed') ||
-        url.contains('transaction=failed');
+    final isError = url.contains('status=failed') ||
+        url.contains('transaction=failed') ||
+        url.contains('charge.error');
 
     if (isSuccess) {
       print('=' * 80);
@@ -480,9 +591,21 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
         if (widget.verificationType == PaymentVerificationType.cardPurchase) {
           // ✅ CARD PURCHASE FLOW — order already exists (order-first)
           print('🔵 [PaymentWebView] Verifying card purchase...');
-          await _paymentRepository.verifyCardPayment(widget.paymentReference);
-          print('✅ [PaymentWebView] Payment verified!');
-          await _onPurchasePaymentVerified();
+          final settled = await _verifyCardUntilSettled();
+          if (settled) {
+            print('✅ [PaymentWebView] Payment verified!');
+            await _onPurchasePaymentVerified();
+          } else {
+            // Not a failure — the charge just hasn't settled yet. Keep polling
+            // in the background and tell the customer the truth.
+            _closeVerifyingDialog();
+            if (mounted) {
+              setState(() {
+                _isVerifying = false;
+              });
+              _showPendingDialog();
+            }
+          }
         } else {
           // ✅ WALLET FUNDING FLOW
           print('🔵 [PaymentWebView] Verifying wallet funding...');
@@ -719,9 +842,72 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
   // ============================================================
   // ✅ ERROR DIALOG
   // ============================================================
+  // ============================================================
+  // ✅ PENDING DIALOG — the charge hasn't settled yet, which is NOT a failure.
+  // Background polling continues while this is up, so a payment that lands a
+  // moment later still takes the customer to the success screen on its own.
+  // ============================================================
+  void _showPendingDialog() {
+    if (_isDialogShowing) return;
+    _isDialogShowing = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Column(
+          children: [
+            Icon(Icons.hourglass_top, color: Colors.orange, size: 64),
+            SizedBox(height: 12),
+            Text(
+              'Confirming Payment',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: const Text(
+          'We have not received confirmation for this payment yet. If you have '
+          'already paid, it will confirm shortly — keep this screen open, or '
+          'check again.',
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _isDialogShowing = false;
+              Navigator.pop(context);
+              _pollPaymentStatus();
+            },
+            child: const Text('Check Again'),
+          ),
+          TextButton(
+            onPressed: () {
+              _isDialogShowing = false;
+              Navigator.pop(context);
+              context.pop({
+                'success': false,
+                'error': 'Payment not confirmed yet. Check your orders before paying again.',
+              });
+            },
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    ).then((_) {
+      _isDialogShowing = false;
+    });
+  }
+
   void _showErrorDialog(String message) {
     if (_isDialogShowing) return;
     _isDialogShowing = true;
+    // Carried out to the caller on Close — Close used to pop with a null error
+    // (_errorMessage is only ever set by a WebView resource error), so the
+    // payment-options screen showed nothing at all and the customer was left
+    // staring at an unchanged screen. Kept separate from _errorMessage so it
+    // does not also raise the full-screen error panel behind the dialog.
+    _lastFailureMessage = message;
 
     print('❌ [PaymentWebView] Showing error dialog: $message');
     showDialog(
@@ -776,7 +962,7 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
             onPressed: () {
               _isDialogShowing = false;
               Navigator.pop(context);
-              context.pop({'success': false, 'error': _errorMessage});
+              context.pop({'success': false, 'error': _lastFailureMessage});
             },
             child: const Text('Close'),
           ),

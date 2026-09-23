@@ -46,10 +46,15 @@ public class PaymentController {
         return paymentGatewayService.verifyPayment(reference);
     }
 
-    @Operation(summary = "Paystack webhook", description = "Webhook endpoint for Paystack payment notifications (Public)")
+    // Public by necessity (SecurityConfig), so the signature IS the authentication: the body
+    // is taken raw, because the HMAC must be computed over exactly the bytes Paystack signed -
+    // deserializing to a Map first and re-serializing would change them and never match.
+    @Operation(summary = "Paystack webhook", description = "Webhook endpoint for Paystack payment notifications (Public, signature-verified)")
     @PostMapping("/webhook")
-    public void handlePaystackWebhook(@RequestBody Map<String, Object> payload) {
-        paymentGatewayService.handleWebhook(payload);
+    public void handlePaystackWebhook(
+            @RequestBody String rawPayload,
+            @RequestHeader(value = "x-paystack-signature", required = false) String signature) {
+        paymentGatewayService.handleWebhook(rawPayload, signature);
     }
 
     @Operation(summary = "Add payment card", description = "Add a new payment card to user's profile")

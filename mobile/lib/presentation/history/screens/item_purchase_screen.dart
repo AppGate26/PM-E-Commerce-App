@@ -145,8 +145,12 @@ class _ItemPurchaseScreenState extends ConsumerState<ItemPurchaseScreen> {
                 else
                   _buildBuyOnceDetails(order),
                 const SizedBox(height: 28),
+                // A settled plan leaves the order at PAYMENT_CONFIRMED, so status alone
+                // kept both repayment buttons live on a fully paid plan - tapping one
+                // just surfaced a raw backend 400.
                 if (order.status != 'CANCELLED' &&
-                    order.status != 'COMPLETED') ...[
+                    order.status != 'COMPLETED' &&
+                    !(isInstallment && _isPlanSettled(order))) ...[
                   if (isInstallment) ...[
                     _actionButton(
                       'Make Next Installment Payment',
@@ -1066,6 +1070,11 @@ class _ItemPurchaseScreenState extends ConsumerState<ItemPurchaseScreen> {
       }
     }
   }
+
+  /// A plan with nothing left to pay. The order is PAYMENT_CONFIRMED rather than
+  /// COMPLETED at that point, so the remaining balance is what actually tells us.
+  bool _isPlanSettled(OrderModel order) =>
+      order.isPaid || order.remainingBalance <= 0.01;
 
   Future<void> _handleNextInstallment(OrderModel order) async {
     print(

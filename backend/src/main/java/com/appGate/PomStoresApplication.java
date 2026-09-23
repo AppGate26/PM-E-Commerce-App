@@ -1,6 +1,7 @@
 package com.appGate;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -22,6 +23,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
  */
 
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider")
+// Enables @Scheduled: AbandonedOrderReaper returns stock held by unpaid checkouts, and
+// InstallmentOverdueScanner marks missed installments overdue.
+@EnableScheduling
 @SpringBootApplication
 @ComponentScan(basePackages = {
     "com.appGate.config",       // Unified configs (Security, Swagger, etc.)

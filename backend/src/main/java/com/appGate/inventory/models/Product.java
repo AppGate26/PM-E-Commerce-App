@@ -3,18 +3,21 @@ package com.appGate.inventory.models;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.appGate.rbac.context.BranchOwned;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
 /**
- * A product. Products are a universal, company-wide catalogue -- not owned by
- * any branch. Any branch can create, edit, or sell any product.
+ * A product. Every product belongs to a branch: branch staff create products for
+ * their own branch (stamped by BranchStampListener), and everything else --
+ * including all online products -- belongs to the Head Office branch.
  */
 @Entity
 @Data
 @Table(name = "products")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-public class Product extends BaseEntity {
+public class Product extends BaseEntity implements BranchOwned {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,6 +65,9 @@ public class Product extends BaseEntity {
 
 	@Column(name = "weight_kg", precision = 10, scale = 3)
 	private java.math.BigDecimal weightKg;
+
+	@Column(name = "branch_id")
+	private Long branchId;
 
 	// Expose flat ids alongside the (lazy) nested objects so clients can filter/auto-fill
 	// by category / sub-category without depending on the nested graph being serialized.

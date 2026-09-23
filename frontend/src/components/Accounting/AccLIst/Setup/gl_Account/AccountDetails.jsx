@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import AccountNavSm from "../../../AccountNavSm";
 import ReuseableChartNav from "./chart_account/ReusableChartNav";
 import {
+  GL_PURPOSE_OPTIONS,
   createAccountDetail,
   deleteAccountDetail,
   getAccountDetails,
@@ -13,9 +14,20 @@ import {
   getControlAccounts,
   updateAccountDetail,
 } from "../../../../../lib/accountingApi";
+import { useAuth } from "../../../../../context/AuthContext";
+import { fetchBranches, HEAD_OFFICE_ID } from "../../../../../lib/branchApi";
+
+const glPurposeLabel = (value) =>
+  GL_PURPOSE_OPTIONS.find((option) => option.value === value)?.label || "";
 
 const AccountDetails = () => {
   const navigate = useNavigate();
+  // Every GL belongs to a branch. Branch users only see and create their own
+  // branch's GLs (the backend enforces this); admin / Head Office users pick one.
+  const { branch: userBranch, canSelectBranch, activeBranchId } = useAuth();
+  const [branches, setBranches] = useState([]);
+  const [branchId, setBranchId] = useState(canSelectBranch ? activeBranchId || "" : "");
+  const [glPurpose, setGlPurpose] = useState("");
   const [accountType, setAccountType] = useState("");
   const [controlAccount, setControlAccount] = useState("");
   const [chartOfAccount, setChartOfAccount] = useState("");
@@ -78,6 +90,19 @@ const AccountDetails = () => {
     loadRows();
   }, []);
 
+  useEffect(() => {
+    if (!canSelectBranch) return;
+    fetchBranches()
+      .then((rows) => setBranches(rows.filter((row) => row.id !== HEAD_OFFICE_ID)))
+      .catch(() => setBranches([]));
+  }, [canSelectBranch]);
+
+  const branchNameMap = useMemo(() => {
+    const map = Object.fromEntries(branches.map((row) => [String(row.id), row.branchName]));
+    if (userBranch?.id) map[String(userBranch.id)] = userBranch.branchName || map[String(userBranch.id)];
+    return map;
+  }, [branches, userBranch]);
+
   const chartNameMap = useMemo(
     () =>
       Object.fromEntries(
@@ -124,6 +149,8 @@ const AccountDetails = () => {
     setChartOfAccount("");
     setAccountDetailsCode("");
     setAccountName("");
+    setGlPurpose("");
+    setBranchId(canSelectBranch ? activeBranchId || "" : "");
     setEditingIndex(null);
   };
 
@@ -145,7 +172,7 @@ const AccountDetails = () => {
       setError("");
 
       if (editingRow) {
-        await updateAccountDetail(editingRow.id, { accountDetailsName: accountName.trim() });
+        await updateAccountDetail(editingRow.id, { accountDetailsName: accountName.trim(), glPurpose });
       } else {
         await createAccountDetail({
           accountTypeId: accountType,
@@ -153,6 +180,8 @@ const AccountDetails = () => {
           chartOfAccountId: chartOfAccount,
           accountDetailsCode: accountDetailsCode.trim(),
           accountDetailsName: accountName.trim(),
+          branchId: canSelectBranch ? branchId : "",
+          glPurpose,
         });
       }
 
@@ -173,6 +202,8 @@ const AccountDetails = () => {
     setChartOfAccount(row.chartOfAccount);
     setAccountDetailsCode(row.accountDetailsCode);
     setAccountName(row.accountName || "");
+    setGlPurpose(row.glPurpose || "");
+    setBranchId(row.branchId ? String(row.branchId) : "");
     setEditingIndex(index);
   };
 
@@ -315,6 +346,42 @@ const AccountDetails = () => {
                   placeholder="Enter account name"
                 />
               </div>
+              <div className="chart-acc-select">
+                <label>Branch</label>
+                {canSelectBranch ? (
+                  <select
+                    value={branchId}
+                    onChange={(e) => setBranchId(e.target.value)}
+                    disabled={editingIndex !== null}
+                  >
+                    <option value="">Head Office (default)</option>
+                    {branches.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.branchName}
+                        {option.isHeadOffice ? " (Head Office)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    className="border text-start border-primary"
+                    value={userBranch?.branchName || "My branch"}
+                    disabled
+                  />
+                )}
+              </div>
+              <div className="chart-acc-select">
+                <label>GL Purpose</label>
+                <select value={glPurpose} onChange={(e) => setGlPurpose(e.target.value)}>
+                  <option value="">None</option>
+                  {GL_PURPOSE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="account-details-btn-row">
@@ -347,17 +414,19 @@ const AccountDetails = () => {
                   <th>CHART OF ACCOUNT</th>
                   <th>ACCOUNT DETAILS</th>
                   <th>ACCOUNT NAME</th>
+                  <th>BRANCH</th>
+                  <th>GL PURPOSE</th>
                   <th>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="7">Loading account details...</td>
+                    <td colSpan="9">Loading account details...</td>
                   </tr>
                 ) : tableRows.length === 0 ? (
                   <tr>
-                    <td colSpan="7">No account details found.</td>
+                    <td colSpan="9">No account details found.</td>
                   </tr>
                 ) : (
                   tableRows.map((row) => {
@@ -370,6 +439,8 @@ const AccountDetails = () => {
                         <td>{chartNameMap[row.chartOfAccount] || row.chartOfAccount}</td>
                         <td>{row.accountDetailsCode}</td>
                         <td>{row.accountName}</td>
+                        <td>{branchNameMap[String(row.branchId)] || row.branchId || "-"}</td>
+                        <td>{glPurposeLabel(row.glPurpose) || "-"}</td>
                         <td>
                           <div className="account-details-action-row">
                             <button

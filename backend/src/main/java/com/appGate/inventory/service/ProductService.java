@@ -49,17 +49,23 @@ public class ProductService {
     private final SubCategoryRepository subCategoryRepository;
     private final SupplierRepository supplierRepository;
     private final StockRepository stockRepository;
+    private final com.appGate.rbac.repository.BranchRepository branchRepository;
+    private final com.appGate.rbac.service.BranchScopeService branchScopeService;
 
     public ProductService(ProductRepository productRepository,
             CategoryRepository categoryRepository,
             SubCategoryRepository subCategoryRepository,
             SupplierRepository supplierRepository,
-            StockRepository stockRepository) {
+            StockRepository stockRepository,
+            com.appGate.rbac.repository.BranchRepository branchRepository,
+            com.appGate.rbac.service.BranchScopeService branchScopeService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.subCategoryRepository = subCategoryRepository;
         this.supplierRepository = supplierRepository;
         this.stockRepository = stockRepository;
+        this.branchRepository = branchRepository;
+        this.branchScopeService = branchScopeService;
     }
 
     public BaseResponse quickPick() {
@@ -143,6 +149,15 @@ public class ProductService {
         product.setManufacturerName(productDto.getManufacturerName());
         product.setQuantity(productDto.getQuantity());
         product.setWeightKg(productDto.getWeightKg());
+        // Branch staff create products for their own branch; admin / Head Office products
+        // (and therefore every online product) belong to the Head Office branch.
+        Long productBranchId = branchScopeService.resolveWriteBranchId(null);
+        if (productBranchId == null) {
+            productBranchId = branchRepository.findByHeadOfficeTrue()
+                    .map(com.appGate.rbac.models.Branch::getId)
+                    .orElse(null);
+        }
+        product.setBranchId(productBranchId);
 
         if (productDto.getProductImage() != null && !productDto.getProductImage().isEmpty()) {
             product.setProductImage(saveImage(productDto.getProductImage(), "product", getBaseUrl(request)));

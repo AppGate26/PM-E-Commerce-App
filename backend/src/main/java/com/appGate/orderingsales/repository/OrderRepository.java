@@ -36,6 +36,9 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     List<Order> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 
+    // Used by AbandonedOrderReaper to find checkouts that were never paid for.
+    List<Order> findByOrderStatusAndCreatedAtBefore(OrderStatus orderStatus, LocalDateTime cutoff);
+
     Page<Order> findByUserIdAndCreatedAtBetween(Long userId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
     Page<Order> findByDeliveryStatusIn(List<DeliveryStatus> deliveryStatuses, Pageable pageable);

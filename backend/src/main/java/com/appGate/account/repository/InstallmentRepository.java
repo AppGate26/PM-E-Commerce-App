@@ -17,6 +17,9 @@ public interface InstallmentRepository extends JpaRepository<Installment, Long> 
 
     List<Installment> findByInstallmentPlanIdAndStatus(Long installmentPlanId, InstallmentStatus status);
 
+    // Used by InstallmentOverdueScanner to sweep every unpaid row.
+    List<Installment> findByStatusIn(List<InstallmentStatus> statuses);
+
     Optional<Installment> findByInstallmentPlanIdAndInstallmentNumber(Long installmentPlanId, Integer installmentNumber);
 
     @Query("SELECT i FROM Installment i WHERE i.installmentPlan.userId = :userId AND i.status = :status")

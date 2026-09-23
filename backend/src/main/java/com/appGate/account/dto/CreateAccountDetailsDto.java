@@ -1,5 +1,6 @@
 package com.appGate.account.dto;
 
+import com.appGate.account.enums.GlPurpose;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -21,4 +22,9 @@ public class CreateAccountDetailsDto {
 
     @NotBlank(message = "Account Details Name is required")
     private String accountDetailsName;
+
+    /** Only honoured for admin / Head Office users; branch users always write to their own branch. */
+    private Long branchId;
+
+    private GlPurpose glPurpose;
 }

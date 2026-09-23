@@ -68,6 +68,7 @@ public class SalesService {
     private final OrderItemRepository orderItemRepository;
     private final BranchScopeService branchScopeService;
     private final PaymentGatewayService paymentGatewayService;
+    private final com.appGate.account.service.GlPostingService glPostingService;
     private final ObjectMapper objectMapper;
     private final WalletService walletService;
     private final PaymentRepository paymentRepository;
@@ -384,6 +385,11 @@ public class SalesService {
             order.setStatus(OrderStatus.PROCESSING);
             order = salesOrderRepository.save(order);
             createdOrders.add(order);
+        }
+
+        // Dr the selling branch's Paystack GL, Cr its Sales GL, for the amount Paystack collected.
+        if (!createdOrders.isEmpty()) {
+            glPostingService.postPaystackSale(createdOrders.get(0).getBranchId(), paid.doubleValue(), reference, null);
         }
 
         return walkInPaymentResult("success", reference, createdOrders, false, null);

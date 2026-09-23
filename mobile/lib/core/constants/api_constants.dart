@@ -271,6 +271,11 @@ class ApiConstants {
 
   static const String initializeBankTransferPayment =
       '$baseUrl/payments/bank-transfer/initialize';
+
+  // Bank (direct debit / USSD) channel. Like the two above it doubles as an
+  // order-first purchase endpoint when `orderId` is included in the body.
+  static const String initializeBankPayment =
+      '$baseUrl/payments/bank/initialize';
   static String verifyPayment(String reference) =>
       '$baseUrl/payments/verify/$reference';
   static String verifyCardPayment(String reference) =>
@@ -281,8 +286,11 @@ class ApiConstants {
   // ============================================================
   static const String installments = '$baseUrl/installments';
   static const String calculateInstallment = '$installments/calculate';
+  // Pays one specific installment row (NOT a plan id) from the wallet. The older
+  // '/pay' variant is gone: it debited the wallet despite claiming otherwise, and a
+  // plan id passed here by mistake paid an unrelated installment.
   static String payInstallment(int installmentId) =>
-      '$installments/$installmentId/pay';
+      '$installments/$installmentId/pay/wallet';
   // Ongoing payment for an already-started plan (orders/history page) —
   // targets the plan; backend resolves whichever installment is next due.
   // The first installment (down payment) is now collected order-first via
