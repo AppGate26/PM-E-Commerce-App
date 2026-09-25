@@ -332,7 +332,8 @@ class _PaymentBreakDownFreqDeliveryScreenState
       final createdPlan = await _installmentRepository.createInstallmentPlan(
         userId: plan.userId,
         frequency: plan.frequency,
-        durationInMonths: plan.durationInMonths,
+        durationInMonths: plan.monthsForRequest,
+        includeInsurance: plan.includeInsurance,
         // Carry the destination so the plan's delivery fee is priced server-side and
         // shown as part of the first payment, instead of quietly appearing on the charge.
         fulfillmentType: 'DELIVERY',

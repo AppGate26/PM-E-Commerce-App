@@ -83,6 +83,7 @@ public class PaymentGatewayService {
     private final com.appGate.orderingsales.service.DeliveryFeeQuoteService deliveryFeeQuoteService;
     private final com.appGate.rbac.service.BranchScopeService branchScopeService;
     private final com.appGate.orderingsales.repository.CartRepository cartRepository;
+    private final com.appGate.client.repository.CustomerRepository customerRepository;
     private final GlPostingService glPostingService;
 
     /** Amount + installment flag returned by {@link #resolveOrderChargeAmount}. */
@@ -2043,6 +2044,19 @@ public class PaymentGatewayService {
         if (funding.getCompanyCardId() != null && paystackData != null) {
             captureCardAuthorization(funding.getCompanyCardId(), paystackData);
         }
+
+        // The status check above is a read without a lock, and two callers race here -
+        // the cashier's own verify callback and the Paystack webhook - so it alone let the
+        // same funding be credited twice. The credit is keyed on the payment reference in
+        // a unique column, which is what actually makes it once-only.
+        if (transactionRepository.findByTransactionReference(
+                WalletService.fundingTransactionReference(reference)).isPresent()) {
+            System.out.println("Cashier funding " + reference + " already credited - skipping");
+            funding.setStatus("COMPLETED");
+            cashierWalletFundingRepository.save(funding);
+            return;
+        }
+
         creditWalletForFunding(funding);
         funding.setStatus("COMPLETED");
         cashierWalletFundingRepository.save(funding);
@@ -2089,14 +2103,29 @@ public class PaymentGatewayService {
         if (wallet == null && funding.getAccountNumber() != null && !funding.getAccountNumber().isBlank()) {
             wallet = walletRepository.findByAccountNumber(funding.getAccountNumber()).orElse(null);
         }
+
+        // If this walk-in customer is also a registered app user, credit the wallet they
+        // actually spend from. Cashier funding used to create a customerId-only wallet with
+        // no userId, which left the money invisible to every findByUserId path - the
+        // customer could see a balance in branch but could not spend a naira of it in the
+        // app - and gave them a second wallet row into the bargain.
+        Long linkedUserId = resolveCustomerUserId(funding.getCustomerId());
+        if (wallet == null && linkedUserId != null) {
+            wallet = walletRepository.findByUserId(linkedUserId).orElse(null);
+        }
+
         if (wallet == null) {
             wallet = new Wallet();
             wallet.setCustomerId(funding.getCustomerId());
             wallet.setAccountNumber(funding.getAccountNumber());
+            wallet.setUserId(linkedUserId);
             wallet.setBalance(0.0);
             wallet.setCurrency("NGN");
             wallet.setIsActive(true);
             wallet = walletRepository.save(wallet);
+        } else if (wallet.getUserId() == null && linkedUserId != null
+                && walletRepository.findByUserId(linkedUserId).isEmpty()) {
+            wallet.setUserId(linkedUserId);
         }
 
         Double balanceBefore = wallet.getBalance();
@@ -2107,11 +2136,16 @@ public class PaymentGatewayService {
         boolean isCard = "CARD".equalsIgnoreCase(funding.getMethod());
         String methodLabel = isCard ? "card" : "bank transfer";
 
+        // Recorded even when we cannot attribute a user: the row carries the once-only
+        // key for this funding, so skipping it would reopen the double-credit hole.
         Long txUserId = wallet.getUserId() != null ? wallet.getUserId() : wallet.getCustomerId();
-        if (txUserId != null) {
+        {
             Transaction transaction = new Transaction();
             transaction.setUserId(txUserId);
-            transaction.setTransactionReference("TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+            // Keyed on the payment reference (unique column), so a replayed webhook or a
+            // second verify cannot credit this funding again - see handleCashierFundingSuccess.
+            transaction.setTransactionReference(
+                    WalletService.fundingTransactionReference(funding.getPaymentReference()));
             transaction.setType(TransactionType.CREDIT);
             transaction.setAmount(funding.getAmount());
             transaction.setBalanceBefore(balanceBefore);
@@ -2201,6 +2235,28 @@ public class PaymentGatewayService {
             orderRepository.save(order);
             mobileSalesOrderSyncService.syncFullPaymentCollectedIsolated(order.getId());
         });
+    }
+
+    /**
+     * The app user behind a walk-in customer record, matched on email, or null when they
+     * have no app account. Customer carries no userId of its own, so email is the only
+     * link between the branch-side record and the account the customer spends from.
+     */
+    private Long resolveCustomerUserId(Long customerId) {
+        if (customerId == null) {
+            return null;
+        }
+        try {
+            return customerRepository.findById(customerId)
+                    .map(com.appGate.client.models.Customer::getEmail)
+                    .filter(email -> email != null && !email.isBlank())
+                    .flatMap(email -> userRepository.findByEmail(email.toLowerCase()))
+                    .map(User::getId)
+                    .orElse(null);
+        } catch (Exception e) {
+            System.err.println("Could not resolve app user for customer " + customerId + ": " + e.getMessage());
+            return null;
+        }
     }
 
     /** Empties the customer's active cart once their order is paid. Safe to call twice. */

@@ -23,6 +23,7 @@ class _DeliveryAboutScreenState extends ConsumerState<DeliveryAboutScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   String? _agentName;
+  bool _isStarting = false;
 
   @override
   void initState() {
@@ -87,7 +88,10 @@ class _DeliveryAboutScreenState extends ConsumerState<DeliveryAboutScreen> {
     }
   }
 
-  void _navigateToNewDelivery() {
+  /// "Start delivery" moves the delivery to IN_TRANSIT on the backend (the web Transit page
+  /// and the customer's order both show it on the way), then opens the confirmation form.
+  /// A delivery that is already in transit goes straight to the form.
+  Future<void> _startAndProceed() async {
     final riderBoxId = _deliveryDetail?.riderBoxId ?? widget.data['riderBoxId'] as int?;
     if (riderBoxId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -99,13 +103,37 @@ class _DeliveryAboutScreenState extends ConsumerState<DeliveryAboutScreen> {
       return;
     }
 
-    print('🚚 [DeliveryAbout] Navigating to new delivery for riderBoxId: $riderBoxId');
+    final alreadyInTransit = _deliveryDetail?.isInTransit ?? widget.data['status'] == 'IN_TRANSIT';
+    if (!alreadyInTransit) {
+      setState(() => _isStarting = true);
+      try {
+        await ref.read(deliveryAgentRepositoryProvider).startDelivery(riderBoxId);
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _isStarting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not start delivery: $e'), backgroundColor: Colors.red),
+        );
+        return;
+      }
+      if (!mounted) return;
+      setState(() => _isStarting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Delivery started - marked as in transit'), backgroundColor: Colors.green),
+      );
+    }
+
+    final detail = _deliveryDetail;
+    final productName = detail?.productName ?? widget.data['productName']?.toString() ?? '';
     context.push(
       AppRoutes.newDelivery,
       extra: {
         'riderBoxId': riderBoxId,
-        'address': _deliveryDetail?.deliveryAddress ?? widget.data['address'] ?? '',
-        'item': _deliveryDetail?.itemOfDelivery ?? widget.data['item'] ?? '',
+        'address': detail?.deliveryAddress ?? widget.data['address'] ?? '',
+        'item': detail?.itemOfDelivery ?? productName,
+        'productId': detail?.productId ?? widget.data['productId'],
+        'productName': productName,
+        'customerName': detail?.customerName ?? widget.data['customerName'] ?? '',
       },
     );
   }
@@ -183,7 +211,16 @@ class _DeliveryAboutScreenState extends ConsumerState<DeliveryAboutScreen> {
                           const SizedBox(height: 10),
                           _buildTextField(
                             'Name of Delivery man',
-                            _agentName ?? 'Gabriel',
+                            detail?.riderName ?? _agentName ?? '-',
+                            enabled: false,
+                          ),
+                          const SizedBox(height: 20),
+                          _buildTextField(
+                            'Customer',
+                            [
+                              detail?.customerName ?? fallbackData['customerName']?.toString() ?? '',
+                              detail?.customerPhone ?? '',
+                            ].where((s) => s.isNotEmpty).join(' - '),
                             enabled: false,
                           ),
                           const SizedBox(height: 20),
@@ -201,7 +238,7 @@ class _DeliveryAboutScreenState extends ConsumerState<DeliveryAboutScreen> {
                           const SizedBox(height: 20),
                           _buildTextField(
                             'Sales Ref',
-                            'Automatically Displays',
+                            detail?.salesReference ?? '-',
                             enabled: false,
                           ),
                           const SizedBox(height: 20),
@@ -213,7 +250,7 @@ class _DeliveryAboutScreenState extends ConsumerState<DeliveryAboutScreen> {
                           const SizedBox(height: 20),
                           _buildTextField(
                             'Product Category',
-                            'Automatically Displays',
+                            detail?.productCategory ?? '-',
                             enabled: false,
                           ),
                           const SizedBox(height: 30),
@@ -223,7 +260,7 @@ class _DeliveryAboutScreenState extends ConsumerState<DeliveryAboutScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: _navigateToNewDelivery,
+                                onPressed: _isStarting ? null : _startAndProceed,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.blueBackground,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -231,14 +268,22 @@ class _DeliveryAboutScreenState extends ConsumerState<DeliveryAboutScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                                child: const Text(
-                                  'PROCEED TO DELIVERY',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                child: _isStarting
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      )
+                                    : Text(
+                                        (detail?.isInTransit ?? fallbackData['status'] == 'IN_TRANSIT')
+                                            ? 'CONTINUE TO CONFIRMATION'
+                                            : 'START DELIVERY',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               ),
                             ),
                         ],

@@ -24,6 +24,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -196,12 +197,16 @@ public class InstallmentService {
     // InstallmentPlanResponseDto.firstPaymentAmount is what the customer actually pays up
     // front (downPayment + deliveryFee).
     private InstallmentPlan buildPlan(InstallmentPlanDto dto, Double amountFinanced) {
-        Double insuranceAmount = amountFinanced * INSURANCE_RATE;
+        // Insurance is optional; a null flag means an older client, which always had it.
+        boolean includeInsurance = !Boolean.FALSE.equals(dto.getIncludeInsurance());
+        Double insuranceAmount = includeInsurance ? amountFinanced * INSURANCE_RATE : 0.0;
         Double grandTotal = amountFinanced + insuranceAmount;
 
+        LocalDate startDate = LocalDate.now();
         Integer totalPeriods = calculateNumberOfInstallments(
             dto.getFrequency(),
-            dto.getDurationInMonths()
+            dto.getDurationInMonths(),
+            startDate
         );
         Double periodAmount = grandTotal / totalPeriods;
 
@@ -220,7 +225,7 @@ public class InstallmentService {
         plan.setDeliveryFee(deliveryFee);
         plan.setFrequency(dto.getFrequency());
         plan.setStatus(InstallmentStatus.ACTIVE);
-        plan.setStartDate(LocalDate.now());
+        plan.setStartDate(startDate);
         plan.setEarlyShipmentEligible(false);
 
         List<Installment> fullSchedule = generateInstallmentSchedule(
@@ -243,19 +248,27 @@ public class InstallmentService {
     // Total periods for the selected duration, e.g. 6 months of MONTHLY -> 6. This is
     // the full schedule length BEFORE buildPlan peels off period #1 as the down
     // payment, not the number of installments actually left to collect afterward.
-    private Integer calculateNumberOfInstallments(InstallmentFrequency frequency, Integer months) {
-        return switch (frequency) {
-            case DAILY -> months * 30; // Approximate
-            case WEEKLY -> months * 4;
+    //
+    // Counted against the real calendar from the start date, not a flat 30 days / 4 weeks
+    // per month: that made a 3-month weekly plan 12 weeks (ending ~7 days early) and a
+    // daily plan's last payment land a day or more off the chosen end date. Now the
+    // final due date never runs past startDate + months.
+    private Integer calculateNumberOfInstallments(InstallmentFrequency frequency, Integer months,
+                                                  LocalDate startDate) {
+        LocalDate endDate = startDate.plusMonths(months);
+        long periods = switch (frequency) {
+            case DAILY -> ChronoUnit.DAYS.between(startDate, endDate);
+            case WEEKLY -> ChronoUnit.WEEKS.between(startDate, endDate);
             case MONTHLY -> months;
         };
+        return (int) Math.max(1, periods);
     }
 
-    private LocalDate calculateNextPaymentDate(LocalDate currentDate, InstallmentFrequency frequency) {
+    private LocalDate dueDateForPeriod(LocalDate startDate, InstallmentFrequency frequency, int period) {
         return switch (frequency) {
-            case DAILY -> currentDate.plusDays(1);
-            case WEEKLY -> currentDate.plusWeeks(1);
-            case MONTHLY -> currentDate.plusMonths(1);
+            case DAILY -> startDate.plusDays(period);
+            case WEEKLY -> startDate.plusWeeks(period);
+            case MONTHLY -> startDate.plusMonths(period);
         };
     }
 
@@ -266,10 +279,11 @@ public class InstallmentService {
             InstallmentFrequency frequency) {
 
         List<Installment> installments = new ArrayList<>();
-        LocalDate currentDueDate = plan.getStartDate();
 
         for (int i = 1; i <= numberOfInstallments; i++) {
-            currentDueDate = calculateNextPaymentDate(currentDueDate, frequency);
+            // Offset from the start date, not chained off the previous due date: chaining
+            // plusMonths drifts once a short month clamps the day (Jan 31 -> Feb 28 -> Mar 28).
+            LocalDate currentDueDate = dueDateForPeriod(plan.getStartDate(), frequency, i);
 
             Installment installment = new Installment();
             installment.setInstallmentPlan(plan);
@@ -365,22 +379,12 @@ public class InstallmentService {
 
             return payInstallmentInternal(installment, userId);
         } catch (RuntimeException e) {
-            // mobileSalesOrderSyncService.syncInstallmentPaid (called from
-            // payInstallmentInternal) may have already marked this shared transaction
-            // rollback-only before throwing. Swallowing that here and returning a normal
-            // response would make Spring's commit-time check find rollback-only set and
-            // throw UnexpectedRollbackException instead - masking the real cause and
-            // skipping this method's own error response. Rethrow in that case so Spring
-            // rolls back cleanly and the actual error reaches the client.
             // Always rethrow: by this point the wallet may already have been debited in
             // this same transaction, and returning a friendly error response instead lets
             // that debit COMMIT while the customer is told the payment failed - they then
-            // pay again. Rethrowing rolls the debit back with everything else.
+            // pay again. Rethrowing rolls the debit back with everything else, and
+            // GlobalExceptionHandler still turns it into an error response for the client.
             throw e;
-            return BaseResponse.builder()
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .message("Failed to process installment payment: " + e.getMessage())
-                    .build();
         } catch (Exception e) {
             return BaseResponse.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -428,16 +432,10 @@ public class InstallmentService {
 
             return payInstallmentInternal(nextInstallment, userId);
         } catch (RuntimeException e) {
-            // See the matching catch in payInstallment for why this check is needed.
-            // Always rethrow: by this point the wallet may already have been debited in
-            // this same transaction, and returning a friendly error response instead lets
-            // that debit COMMIT while the customer is told the payment failed - they then
-            // pay again. Rethrowing rolls the debit back with everything else.
+            // See the matching catch in payInstallment: always rethrow so a wallet debit
+            // already applied in this transaction rolls back instead of committing behind
+            // a "payment failed" message.
             throw e;
-            return BaseResponse.builder()
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .message("Failed to process installment payment: " + e.getMessage())
-                    .build();
         } catch (Exception e) {
             return BaseResponse.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -575,16 +573,10 @@ public class InstallmentService {
                     .data(InstallmentPlanResponseDto.from(plan))
                     .build();
         } catch (RuntimeException e) {
-            // See the matching catch in payInstallment for why this check is needed.
-            // Always rethrow: by this point the wallet may already have been debited in
-            // this same transaction, and returning a friendly error response instead lets
-            // that debit COMMIT while the customer is told the payment failed - they then
-            // pay again. Rethrowing rolls the debit back with everything else.
+            // See the matching catch in payInstallment: always rethrow so a wallet debit
+            // already applied in this transaction rolls back instead of committing behind
+            // a "payment failed" message.
             throw e;
-            return BaseResponse.builder()
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .message("Failed to process full installment payment: " + e.getMessage())
-                    .build();
         } catch (Exception e) {
             return BaseResponse.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())

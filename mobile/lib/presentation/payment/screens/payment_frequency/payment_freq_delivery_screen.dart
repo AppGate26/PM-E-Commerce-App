@@ -273,6 +273,8 @@ class _PaymentFreqDeliveryScreenState
       durationInMonths: plan.durationInMonths,
       schedule: newSchedule, // ← rebuilt schedule
       createdAt: plan.createdAt,
+      selectedMonths: plan.selectedMonths,
+      includeInsurance: plan.includeInsurance,
     );
     final checkoutData = {
       'plan': updatedPlan,

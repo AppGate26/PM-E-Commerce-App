@@ -20,6 +20,9 @@
   import 'package:pm_e_commerce_app/presentation/customer%20care/screens/phone_support_screen.dart';
   import 'package:pm_e_commerce_app/presentation/delivery/screens/delivery_about_screen.dart';
   import 'package:pm_e_commerce_app/presentation/delivery/screens/delivery_change_password_screen.dart';
+  import 'package:pm_e_commerce_app/presentation/delivery/screens/delivery_chat_list_screen.dart';
+  import 'package:pm_e_commerce_app/presentation/delivery/screens/delivery_chat_screen.dart';
+  import 'package:pm_e_commerce_app/presentation/delivery/screens/delivery_notifications_screen.dart';
   import 'package:pm_e_commerce_app/presentation/delivery/screens/delivery_confirmation_screen.dart';
   import 'package:pm_e_commerce_app/presentation/delivery/screens/delivery_forgot_password_screen.dart';
   import 'package:pm_e_commerce_app/presentation/delivery/screens/delivery_history_screen.dart';
@@ -659,6 +662,28 @@
           builder: (context, state) {
             final data = state.extra as Map<String, dynamic>? ?? {};
             return DeliveryAboutScreen(data: data);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.deliveryNotifications,
+          name: AppRoutes.deliveryNotifications,
+          builder: (context, state) => const DeliveryNotificationsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.deliveryChatList,
+          name: AppRoutes.deliveryChatList,
+          builder: (context, state) => const DeliveryChatListScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.deliveryChat,
+          name: AppRoutes.deliveryChat,
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>? ?? {};
+            return DeliveryChatScreen(
+              contactUserId: extra['contactUserId'] as int? ?? 0,
+              contactName: extra['contactName'] as String? ?? 'Dispatch',
+              contactRole: extra['contactRole'] as String?,
+            );
           },
         ),
         GoRoute(

@@ -152,10 +152,11 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
     // (SalesService.submitOrderForApproval), so an order that has already been forwarded -
     // or that is dead - has nothing left to do here and drops off the list.
     //
-    // The salesReference IS NOT NULL leg is the exact complement of
-    // findAwaitingSalesReference's IS NULL leg below, so an order sits on "Order list as
-    // paid" until its reference is minted and here afterwards - never in the gap between
-    // the two. That only holds without an isPaid leg: generateSalesReference does not
+    // Every order with a minted reference lands here, so none falls into the gap between
+    // this screen and findAwaitingSalesReference below. A referenced order that is not yet
+    // 100% paid shows on BOTH screens: here so it can be sent for approval, and on "Order
+    // list as paid" until the customer has cleared the balance. That only holds without an
+    // isPaid leg: generateSalesReference does not
     // touch isPaid, so requiring isPaid = true here stranded any order whose reference had
     // been minted while the flag was still false - off "Order list as paid" (reference is
     // no longer null) and not yet on this screen either.
@@ -167,8 +168,10 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
     // "Order list as paid" backing query: orders that have crossed the >50%-paid mark
     // (reads the stored paymentProgress column directly, not the recomputed
     // resolvePaymentProgress figure - see SalesService.getOrdersAwaitingSalesReference)
-    // and haven't had a sales reference generated yet. No isPaid/status filtering -
-    // that's what was silently dropping eligible orders out of the old
+    // and either haven't had a sales reference generated yet or are still short of
+    // 100% paid. Minting the reference used to drop a part-paid credit order off this
+    // list, so staff lost track of a customer who still owed money on it. No isPaid/status
+    // filtering - that's what was silently dropping eligible orders out of the old
     // incomplete-payments-derived list.
     //
     // ONE_OFF is excluded because those orders are handled on the "One of order" screen
@@ -176,12 +179,14 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
     // put the same order on two screens. The IS NULL leg matters: a bare
     // "orderType <> ONE_OFF" is unknown (not true) for a row with no orderType, which
     // would silently drop those rows - the exact failure this query was written to fix.
-    @Query("SELECT s FROM SalesOrder s WHERE s.salesReference IS NULL "
-            + "AND s.paymentProgress >= :paymentProgress "
+    @Query("SELECT s FROM SalesOrder s WHERE s.paymentProgress >= :paymentProgress "
+            + "AND (s.salesReference IS NULL OR s.paymentProgress < :fullyPaidProgress) "
             + "AND (s.orderType IS NULL "
             + "OR s.orderType <> com.appGate.orderingsales.enums.SalesOrderType.ONE_OFF)")
     Page<SalesOrder> findAwaitingSalesReference(
-            @Param("paymentProgress") BigDecimal paymentProgress, Pageable pageable);
+            @Param("paymentProgress") BigDecimal paymentProgress,
+            @Param("fullyPaidProgress") BigDecimal fullyPaidProgress,
+            Pageable pageable);
 
     // "Marking as paid" backing query: orders still under the 50%-paid mark, read
     // straight off the stored paymentProgress column - see

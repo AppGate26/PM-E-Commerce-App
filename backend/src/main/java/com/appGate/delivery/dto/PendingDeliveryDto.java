@@ -14,6 +14,13 @@ public class PendingDeliveryDto {
     // can hold more than one product (see DeliveryOperationsService.mapToPendingDeliveryDto).
     private String productName;
     private String productImage;
+    // Mirrors items.get(0).productId so the rider app can auto-fill the feedback form's
+    // product id instead of the rider typing it in.
+    private Long productId;
+    private String productCategory;
+    // SalesOrder.referenceNo - shown as "Sales Ref" on the rider's delivery details screen.
+    private String salesReference;
+    private String riderName;
     private List<PendingDeliveryItemDto> items;
     private String deliveryAddress;
     private String customerName;

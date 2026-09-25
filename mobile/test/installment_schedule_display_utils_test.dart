@@ -49,5 +49,38 @@ void main() {
       expect(displaySchedule.first.amountToPay, 5500.0);
       expect(displaySchedule.first.cumulative, 5500.0);
     });
+
+    test('counts periods on the real calendar, like the backend', () {
+      final jan31 = DateTime(2026, 1, 31);
+      // Jan 31 + 1 month clamps to Feb 28, not a flat 30 days.
+      expect(InstallmentDisplayUtils.periodsFor('DAILY', 1, from: jan31), 28);
+      expect(InstallmentDisplayUtils.periodsFor('MONTHLY', 1, from: jan31), 1);
+
+      final apr1 = DateTime(2026, 4, 1);
+      // Apr 1 -> Jul 1 is 91 days = 13 full weeks, not 3 x 4.
+      expect(InstallmentDisplayUtils.periodsFor('WEEKLY', 3, from: apr1), 13);
+      expect(InstallmentDisplayUtils.periodsFor('DAILY', 1, from: apr1), 30);
+    });
+
+    test('sends the chosen months, not the payment count, on create', () {
+      final daily = InstallmentPlan(
+        planId: 3,
+        userId: 7,
+        productId: 10,
+        productName: 'Fan',
+        productPrice: 30000,
+        insurance: 0,
+        totalAmount: 30000,
+        frequency: 'DAILY',
+        durationInMonths: 30, // payment count from the server
+        schedule: const [],
+        selectedMonths: 1,
+        includeInsurance: false,
+      );
+
+      expect(daily.monthsForRequest, 1);
+      expect(daily.copyWith(planId: 4).monthsForRequest, 1);
+      expect(daily.copyWith(planId: 4).includeInsurance, isFalse);
+    });
   });
 }

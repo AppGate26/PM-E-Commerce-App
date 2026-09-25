@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Encrypted, biometric-gated storage for the credentials needed to
@@ -25,13 +26,40 @@ class SecureCredentialsService {
   }
 
   static Future<bool> isEnabled() async {
-    return await _storage.read(key: _keyEnabled) == 'true';
+    try {
+      return await _storage.read(key: _keyEnabled) == 'true';
+    } catch (e) {
+      // Reads throw when the Keystore key is gone but the encrypted prefs
+      // file survived — happens after an Android backup/restore onto a new
+      // phone. Treat it as "not set up" and clear the wreckage so the user
+      // gets offered enrollment again instead of a button that does nothing.
+      debugPrint('[SecureCredentials] isEnabled() failed, resetting: $e');
+      await _safeDisable();
+      return false;
+    }
   }
 
   static Future<({String email, String password})?> getCredentials() async {
-    final email = await _storage.read(key: _keyEmail);
-    final password = await _storage.read(key: _keyPassword);
-    if (email == null || password == null) return null;
-    return (email: email, password: password);
+    try {
+      final email = await _storage.read(key: _keyEmail);
+      final password = await _storage.read(key: _keyPassword);
+      if (email == null || password == null) {
+        await _safeDisable();
+        return null;
+      }
+      return (email: email, password: password);
+    } catch (e) {
+      debugPrint('[SecureCredentials] getCredentials() failed, resetting: $e');
+      await _safeDisable();
+      return null;
+    }
+  }
+
+  static Future<void> _safeDisable() async {
+    try {
+      await disable();
+    } catch (e) {
+      debugPrint('[SecureCredentials] disable() failed: $e');
+    }
   }
 }

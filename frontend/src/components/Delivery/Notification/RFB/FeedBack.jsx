@@ -3,6 +3,19 @@ import { Link } from "react-router-dom";
 import { deliveryApi } from "../../../../lib/deliveryApi";
 import "../../../../Styles/Delivery/Delivery.css";
 
+const STATUS_LABELS = {
+  DELIVERED: "Delivered",
+  WRONG_PRODUCT: "Wrong product",
+  OWNER_NOT_AVAILABLE: "Owner not available",
+  WRONG_ADDRESS: "Wrong address",
+};
+
+const formatDate = (value) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+};
+
 const FeedBack = ({ toggleFeedBackModal }) => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
@@ -18,72 +31,23 @@ const FeedBack = ({ toggleFeedBackModal }) => {
     filterFeedbacks();
   }, [searchQuery, feedbacks]);
 
+  // Reads what riders submit from the delivery app's feedback screen. This page used to read
+  // /admin/rider-feedback, a separate table the app never writes to, so it was always empty.
   const fetchFeedbacks = async () => {
     try {
       setLoading(true);
       setError("");
-      console.log("═══════════════════════════════════════════════════════════");
-      console.log("🔵 FeedBack: ========== FETCHING RIDER FEEDBACK ==========");
-      console.log("═══════════════════════════════════════════════════════════");
-      console.log("FeedBack: API endpoint: /admin/rider-feedback");
-      console.log("FeedBack: Method: GET");
-      console.log("FeedBack: Making API request...");
-      
-      const response = await deliveryApi.getRiderFeedback();
-      
-      console.log("═══════════════════════════════════════════════════════════");
-      console.log("✅ FeedBack: API RESPONSE RECEIVED");
-      console.log("═══════════════════════════════════════════════════════════");
-      console.log("FeedBack: Raw API response:", response);
-      console.log("FeedBack: Response type:", typeof response);
-      console.log("FeedBack: Is array?", Array.isArray(response));
-      console.log("FeedBack: Response keys:", Object.keys(response || {}));
-      console.log("FeedBack: Response.data exists?", !!response?.data);
-      console.log("FeedBack: Response.data is array?", Array.isArray(response?.data));
-      
+      const response = await deliveryApi.getDeliveryFeedback();
       const feedbacksList = Array.isArray(response) ? response : [];
-
-      if (feedbacksList.length > 0) {
-        console.log("═══════════════════════════════════════════════════════════");
-        console.log("📋 FeedBack: FIRST FEEDBACK SAMPLE");
-        console.log("═══════════════════════════════════════════════════════════");
-        console.log("FeedBack: First feedback:", feedbacksList[0]);
-        console.log("FeedBack: First feedback keys:", Object.keys(feedbacksList[0]));
-        console.log("FeedBack: First feedback ID:", feedbacksList[0].id);
-        console.log("FeedBack: First feedback orderId:", feedbacksList[0].orderId);
-        console.log("FeedBack: First feedback productId:", feedbacksList[0].productId);
-        console.log("FeedBack: First feedback productName:", feedbacksList[0].productName);
-        console.log("FeedBack: First feedback riderName:", feedbacksList[0].riderName);
-        console.log("FeedBack: First feedback customerName:", feedbacksList[0].customerName);
-        console.log("FeedBack: First feedback quantityDelivered:", feedbacksList[0].quantityDelivered);
-        
-        if (feedbacksList.length > 1) {
-          console.log("FeedBack: All feedbacks count:", feedbacksList.length);
-        }
-      } else {
-        console.warn("⚠️ FeedBack: No feedbacks found in response");
-      }
-
       setFeedbacks(feedbacksList);
       setFilteredFeedbacks(feedbacksList);
-      console.log("═══════════════════════════════════════════════════════════");
-      console.log(`✅ FeedBack: SUCCESS - Loaded ${feedbacksList.length} feedbacks`);
-      console.log("═══════════════════════════════════════════════════════════");
     } catch (err) {
-      console.error("═══════════════════════════════════════════════════════════");
-      console.error("❌ FeedBack: ERROR FETCHING FEEDBACKS");
-      console.error("═══════════════════════════════════════════════════════════");
-      console.error("FeedBack: Error message:", err?.message);
-      console.error("FeedBack: Error stack:", err?.stack);
-      console.error("FeedBack: Error name:", err?.name);
-      console.error("FeedBack: Full error object:", err);
-      const errorMsg = err?.message || "Failed to load rider feedback. Please refresh the page.";
-      setError(errorMsg);
+      console.error("FeedBack: failed to load delivery feedback", err);
+      setError(err?.message || "Failed to load rider feedback. Please refresh the page.");
       setFeedbacks([]);
       setFilteredFeedbacks([]);
     } finally {
       setLoading(false);
-      console.log("FeedBack: Fetch completed. Loading state set to false.");
     }
   };
 
@@ -94,13 +58,16 @@ const FeedBack = ({ toggleFeedBackModal }) => {
     }
 
     const query = searchQuery.toLowerCase();
-    const filtered = feedbacks.filter((feedback) => {
-      const productId = (feedback.productId || "").toLowerCase();
-      const productName = (feedback.productName || "").toLowerCase();
-      const riderName = (feedback.riderName || "").toLowerCase();
-      const customerName = (feedback.customerName || "").toLowerCase();
-      return productId.includes(query) || productName.includes(query) || riderName.includes(query) || customerName.includes(query);
-    });
+    const filtered = feedbacks.filter((feedback) =>
+      [
+        feedback.productId,
+        feedback.productName,
+        feedback.riderName,
+        feedback.customerName,
+        feedback.salesReference,
+        STATUS_LABELS[feedback.status] || feedback.status,
+      ].some((value) => String(value ?? "").toLowerCase().includes(query))
+    );
     setFilteredFeedbacks(filtered);
   };
 
@@ -172,7 +139,7 @@ const FeedBack = ({ toggleFeedBackModal }) => {
             className="table-scroll-bar rider-box-transit"
             style={{ height: "400px", overflowX: "auto", overflowY: "auto" }}
           >
-            <table className="mt-0 manage-riders-table" style={{ width: "100%", minWidth: "900px" }}>
+            <table className="mt-0 manage-riders-table" style={{ width: "100%", minWidth: "1000px" }}>
               <thead>
                 <tr>
                   <th>PRODUCT ID</th>
@@ -180,43 +147,27 @@ const FeedBack = ({ toggleFeedBackModal }) => {
                   <th>RIDER&apos;S NAME</th>
                   <th>CUSTOMER&apos;S NAME</th>
                   <th>QUANTITY DELIVERED</th>
-                  <th>ACTION</th>
+                  <th>STATUS</th>
+                  <th>DATE</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredFeedbacks.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-4">
+                    <td colSpan="7" className="text-center py-4">
                       {error ? "Error loading feedbacks" : "No feedback notifications found"}
                     </td>
                   </tr>
                 ) : (
                   filteredFeedbacks.map((feedback, index) => (
-                    <tr key={feedback.id || feedback.feedbackId || index}>
-                      <td>{feedback.productId || "-"}</td>
+                    <tr key={feedback.id || index}>
+                      <td>{feedback.productId ?? "-"}</td>
                       <td>{feedback.productName || "-"}</td>
                       <td>{feedback.riderName || "-"}</td>
                       <td>{feedback.customerName || "-"}</td>
-                      <td>{feedback.quantityDelivered || feedback.quantity || "-"}</td>
-                      <td>
-                        <button
-                          className="btn-link text-primary view-btn"
-                          onClick={() => {
-                            console.log("FeedBack: View clicked for feedback:", feedback);
-                          }}
-                          style={{ 
-                            textDecoration: "underline", 
-                            cursor: "pointer",
-                            backgroundColor: "#0867db",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            padding: "0.6rem 1.5rem"
-                          }}
-                        >
-                          View
-                        </button>
-                      </td>
+                      <td>{feedback.quantityDelivered ?? "-"}</td>
+                      <td>{STATUS_LABELS[feedback.status] || feedback.status || "-"}</td>
+                      <td>{formatDate(feedback.createdAt)}</td>
                     </tr>
                   ))
                 )}

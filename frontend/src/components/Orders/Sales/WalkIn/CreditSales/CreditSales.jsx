@@ -1661,17 +1661,27 @@ const CreditSales = ({ toggleCdsModal }) => {
   };
 
   // Update loan calculations
+  // Reads from the latest state (prev) rather than the closed-over formData, since this
+  // runs from a setTimeout after the triggering change - otherwise it computes from stale
+  // values. An empty/zero rate yields zero interest instead of leaving old figures behind.
   const updateLoanCalculations = () => {
-    const productAmount = parseFloat(formData.loanInfo.productAmount) || 0;
-    const interestRate = parseFloat(formData.loanInfo.rate) || 0;
-    const loanDuration = parseInt(formData.loanInfo.duration) || 0;
-    
-    if (productAmount > 0 && interestRate > 0 && loanDuration > 0) {
+    setFormData(prev => {
+      const productAmount = parseFloat(prev.loanInfo.productAmount) || 0;
+      const interestRate = parseFloat(prev.loanInfo.rate) || 0;
+      const loanDuration = parseInt(prev.loanInfo.duration) || 0;
+
+      if (productAmount <= 0 || loanDuration <= 0) {
+        return {
+          ...prev,
+          loanInfo: { ...prev.loanInfo, interestOnLoan: "", principalRepayment: "", monthlyPayment: "" }
+        };
+      }
+
       const interest = calculateLoanInterest(productAmount, interestRate, loanDuration);
       const principal = calculatePrincipalRepayment(productAmount, loanDuration);
       const monthlyPayment = principal + (interest / loanDuration);
-      
-      setFormData(prev => ({
+
+      return {
         ...prev,
         loanInfo: {
           ...prev.loanInfo,
@@ -1679,8 +1689,8 @@ const CreditSales = ({ toggleCdsModal }) => {
           principalRepayment: principal.toFixed(2),
           monthlyPayment: monthlyPayment.toFixed(2)
         }
-      }));
-    }
+      };
+    });
   };
 
   // Select product
@@ -1818,14 +1828,15 @@ const CreditSales = ({ toggleCdsModal }) => {
       loanType: formData.loanInfo.loanType || "Personal",
       repaymentMethod: formData.loanInfo.repaymentMethod || "Monthly",
       duration: parseInt(formData.loanInfo.duration) || 12,
-      rate: parseFloat(formData.loanInfo.rate) || 10,
+      // No silent default - an empty rate means no interest, not 10%.
+      rate: parseFloat(formData.loanInfo.rate) || 0,
       startDate: formData.loanInfo.startDate || new Date().toISOString().split('T')[0]
     };
 
     try {
       setLoading(true);
       setError("");
-      
+
       const response = await apiRequest("/sales/loan/calculate-schedule", "POST", loanData);
       
       let scheduleData = null;
@@ -1960,7 +1971,11 @@ const CreditSales = ({ toggleCdsModal }) => {
           price: parseFloat(formData.productInfo.price) || 0,
           unitPrice: parseFloat(formData.productInfo.unitPrice) || 0,
           quantity: parseInt(formData.productInfo.quantity) || 1,
-          discount: parseFloat(formData.productInfo.discount) || 0,
+          // Entered as a percentage (see the "DISCOUNT (%)" field) but subtracted by the
+          // backend as a naira amount, so convert it here - same fix as CashSales.
+          discount: ((parseFloat(formData.productInfo.price) || 0)
+            * (parseInt(formData.productInfo.quantity) || 1)
+            * ((parseFloat(formData.productInfo.discount) || 0) / 100)),
           coupon: formData.productInfo.coupon || ""
         },
         customerInfo: {

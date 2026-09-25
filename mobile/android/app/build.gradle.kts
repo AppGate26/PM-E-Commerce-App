@@ -40,6 +40,12 @@ android {
     }
 }
 
+dependencies {
+    // Required by the Theme.AppCompat parent in res/values/styles.xml, which
+    // local_auth needs in order to inflate its dialogs.
+    implementation("androidx.appcompat:appcompat:1.7.0")
+}
+
 flutter {
     source = "../.."
 }

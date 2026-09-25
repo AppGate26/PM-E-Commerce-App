@@ -21,8 +21,18 @@ class DeliveryConfirmationScreen extends ConsumerStatefulWidget {
 class _DeliveryConfirmationScreenState
     extends ConsumerState<DeliveryConfirmationScreen> {
   String? _status;
+  // Value sent to the backend (FeedbackStatus enum) -> label shown to the rider. The labels
+  // used to be sent as-is, which the backend rejected for everything except DELIVERED.
+  static const Map<String, String> _statusOptions = {
+    'DELIVERED': 'Delivered',
+    'WRONG_PRODUCT': 'Wrong Product',
+    'OWNER_NOT_AVAILABLE': 'Owner not available',
+    'WRONG_ADDRESS': 'Wrong Address',
+  };
+  final _agentController = TextEditingController();
   final _productIdController = TextEditingController();
   final _customerNameController = TextEditingController();
+  bool _loadingDetails = false;
   final Map<String, dynamic> _data = {};
   int _currentIndex = 2;
   int? _riderBoxId;
@@ -43,9 +53,10 @@ class _DeliveryConfirmationScreenState
       if (userData != null) {
         final userJson = jsonDecode(userData);
         final name = userJson['name'] as String?;
-        if (name != null && name.isNotEmpty) {
+        if (name != null && name.isNotEmpty && mounted) {
           setState(() {
             _deliveryAgentName = name;
+            if (_agentController.text.isEmpty) _agentController.text = name;
           });
           print(
               '✅ [DeliveryConfirmation] Agent name loaded: $_deliveryAgentName');
@@ -56,26 +67,60 @@ class _DeliveryConfirmationScreenState
     }
   }
 
+  bool _extrasLoaded = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_extrasLoaded) return;
+    _extrasLoaded = true;
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
     if (extra != null) {
       _data.addAll(extra);
       _riderBoxId = extra['riderBoxId'] as int?;
-      final productIdStr = extra['productId'] as String?;
-      if (productIdStr != null) {
-        _productId = int.tryParse(productIdStr);
-      }
-      _customerNameController.text = extra['customerName'] ?? '';
-      _productIdController.text = productIdStr ?? '';
-      print(
-          '🚚 [DeliveryConfirmation] Loaded data - riderBoxId: $_riderBoxId, productId: $_productId');
+      // May arrive as an int or a string depending on the screen that pushed us.
+      final rawProductId = extra['productId'];
+      _productId = rawProductId is int ? rawProductId : int.tryParse('${rawProductId ?? ''}');
+      if (_productId == 0) _productId = null;
+      _customerNameController.text = extra['customerName']?.toString() ?? '';
+      _productIdController.text = _productId?.toString() ?? '';
+    }
+    if (_riderBoxId != null && (_productId == null || _customerNameController.text.isEmpty)) {
+      _fillFromDelivery(_riderBoxId!);
+    }
+  }
+
+  /// Pulls product id, customer and rider name from the delivery itself, so the rider
+  /// doesn't have to type them.
+  Future<void> _fillFromDelivery(int riderBoxId) async {
+    // Called from didChangeDependencies, before the first build - no setState needed here.
+    _loadingDetails = true;
+    try {
+      final detail = await ref.read(deliveryAgentProvider.notifier).getDeliveryDetail(riderBoxId);
+      if (!mounted) return;
+      setState(() {
+        if (_productId == null && detail.productId != 0) {
+          _productId = detail.productId;
+          _productIdController.text = detail.productId.toString();
+        }
+        if (_customerNameController.text.isEmpty) {
+          _customerNameController.text = detail.customerName;
+        }
+        if (detail.riderName != null && detail.riderName!.isNotEmpty) {
+          _deliveryAgentName = detail.riderName;
+          _agentController.text = detail.riderName!;
+        }
+      });
+    } catch (e) {
+      print('⚠️ [DeliveryConfirmation] Could not load delivery details: $e');
+    } finally {
+      if (mounted) setState(() => _loadingDetails = false);
     }
   }
 
   @override
   void dispose() {
+    _agentController.dispose();
     _productIdController.dispose();
     _customerNameController.dispose();
     super.dispose();
@@ -155,16 +200,6 @@ class _DeliveryConfirmationScreenState
       return;
     }
 
-    if (_productIdController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter product ID'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
     if (_customerNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -186,17 +221,7 @@ class _DeliveryConfirmationScreenState
       return;
     }
 
-    final productId =
-        _productId ?? int.tryParse(_productIdController.text.trim());
-    if (productId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid product ID'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+    final productId = _productId ?? int.tryParse(_productIdController.text.trim()) ?? 0;
 
     setState(() {
       _isLoading = true;
@@ -211,7 +236,9 @@ class _DeliveryConfirmationScreenState
 
       await ref.read(deliveryAgentProvider.notifier).submitFeedback(
             riderBoxId: _riderBoxId!,
-            deliveryAgentName: _deliveryAgentName ?? 'Unknown',
+            deliveryAgentName: _agentController.text.trim().isNotEmpty
+                ? _agentController.text.trim()
+                : (_deliveryAgentName ?? ''),
             productId: productId,
             customerName: _customerNameController.text.trim(),
             status: _status!,
@@ -292,12 +319,11 @@ class _DeliveryConfirmationScreenState
                             TextStyle(fontSize: 14, color: Color(0xFF666666))),
                     const SizedBox(height: 8),
                     TextFormField(
-                      initialValue:
-                          _deliveryAgentName ?? _data['agent'] ?? 'Gabriel',
+                      controller: _agentController,
                       readOnly: true,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: const Color(0xFFF8F8FF),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide:
@@ -321,10 +347,11 @@ class _DeliveryConfirmationScreenState
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _productIdController,
-                      keyboardType: TextInputType.number,
+                      readOnly: true,
                       decoration: InputDecoration(
+                        hintText: _loadingDetails ? 'Loading...' : 'Filled in automatically',
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: const Color(0xFFF8F8FF),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide:
@@ -375,14 +402,9 @@ class _DeliveryConfirmationScreenState
                     DropdownButtonFormField<String>(
                       value: _status,
                       hint: const Text('Select status'),
-                      items: [
-                        'DELIVERED',
-                        'Wrong Product',
-                        'Owner not available',
-                        'Wrong Address',
-                      ]
-                          .map(
-                              (s) => DropdownMenuItem(value: s, child: Text(s)))
+                      items: _statusOptions.entries
+                          .map((e) => DropdownMenuItem(
+                              value: e.key, child: Text(e.value)))
                           .toList(),
                       onChanged: (v) => setState(() => _status = v),
                       decoration: InputDecoration(

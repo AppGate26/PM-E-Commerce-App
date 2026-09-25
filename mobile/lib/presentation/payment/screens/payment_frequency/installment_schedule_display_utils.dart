@@ -3,23 +3,47 @@ import 'package:pm_e_commerce_app/data/models/installment_models.dart';
 class InstallmentDisplayUtils {
   /// How many payments a plan actually has, matching the backend exactly
   /// (InstallmentService.calculateNumberOfInstallments): a 3-month WEEKLY plan is
-  /// 12 payments, not 3.
+  /// 13 payments, not 3.
   ///
   /// This screen used to divide by durationInMonths for every frequency, so a
   /// weekly or daily plan advertised roughly 4x / 30x the amount the server would
   /// actually charge — and on the wallet path the customer confirmed one figure
   /// and had a different one debited.
-  static int periodsFor(String frequency, int durationInMonths) {
+  ///
+  /// Counted on the real calendar from [from] (today) to [from] + months, like
+  /// the backend: a 3-month WEEKLY plan is 13 full weeks, a 1-month DAILY plan
+  /// is the number of days until the same date next month.
+  static int periodsFor(String frequency, int durationInMonths,
+      {DateTime? from}) {
     final months = durationInMonths > 0 ? durationInMonths : 1;
+    final now = from ?? DateTime.now();
+    final start = DateTime.utc(now.year, now.month, now.day);
+    final end = _addMonthsClamped(start, months);
+    final days = end.difference(start).inDays;
+    final int periods;
     switch (frequency.toUpperCase()) {
       case 'DAILY':
-        return months * 30;
+        periods = days;
+        break;
       case 'WEEKLY':
-        return months * 4;
+        periods = days ~/ 7;
+        break;
       case 'MONTHLY':
       default:
-        return months;
+        periods = months;
     }
+    return periods > 0 ? periods : 1;
+  }
+
+  /// Same month arithmetic as Java's LocalDate.plusMonths: the day is clamped to
+  /// the target month's length (Jan 31 + 1 month = Feb 28/29), where Dart's
+  /// DateTime constructor would roll over into March.
+  static DateTime _addMonthsClamped(DateTime date, int months) {
+    final monthIndex = date.month - 1 + months;
+    final year = date.year + monthIndex ~/ 12;
+    final month = monthIndex % 12 + 1;
+    final lastDay = DateTime.utc(year, month + 1, 0).day;
+    return DateTime.utc(year, month, date.day > lastDay ? lastDay : date.day);
   }
 
   /// The schedule to show. The server's own schedule wins whenever it sent one —
@@ -29,7 +53,11 @@ class InstallmentDisplayUtils {
       return plan.schedule;
     }
 
-    final count = periodsFor(plan.frequency, plan.durationInMonths);
+    // plan.durationInMonths already holds the server's payment count; only
+    // derive it from months when the customer's chosen months are known.
+    final count = plan.selectedMonths != null
+        ? periodsFor(plan.frequency, plan.selectedMonths!)
+        : (plan.durationInMonths > 0 ? plan.durationInMonths : 1);
 
     final totalMinorUnits = (plan.totalAmount * 100).round();
     final baseAmountMinorUnits = totalMinorUnits ~/ count;

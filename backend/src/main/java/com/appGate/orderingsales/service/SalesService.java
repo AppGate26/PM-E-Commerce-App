@@ -225,10 +225,20 @@ public class SalesService {
                     .filter(e -> e.getEntryNumber() == 1)
                     .findFirst()
                     .ifPresent(entry -> {
-                        entry.setStatus("PAID");
+                        // Only call it settled when it actually covers what was due. The
+                        // amount comes from the client's initialize call, so an under-payment
+                        // used to mark installment #1 fully PAID regardless.
+                        boolean covered = entry.getAmountDue() == null
+                                || amountPaid.compareTo(entry.getAmountDue()) >= 0;
+                        entry.setStatus(covered ? "PAID" : "PARTIAL");
                         entry.setAmountPaid(amountPaid);
                         entry.setPaidDate(effectivePaidAt.toLocalDate());
                         loanRepaymentEntryRepository.save(entry);
+                        if (!covered) {
+                            System.err.println("UNDER-PAYMENT on sales order " + order.getSalesReference()
+                                    + ": first installment collected " + amountPaid + " of "
+                                    + entry.getAmountDue() + " due (reference " + reference + ")");
+                        }
                     });
 
             BigDecimal totalPaid = loanRepaymentEntryRepository.sumAmountPaidByLoanDetailsId(loan.getId());
@@ -242,6 +252,11 @@ public class SalesService {
         });
 
         markShadowInstallmentPaid(order.getId(), 1, amountPaid, effectivePaidAt.toLocalDate(), payment.getId());
+
+        // Dr the branch's Paystack GL, Cr its Sales GL - this money arrived through
+        // Paystack exactly like a walk-in cash sale, which has always posted.
+        glPostingService.postPaystackSale(order.getBranchId(), amountPaid.doubleValue(),
+                reference, order.getCustomerId());
 
         createNotification(order, NotificationType.ORDERLIST,
                 "First installment payment of " + amountPaid + " received for order by " + order.getCustomerName());
@@ -374,6 +389,14 @@ public class SalesService {
             SalesOrder order = createWalkInCashSales(itemDto);
             order.setSalesReference(reference + "-" + i);
             order = salesOrderRepository.save(order);
+
+            // Record the Paystack collection against this sale BEFORE marking it paid:
+            // walk-in cash sales previously produced no `payments` row at all, so the
+            // money was invisible to every payment report and nothing tied the gateway
+            // reference to the order. Doing it here also stops markAsPaid writing a
+            // manual-settlement artefact over a real gateway payment.
+            recordGatewaySettlement(order, lineTotal(itemDto), reference + "-" + i);
+
             order = markAsPaid(order.getId());
 
             // Paystack already confirmed the cash, so skip both the manual "Send for
@@ -695,6 +718,10 @@ public class SalesService {
 
         markShadowInstallmentPaid(orderId, entry.getEntryNumber(), amountDue, LocalDate.now(), payment.getId());
 
+        // Paystack money in, so it posts like any other Paystack sale for this branch.
+        glPostingService.postPaystackSale(order.getBranchId(), amountDue.doubleValue(),
+                reference, order.getCustomerId());
+
         createNotification(order, NotificationType.ORDERLIST,
                 "Installment payment of " + amountDue + " received for order by " + order.getCustomerName());
 
@@ -816,15 +843,26 @@ public class SalesService {
         // books the sale against their own branch, whatever the request body claims.
         order.setBranchId(branchScopeService.resolveWriteBranchId(dto.getBranchId()));
 
-        // Decrement branch stock for the product being sold
-        if (dto.getBranchId() != null && dto.getProductInfo() != null
+        // Decrement branch stock for the product being sold. Keyed on the branch the order
+        // was actually booked against, not on dto.getBranchId(): the walk-in screens send
+        // no branchId in the body (the branch travels in the X-Branch-Id header), so this
+        // used to skip silently and every walk-in sale sold stock it never removed.
+        if (order.getBranchId() != null && dto.getProductInfo() != null
                 && dto.getProductInfo().getProductId() != null) {
             try {
                 Long productId = Long.parseLong(dto.getProductInfo().getProductId());
                 int qty = order.getQuantity() != null ? order.getQuantity() : 1;
-                decrementBranchStock(productId, dto.getBranchId(), qty);
+                decrementBranchStock(productId, order.getBranchId(), qty);
             } catch (NumberFormatException ignored) {
                 // productId is not a numeric Long — stock decrement skipped
+            } catch (RuntimeException e) {
+                // A walk-in sale reaches here AFTER Paystack has collected the money
+                // (verifyWalkInCashPayment), so refusing the sale now would take payment and
+                // hand over nothing. Record the sale and flag the shortfall for stock to
+                // reconcile instead.
+                System.err.println("STOCK SHORTFALL on sales order " + order.getSalesReference()
+                        + " (product " + dto.getProductInfo().getProductId() + ", branch " + order.getBranchId()
+                        + "): " + e.getMessage() + " - sale recorded anyway, stock needs reconciling.");
             }
         }
 
@@ -990,11 +1028,71 @@ public class SalesService {
 
         SalesOrder savedOrder = salesOrderRepository.save(order);
 
+        // Leave an artefact behind. Flipping isPaid with nothing in `payments` made
+        // "orders marked paid" impossible to reconcile against money actually received.
+        recordOffSystemSettlement(savedOrder, "Marked paid by sales/admin");
+
         createNotification(savedOrder, NotificationType.ORDERLIST,
                 "Payment confirmed for order by " + savedOrder.getCustomerName()
                         + " (" + paymentPercentage + "% paid)");
 
         return savedOrder;
+    }
+
+    /** Records a Paystack-collected payment against a walk-in sale. Idempotent on the reference. */
+    private void recordGatewaySettlement(SalesOrder order, BigDecimal amount, String reference) {
+        try {
+            if (reference == null || paymentRepository.findByPaymentReference(reference).isPresent()) {
+                return;
+            }
+            Payment payment = new Payment();
+            payment.setSalesOrderId(order.getId());
+            payment.setUserId(order.getCustomerId());
+            payment.setAmount(amount != null ? amount.doubleValue() : 0d);
+            payment.setPaymentMethod(PaymentMethod.CARD);
+            payment.setStatus(PaymentStatus.COMPLETED);
+            payment.setPaymentReference(reference);
+            payment.setPaidAt(LocalDateTime.now());
+            payment.setBranchId(order.getBranchId());
+            paymentRepository.save(payment);
+        } catch (Exception e) {
+            System.err.println("Could not record gateway payment " + reference + " for sales order "
+                    + order.getId() + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Records a Payment row for a sale settled outside the gateway (cash at the counter,
+     * transfer confirmed by the cashier, an admin settling an order). Skipped when the
+     * sale already has a payment - a Paystack-collected sale records its own, with the
+     * real gateway reference.
+     */
+    private void recordOffSystemSettlement(SalesOrder order, String note) {
+        try {
+            if (!paymentRepository.findBySalesOrderId(order.getId()).isEmpty()) {
+                return;
+            }
+            BigDecimal total = order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO;
+            Payment payment = new Payment();
+            payment.setSalesOrderId(order.getId());
+            payment.setUserId(order.getCustomerId());
+            payment.setAmount(total.doubleValue());
+            // No gateway was involved; BANK_TRANSFER is the closest of the four methods
+            // for "settled off-system", and the reference says how it was recorded.
+            payment.setPaymentMethod(PaymentMethod.BANK_TRANSFER);
+            payment.setStatus(PaymentStatus.COMPLETED);
+            payment.setPaymentReference("MANUAL-" + order.getId() + "-"
+                    + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
+            payment.setPaidAt(LocalDateTime.now());
+            payment.setFailureReason(null);
+            payment.setBranchId(order.getBranchId());
+            paymentRepository.save(payment);
+            System.out.println("Recorded off-system settlement for sales order "
+                    + order.getSalesReference() + " (" + note + ")");
+        } catch (Exception e) {
+            System.err.println("Could not record settlement artefact for sales order "
+                    + order.getId() + ": " + e.getMessage());
+        }
     }
 
     // Settles an existing incomplete order in a single one-off payment: folds in any
@@ -1024,6 +1122,9 @@ public class SalesService {
         order.setPaymentProgress(BigDecimal.valueOf(100));
 
         SalesOrder savedOrder = salesOrderRepository.save(order);
+
+        // Same reason as markAsPaid: the settlement has to leave a trace in `payments`.
+        recordOffSystemSettlement(savedOrder, "One-off order settled by sales/admin");
 
         createNotification(savedOrder, NotificationType.ORDERLIST,
                 "One-off payment settled for order by " + savedOrder.getCustomerName());
@@ -1441,8 +1542,29 @@ public class SalesService {
                 amountPaid = order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO;
             }
             if (amountPaid.compareTo(BigDecimal.ZERO) > 0) {
-                walletService.creditWallet(order.getCustomerId(), amountPaid.doubleValue(),
+                com.appGate.account.response.BaseResponse refund = walletService.creditWallet(
+                        order.getCustomerId(), amountPaid.doubleValue(),
                         "Refund for rejected order " + order.getReferenceNo());
+
+                // creditWallet keys on userId. For a walk-in or staff-entered order,
+                // customerId is a Customer id, not a user id, so that lookup finds nothing
+                // - and the failure used to be discarded, cancelling the order with the
+                // customer's money still held. Fall back to the customerId-keyed path
+                // (the same one cancelSalesOrder uses) and shout if it still fails.
+                if (refund == null || refund.getStatus() != 200) {
+                    com.appGate.account.dto.FundWalletDto fw = new com.appGate.account.dto.FundWalletDto();
+                    fw.setCustomerId(order.getCustomerId());
+                    fw.setAmount(amountPaid.doubleValue());
+                    fw.setFundingMethod("REFUND");
+                    fw.setDescription("Refund for rejected order " + order.getReferenceNo());
+                    refund = walletService.fundCustomerWallet(fw);
+                }
+                if (refund == null || refund.getStatus() != 200) {
+                    throw new RuntimeException("Order not rejected: the refund of " + amountPaid
+                            + " could not be paid back to the customer ("
+                            + (refund != null ? refund.getMessage() : "no response")
+                            + "). Resolve the refund first.");
+                }
             }
         }
 
@@ -1800,13 +1922,15 @@ public class SalesService {
      * "Order list as paid" backing query - deliberately independent of {@link #getIncompletePayments}
      * and its isPaid/status/percentage-recomputation rules, which were silently excluding orders
      * that had genuinely crossed the 50%-paid mark. Filters directly on the SalesOrder table's own
-     * stored salesReference/paymentProgress columns: salesReference IS NULL and paymentProgress > 50,
-     * minus ONE_OFF orders - those belong to {@link #getMobileOrdersPaidInFull} ("One of order").
+     * stored salesReference/paymentProgress columns: paymentProgress >= 50 and either no
+     * salesReference yet or still under 100% paid, so a part-paid credit order stays listed
+     * until it is fully paid. ONE_OFF orders are excluded - those belong to
+     * {@link #getMobileOrdersPaidInFull} ("One of order").
      */
     public Page<IncompletePaymentDto> getOrdersAwaitingSalesReference(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return salesOrderRepository
-                .findAwaitingSalesReference(BigDecimal.valueOf(50), pageable)
+                .findAwaitingSalesReference(BigDecimal.valueOf(50), BigDecimal.valueOf(100), pageable)
                 .map(this::toStoredProgressDto);
     }
 

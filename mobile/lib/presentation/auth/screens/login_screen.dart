@@ -26,6 +26,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
   bool _biometricLoginAvailable = false;
 
+  /// Set by [_performLogin] so biometric login can tell "signed in" from
+  /// "the saved password is stale". The three-tier cascade can't just return
+  /// a bool — tier three reports through an AsyncValue callback.
+  bool _loginSucceeded = false;
+
+  /// True when the last login attempt died on the network rather than on bad
+  /// credentials. Stops us wiping saved credentials just because the user is
+  /// offline.
+  bool _loginHitConnectionError = false;
+
   @override
   void initState() {
     super.initState();
@@ -52,18 +62,62 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _showBiometricMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
   Future<void> _handleBiometricLogin() async {
     if (_isLoading) return;
 
     final credentials = await SecureCredentialsService.getCredentials();
-    if (credentials == null) return;
+    if (credentials == null) {
+      // Saved credentials are gone or unreadable (e.g. restored onto a new
+      // phone, where the Keystore key didn't come across). Hide the button
+      // rather than leaving one that does nothing when tapped.
+      if (!mounted) return;
+      setState(() => _biometricLoginAvailable = false);
+      _showBiometricMessage(
+        'Fingerprint login needs to be set up again on this phone. '
+        'Please sign in with your password.',
+      );
+      return;
+    }
 
-    final authenticated = await BiometricService.authenticate(
+    final result = await BiometricService.authenticate(
       reason: 'Authenticate to log in',
     );
-    if (!authenticated || !mounted) return;
+    if (!mounted) return;
+
+    if (!result.isSuccess) {
+      final message = result.userMessage;
+      if (message != null) _showBiometricMessage(message);
+      return;
+    }
 
     await _performLogin(credentials.email, credentials.password);
+    if (!mounted || _loginSucceeded) return;
+
+    // The fingerprint matched but the server rejected the saved password —
+    // it was most likely changed elsewhere. Drop it so the user isn't stuck
+    // replaying a dead credential every time they open the app. A network
+    // failure is not the password's fault, so leave it alone in that case.
+    if (_loginHitConnectionError) return;
+
+    await SecureCredentialsService.disable();
+    await SharedPreferenceService.clearBiometricPromptSeen();
+    if (!mounted) return;
+    setState(() => _biometricLoginAvailable = false);
+    _showBiometricMessage(
+      'Your saved sign-in details are out of date. Please sign in with your '
+      'password to set fingerprint login up again.',
+    );
   }
 
   Future<void> _maybeOfferBiometricEnrollment(
@@ -79,10 +133,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final available = await BiometricService.isAvailable();
     if (!available || !mounted) return;
 
-    await SharedPreferenceService.setBiometricPromptSeen();
-
     final wantsBiometric = await showDialog<bool>(
       context: context,
+      // Force an explicit answer. This used to be marked "seen" before the
+      // dialog even appeared, so a back-button dismissal burned the single
+      // chance and the user was never offered fingerprint login again.
+      barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Enable Fingerprint Login?'),
@@ -102,14 +158,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
 
+    // Only remember the answer once they actually gave one.
+    if (wantsBiometric != null) {
+      await SharedPreferenceService.setBiometricPromptSeen();
+    }
     if (wantsBiometric != true || !mounted) return;
 
-    final confirmed = await BiometricService.authenticate(
+    final result = await BiometricService.authenticate(
       reason: 'Confirm your fingerprint to enable quick login',
     );
-    if (confirmed) {
+    if (result.isSuccess) {
       await SecureCredentialsService.enable(email, password);
+      return;
     }
+
+    // Enrolment failed — tell them why, and let them try again next sign-in
+    // instead of silently never offering it again.
+    await SharedPreferenceService.clearBiometricPromptSeen();
+    final message = result.userMessage;
+    if (message != null) _showBiometricMessage(message);
   }
 
   @override
@@ -141,6 +208,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _performLogin(String email, String password) async {
+    _loginSucceeded = false;
+    _loginHitConnectionError = false;
     setState(() {
       _isLoading = true;
     });
@@ -165,6 +234,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       print('═══════════════════════════════════════════════════════════════');
       print('');
 
+      _loginSucceeded = true;
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -184,6 +254,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       // If connection failed (timeout/network), skip all fallback logins — the server is unreachable
       if (_isConnectionError(errorMsg)) {
+        _loginHitConnectionError = true;
         if (mounted) {
           setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -237,6 +308,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       print('═══════════════════════════════════════════════════════════════');
       print('');
 
+      _loginSucceeded = true;
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -289,6 +361,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             });
 
             if (user != null) {
+              _loginSucceeded = true;
               print(
                   '✅ [Login] Regular user login successful - userId: ${user.id}');
               // Save login state for regular user
@@ -311,6 +384,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             // Still loading, keep loading state
           },
           error: (error, stackTrace) {
+            _loginHitConnectionError =
+                _isConnectionError(error.toString().toLowerCase());
             setState(() {
               _isLoading = false;
             });
@@ -327,6 +402,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
       }
     } catch (e) {
+      _loginHitConnectionError = _isConnectionError(e.toString().toLowerCase());
       if (mounted) {
         setState(() {
           _isLoading = false;

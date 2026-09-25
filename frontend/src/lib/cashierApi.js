@@ -29,35 +29,9 @@ const extractCollection = (payload) => {
   return [];
 };
 
-const shouldTryNextEndpoint = (error) => {
-  const status = Number(error?.status || error?.httpStatus || error?.code || 0);
-  const message = String(error?.message || "").toLowerCase();
-  return (
-    status === 403 ||
-    status === 404 ||
-    status >= 500 ||
-    message.includes("forbidden") ||
-    message.includes("not found") ||
-    message.includes("internal server")
-  );
-};
-
-const tryApiRequest = async (requests = []) => {
-  let lastError = null;
-
-  for (const request of requests) {
-    try {
-      return await apiRequest(request.url, request.method || "GET", request.body);
-    } catch (error) {
-      lastError = error;
-      if (!shouldTryNextEndpoint(error)) {
-        throw error;
-      }
-    }
-  }
-
-  throw lastError || new Error("Request failed");
-};
+// tryApiRequest (walk a list of candidate URLs until one answers) and its
+// shouldTryNextEndpoint predicate went with the guessed endpoint lists they existed to
+// serve. Every call here now names the one real endpoint.
 
 const firstValue = (item = {}, keys = []) => {
   for (const key of keys) {
@@ -170,19 +144,15 @@ const normalizeCompanyCard = (item = {}, index = 0) => ({
   raw: item,
 });
 
+// Removed as dead and misleading (no component called any of them):
+//   submitLoanPayment      -> POST /cashier/loan-payment, an endpoint that has been closed
+//                             off because it recorded repayments against a hard-coded
+//                             balance and reduced no actual loan.
+//   fundWalkInCustomerWallet, fundWalletByCompanyCard, initializeCashierBankTransfer
+//                          -> cash and company-card funding, advertised here but never
+//                             wired to a screen. The live funding path is
+//                             initializePaystackCheckout + verifyCashierWalletFunding.
 export const cashierApi = {
-  submitLoanPayment: (body) => apiRequest("/cashier/loan-payment", "POST", body),
-
-  fundWalkInCustomerWallet: async (body) => {
-    const payload = await tryApiRequest([
-      { url: "/cashier/wallet/fund", method: "POST", body },
-      { url: "/cashier/walk-in-wallet/fund", method: "POST", body },
-      { url: "/cashier/customer-wallet/fund", method: "POST", body },
-      { url: "/admin/wallet/fund", method: "POST", body },
-      { url: "/payment/wallet/fund", method: "POST", body },
-    ]);
-    return unwrapResponse(payload) || payload || {};
-  },
 
   // Shared company-card registry used to record card funding (record-only).
   getCompanyCards: async () => {
@@ -195,34 +165,16 @@ export const cashierApi = {
     return unwrapResponse(payload) || payload || {};
   },
 
-  // Charges a company card through Paystack to fund a customer wallet. Returns an
-  // authorizationUrl the first time a card is used (redirect to tokenize it); afterwards the
-  // saved authorization is charged instantly and the wallet is credited server-side.
-  fundWalletByCompanyCard: async (body) => {
-    const payload = await apiRequest("/cashier/wallet/fund-by-card", "POST", body);
-    return unwrapResponse(payload) || payload || {};
-  },
-
-  // Starts a Paystack bank-transfer funding for a walk-in customer's wallet. The target
-  // account travels in the body so the backend can credit it on successful payment.
-  initializeCashierBankTransfer: async (body) => {
+  // Initialize Paystack hosted checkout for wallet funding. Supports both card and bank
+  // transfer; the user picks on Paystack's hosted page. Only one real endpoint backs this -
+  // the three fallbacks that used to follow it do not exist on the backend and only served
+  // to turn a plain 404 into three more.
+  initializePaystackCheckout: async (body) => {
     const payload = await apiRequest(
-      "/cashier/wallet/initialize-transfer",
+      "/cashier/wallet/initialize-paystack-checkout",
       "POST",
       body,
     );
-    return unwrapResponse(payload) || payload || {};
-  },
-
-  // Initialize Paystack hosted checkout for wallet funding. Supports both card and bank transfer.
-  // User selects payment method on Paystack's hosted page.
-  initializePaystackCheckout: async (body) => {
-    const payload = await tryApiRequest([
-      { url: "/cashier/wallet/initialize-paystack-checkout", method: "POST", body },
-      { url: "/cashier/wallet/initialize-checkout", method: "POST", body },
-      { url: "/cashier/wallet/fund-via-paystack", method: "POST", body },
-      { url: "/payment/wallet/initialize", method: "POST", body },
-    ]);
     return unwrapResponse(payload) || payload || {};
   },
 

@@ -42,6 +42,10 @@ class SharedPreferenceService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyUserLoggedIn);
     await prefs.remove(_keyUserToken);
+    // Logout also revokes fingerprint login, so the next person to sign in on
+    // this phone should be offered it again. Without this, whoever declined
+    // once was never asked again on that device.
+    await prefs.remove(_keyBiometricPromptSeen);
   }
 
   // Whether we've already asked this device's user if they want
@@ -54,6 +58,13 @@ class SharedPreferenceService {
   static Future<void> setBiometricPromptSeen() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyBiometricPromptSeen, true);
+  }
+
+  /// Call on logout, next to [SecureCredentialsService.disable], so the next
+  /// person signing in on this phone is offered fingerprint login again.
+  static Future<void> clearBiometricPromptSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyBiometricPromptSeen);
   }
 
   static Future<void> clearAll() async {

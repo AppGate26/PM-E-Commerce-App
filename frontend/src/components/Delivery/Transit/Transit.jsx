@@ -96,14 +96,17 @@ const Transit = ({ toggleTransitModal }) => {
     }
 
     const query = searchQuery.toLowerCase();
-    const filtered = deliveries.filter((delivery) => {
-      const orderId = (delivery.orderId || "").toLowerCase();
-      const productId = (delivery.productId || "").toLowerCase();
-      const productName = (delivery.productName || "").toLowerCase();
-      const customerName = (delivery.customerName || "").toLowerCase();
-      const productDescription = (delivery.productDescription || delivery.description || "").toLowerCase();
-      return orderId.includes(query) || productId.includes(query) || productName.includes(query) || customerName.includes(query) || productDescription.includes(query);
-    });
+    const filtered = deliveries.filter((delivery) =>
+      [
+        delivery.orderId,
+        delivery.salesReference,
+        delivery.productId,
+        delivery.productName,
+        delivery.customerName,
+        delivery.riderName,
+        delivery.productDescription,
+      ].some((value) => String(value ?? "").toLowerCase().includes(query))
+    );
     setFilteredDeliveries(filtered);
   };
 
@@ -199,7 +202,7 @@ const Transit = ({ toggleTransitModal }) => {
                 ) : (
                   filteredDeliveries.map((delivery, index) => (
                     <tr key={delivery.id || delivery.orderId || index}>
-                      <td>{delivery.orderId || delivery.order_id || "-"}</td>
+                      <td>{delivery.salesReference || delivery.orderId || "-"}</td>
                       <td>{delivery.productId || delivery.product_id || "-"}</td>
                       <td>{delivery.productName || delivery.product_name || "-"}</td>
                       <td>{delivery.productDescription || delivery.description || delivery.product_description || "-"}</td>
@@ -249,6 +252,7 @@ const Transit = ({ toggleTransitModal }) => {
             setShowDetailModal(false);
             setSelectedDelivery(null);
           }}
+          onDelivered={fetchTransitDeliveries}
         />
       )}
     </div>

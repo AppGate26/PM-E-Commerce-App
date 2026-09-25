@@ -2,6 +2,7 @@ package com.appGate.delivery.controller;
 
 import com.appGate.delivery.dto.RiderFeedbackDto;
 import com.appGate.delivery.response.BaseResponse;
+import com.appGate.delivery.service.DeliveryOperationsService;
 import com.appGate.delivery.service.RiderFeedbackService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -13,9 +14,20 @@ import org.springframework.web.bind.annotation.*;
 public class RiderFeedbackController {
 
     private final RiderFeedbackService riderFeedbackService;
+    private final DeliveryOperationsService deliveryOperationsService;
 
-    public RiderFeedbackController(RiderFeedbackService riderFeedbackService) {
+    public RiderFeedbackController(RiderFeedbackService riderFeedbackService,
+                                   DeliveryOperationsService deliveryOperationsService) {
         this.riderFeedbackService = riderFeedbackService;
+        this.deliveryOperationsService = deliveryOperationsService;
+    }
+
+    // Feedback riders submit from the delivery app (POST /api/delivery-agent/submit-feedback),
+    // joined to the delivery's product/customer. This is what the web Feedback Notification
+    // page lists - /rider-feedback below is a separate, older table the app never writes to.
+    @GetMapping("/delivery-feedback")
+    public BaseResponse getDeliveryFeedback() {
+        return deliveryOperationsService.getAllFeedback();
     }
 
     @GetMapping("/rider-feedback")

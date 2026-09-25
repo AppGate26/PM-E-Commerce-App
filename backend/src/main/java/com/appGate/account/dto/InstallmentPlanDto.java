@@ -31,6 +31,10 @@ public class InstallmentPlanDto {
     @Min(value = 1, message = "Duration must be at least 1 month")
     private Integer durationInMonths;
 
+    // Insurance is optional. Null (older app builds that never send it) keeps the
+    // previous behaviour of adding it.
+    private Boolean includeInsurance = true;
+
     private FulfillmentType fulfillmentType;
 
     private String deliveryAddress;

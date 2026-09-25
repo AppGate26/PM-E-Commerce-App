@@ -42,5 +42,20 @@ export const payNextInstallmentViaPaystackPopup = async ({ orderId, email }) => 
     }, 1200);
   });
 
-  return response;
+  // The popup closing tells us nothing about whether the customer actually paid, so ask
+  // the server. Callers used to report "payment received" purely because the window shut,
+  // which read as success even when the customer abandoned checkout.
+  let settled = false;
+  let settlementMessage = "Payment window closed before the payment was confirmed.";
+  try {
+    const verification = await salesApi.verifyOrderInstallmentPayment(
+      response?.reference || response?.paymentReference
+    );
+    settled = verification?.status === "success";
+    settlementMessage = verification?.message || settlementMessage;
+  } catch (error) {
+    settlementMessage = error?.message || settlementMessage;
+  }
+
+  return { ...response, settled, settlementMessage };
 };

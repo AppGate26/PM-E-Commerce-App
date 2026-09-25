@@ -174,6 +174,7 @@ class _PendingDeliveriesScreenState extends ConsumerState<PendingDeliveriesScree
                                     'productName': delivery.productName,
                                     'address': delivery.deliveryAddress,
                                     'customerName': delivery.customerName,
+                                    'status': delivery.status,
                                   },
                                 );
                               },
@@ -269,6 +270,34 @@ class _DeliveryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
 
+                if (delivery.isInTransit) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEDE4FF),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      'IN TRANSIT',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF4B2A8A),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                ],
+
+                // Customer
+                if (delivery.customerName.isNotEmpty)
+                  Text(
+                    delivery.customerName,
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF444444)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
                 // Address
                 Text(
                   delivery.deliveryAddress,
@@ -302,7 +331,7 @@ class _DeliveryCard extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        child: const Text('CONFIRM DELIVERY'),
+                        child: Text(delivery.isInTransit ? 'CONFIRM DELIVERY' : 'START DELIVERY'),
                       ),
                     ),
                     const Spacer(),

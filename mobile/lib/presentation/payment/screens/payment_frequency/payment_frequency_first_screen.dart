@@ -22,6 +22,9 @@ class _PaymentFrequencyFirstScreenState
   Map<String, dynamic>? _product;
   String _selectedFrequency = 'Daily';
   bool _isCalculating = false;
+  // Insurance is optional; on by default. Sent with the preview and carried on
+  // the plan so the persisted plan is priced the same way.
+  bool _includeInsurance = true;
 
   final VerificationRepository _verificationRepository =
       VerificationRepository();
@@ -252,6 +255,7 @@ class _PaymentFrequencyFirstScreenState
         productPrice: productPrice,
         frequency: apiFrequency,
         durationInMonths: durationInMonths,
+        includeInsurance: _includeInsurance,
       );
 
       final requestJson = request.toJson();
@@ -299,6 +303,8 @@ class _PaymentFrequencyFirstScreenState
             durationInMonths: plan.durationInMonths,
             schedule: plan.schedule,
             createdAt: plan.createdAt,
+            selectedMonths: durationInMonths,
+            includeInsurance: _includeInsurance,
           );
 
           print('💳 [PAYMENT FREQ] Showing pickup/delivery modal...');
@@ -660,6 +666,8 @@ class _PaymentFrequencyFirstScreenState
                           ),
                         ),
                         const SizedBox(height: 12),
+                        _buildInsuranceToggle(),
+                        const SizedBox(height: 12),
                         _isCalculating
                             ? const Center(
                                 child: Padding(
@@ -875,6 +883,35 @@ class _PaymentFrequencyFirstScreenState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInsuranceToggle() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.whiteBackground,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: SwitchListTile(
+        value: _includeInsurance,
+        onChanged: _isCalculating
+            ? null
+            : (value) => setState(() => _includeInsurance = value),
+        activeColor: AppColors.blueBackground,
+        dense: true,
+        title: Text(
+          'Add insurance (10%)',
+          style: TextStyle(
+            color: AppColors.textBlue,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: const Text(
+          'Optional. Turn off to pay without insurance.',
+          style: TextStyle(color: Colors.grey, fontSize: 12),
+        ),
       ),
     );
   }

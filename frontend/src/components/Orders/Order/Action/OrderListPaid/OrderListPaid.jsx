@@ -223,7 +223,7 @@ const OrderListPaid = ({ toggleOlpModal }) => {
     setSuccess("");
 
     try {
-      await payNextInstallmentViaPaystackPopup({
+      const outcome = await payNextInstallmentViaPaystackPopup({
         orderId: selectedOrderId,
         email: orderDetails?.email || selectedOrder?.email || "",
       });
@@ -231,8 +231,15 @@ const OrderListPaid = ({ toggleOlpModal }) => {
       await fetchPaymentDetails(selectedOrderId);
       await fetchOrderDetails(selectedOrderId);
 
-      setSuccess("Payment window closed. Order payment details have been refreshed.");
-      setTimeout(() => setSuccess(""), 4000);
+      // Report what the server says happened, not merely that the popup closed - an
+      // abandoned checkout used to read as a successful payment.
+      if (outcome?.settled) {
+        setSuccess("Payment confirmed. Order payment details have been refreshed.");
+        setTimeout(() => setSuccess(""), 4000);
+      } else {
+        setError(outcome?.settlementMessage || "Payment was not confirmed.");
+        setTimeout(() => setError(""), 5000);
+      }
     } catch (err) {
       setError(err?.message || "Failed to start installment payment. Please try again.");
       setTimeout(() => setError(""), 5000);
@@ -260,12 +267,12 @@ const OrderListPaid = ({ toggleOlpModal }) => {
     try {
       await apiRequest(`/sales/orders/${selectedOrderId}/mark-paid`, "PUT", {});
 
-      setSuccess("Order marked as paid. It will now appear under Completed Payments.");
-      setQualifiedOrders((prev) =>
-        prev.filter((o) => (o.id || o.orderId)?.toString() !== selectedOrderId?.toString())
-      );
+      // Reload rather than drop the row locally: an order that is not yet 100% paid stays
+      // on this list until the customer clears the balance.
+      setSuccess("Order marked as paid. It stays on this list until it is 100% paid.");
       setSelectedOrderId("");
       setSelectedOrder(null);
+      await fetchQualifiedOrders();
       setTimeout(() => setSuccess(""), 4000);
     } catch (err) {
       setError(err?.message || "Failed to mark order as paid. Please try again.");
@@ -275,9 +282,10 @@ const OrderListPaid = ({ toggleOlpModal }) => {
     }
   };
 
-  // Reset any generated reference when the selected order changes.
+  // Show the selected order's existing reference, if any - part-paid orders stay on this
+  // list after their reference is minted.
   useEffect(() => {
-    setSalesReference("");
+    setSalesReference(selectedOrder?.salesReference || "");
   }, [selectedOrderId]);
 
   // Calculate payment percentage (from selected order's data)

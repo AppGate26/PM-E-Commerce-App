@@ -12,6 +12,9 @@ import java.util.List;
 public interface DeliveryNotificationRepository extends JpaRepository<DeliveryNotification, Long> {
     Page<DeliveryNotification> findAllByOrderByNotificationDateDesc(Pageable pageable);
     List<DeliveryNotification> findByRiderIdOrderByNotificationDateDesc(Long riderId);
+    Page<DeliveryNotification> findByRiderIdOrderByNotificationDateDesc(Long riderId, Pageable pageable);
+    long countByRiderIdAndIsReadFalse(Long riderId);
+    List<DeliveryNotification> findByRiderIdAndIsReadFalse(Long riderId);
     List<DeliveryNotification> findByIsReadOrderByNotificationDateDesc(Boolean isRead);
 
     Page<DeliveryNotification> findByBranchIdOrderByNotificationDateDesc(Long branchId, Pageable pageable);
