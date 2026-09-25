@@ -62,11 +62,12 @@ public class CashierStandController {
         return new BaseResponse(HttpStatus.OK.value(), "successful", result);
     }
 
-    @PostMapping("/loan-payment")
-    public BaseResponse processLoanPayment(@RequestBody LoanPaymentDto dto) {
-        LoanPayment payment = cashierStandService.processLoanPayment(dto);
-        return new BaseResponse(HttpStatus.CREATED.value(), "successful", payment);
-    }
+    // POST /cashier/loan-payment is closed off. It recorded a repayment against a
+    // hard-coded ₦150,000 "previous balance" and touched no LoanDetails,
+    // LoanRepaymentEntry, InstallmentPlan or wallet - so it produced a receipt and a
+    // ledger line for a repayment that never actually reduced anybody's loan. No screen
+    // calls it. Repayments go through the real paths: the Paystack installment flow
+    // (/api/sales/orders/{id}/installment-payment/*) or the wallet endpoints.
 
     @GetMapping("/customer/{customerId}/ledger")
     public BaseResponse getCustomerLedger(

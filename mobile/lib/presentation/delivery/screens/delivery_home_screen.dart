@@ -1,11 +1,15 @@
 // lib/presentation/delivery/screens/delivery_home_screen.dart
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pm_e_commerce_app/core/routes/routes_name.dart';
 import 'package:pm_e_commerce_app/core/services/storage_service.dart';
 import 'package:pm_e_commerce_app/core/services/secure_credentials_service.dart';
+import 'package:pm_e_commerce_app/core/services/shared_preference_service.dart';
 import 'package:pm_e_commerce_app/core/theme/app_colors.dart';
+import 'package:pm_e_commerce_app/data/repositories/delivery_agent_repository.dart';
+import 'package:pm_e_commerce_app/presentation/delivery/delivery_session.dart';
 import 'package:pm_e_commerce_app/presentation/delivery/widgets/bottom_navbar.dart';
 
 class DeliveryHomeScreen extends StatefulWidget {
@@ -18,11 +22,51 @@ class DeliveryHomeScreen extends StatefulWidget {
 class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
   int _selectedIndex = 1;   // Home is the default screen
   String _agentName = 'USER';
+  int _unreadNotifications = 0;
+  int _unreadChat = 0;
+  Timer? _badgeTimer;
+  final DeliveryAgentRepository _repo = DeliveryAgentRepository();
 
   @override
   void initState() {
     super.initState();
     _loadAgentName();
+    _refreshBadges();
+    // No push service is configured, so new assignments/messages are picked up by polling.
+    _badgeTimer = Timer.periodic(const Duration(seconds: 30), (_) => _refreshBadges());
+  }
+
+  @override
+  void dispose() {
+    _badgeTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refreshBadges() async {
+    final riderId = await currentRiderId();
+    int notifications = _unreadNotifications;
+    int chat = _unreadChat;
+    try {
+      if (riderId != null) {
+        notifications = await _repo.getUnreadNotificationCount(riderId);
+      }
+    } catch (_) {}
+    try {
+      chat = await _repo.getChatUnreadCount();
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() {
+      _unreadNotifications = notifications;
+      _unreadChat = chat;
+    });
+  }
+
+  Future<void> _openAndRefresh(String route) async {
+    _badgeTimer?.cancel();
+    await context.push(route);
+    if (!mounted) return;
+    _refreshBadges();
+    _badgeTimer = Timer.periodic(const Duration(seconds: 30), (_) => _refreshBadges());
   }
 
   Future<void> _loadAgentName() async {
@@ -123,6 +167,7 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
                     try {
                       await StorageService.removeToken();
                       await SecureCredentialsService.disable();
+                      await SharedPreferenceService.clearBiometricPromptSeen();
                       print('✅ [DeliveryHome] Storage cleared');
                     } catch (e) {
                       print('❌ [DeliveryHome] Error clearing storage: $e');
@@ -193,39 +238,64 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  _badgeIcon(
+                    icon: Icons.notifications_none,
+                    count: _unreadNotifications,
+                    onTap: () => _openAndRefresh(AppRoutes.deliveryNotifications),
+                  ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 40),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(top: 32, bottom: 24),
+                child: Column(
+                  children: [
 
-            // ── Menu Buttons ───────────────────────────────────────
-            _buildMenuButton(
-              label: 'PENDING DELIVERIES',
-              isHighlighted: true,
-              onTap: () => context.go(AppRoutes.pendingDeliveries),
+                    // ── Menu Buttons ───────────────────────────────────────
+                    _buildMenuButton(
+                      label: 'PENDING DELIVERIES',
+                      isHighlighted: true,
+                      onTap: () => context.go(AppRoutes.pendingDeliveries),
+                    ),
+                    const SizedBox(height: 20),
+
+                    _buildMenuButton(
+                      label: 'NEW DELIVERY',
+                      onTap: () => context.go(AppRoutes.newDelivery),
+                    ),
+                    const SizedBox(height: 20),
+
+                    _buildMenuButton(
+                      label: 'DELIVERY HISTORY',
+                      onTap: () => context.go(AppRoutes.deliveryHistory),
+                    ),
+                    const SizedBox(height: 20),
+
+                    _buildMenuButton(
+                      label: 'NOTIFICATIONS',
+                      badge: _unreadNotifications,
+                      onTap: () => _openAndRefresh(AppRoutes.deliveryNotifications),
+                    ),
+                    const SizedBox(height: 20),
+
+                    _buildMenuButton(
+                      label: 'CHAT WITH DISPATCH',
+                      badge: _unreadChat,
+                      onTap: () => _openAndRefresh(AppRoutes.deliveryChatList),
+                    ),
+                    const SizedBox(height: 20),
+
+                    _buildMenuButton(
+                      label: 'LOG OUT',
+                      isLogout: true,
+                      onTap: _showLogoutDialog, // Now shows popup
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
-
-            _buildMenuButton(
-              label: 'NEW DELIVERY',
-              onTap: () => context.go(AppRoutes.newDelivery),
-            ),
-            const SizedBox(height: 20),
-
-            _buildMenuButton(
-              label: 'DELIVERY HISTORY',
-              onTap: () => context.go(AppRoutes.deliveryHistory),
-            ),
-            const SizedBox(height: 20),
-
-            _buildMenuButton(
-              label: 'LOG OUT',
-              isLogout: true,
-              onTap: _showLogoutDialog, // Now shows popup
-            ),
-
-            const Spacer(),
           ],
         ),
       ),
@@ -237,10 +307,45 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
     );
   }
 
+  Widget _badgeIcon({required IconData icon, required int count, required VoidCallback onTap}) {
+    return IconButton(
+      onPressed: onTap,
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Icon(icon, color: Colors.white, size: 28),
+          if (count > 0)
+            Positioned(
+              right: -4,
+              top: -4,
+              child: _countBubble(count),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _countBubble(int count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      constraints: const BoxConstraints(minWidth: 18),
+      decoration: BoxDecoration(
+        color: AppColors.red,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        count > 99 ? '99+' : '$count',
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
   Widget _buildMenuButton({
     required String label,
     bool isHighlighted = false,
     bool isLogout = false,
+    int badge = 0,
     required VoidCallback onTap,
   }) {
     return Padding(
@@ -264,19 +369,28 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
               ),
             ],
           ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isLogout
-                  ? AppColors.red
-                  : (isHighlighted
-                      ? AppColors.blueBackground
-                      : const Color(0xFF555555)),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.0,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isLogout
+                      ? AppColors.red
+                      : (isHighlighted
+                          ? AppColors.blueBackground
+                          : const Color(0xFF555555)),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              if (badge > 0) ...[
+                const SizedBox(width: 8),
+                _countBubble(badge),
+              ],
+            ],
           ),
         ),
       ),

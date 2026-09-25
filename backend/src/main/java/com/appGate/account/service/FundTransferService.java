@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,7 @@ public class FundTransferService {
 
     private final JournalEntryService journalEntryService;
     private final WalletService walletService;
+    private final GlPostingService glPostingService;
 
     @Transactional
     public BaseResponse createFundTransfer(FundTransferDto dto, Long userId) {
@@ -41,7 +43,17 @@ public class FundTransferService {
                         ? dto.getDescription()
                         : "Fund transfer to customer wallet";
                 fw.setDescription(base + " (" + companyRef + ")");
-                return walletService.fundCustomerWallet(fw);
+                BaseResponse funded = walletService.fundCustomerWallet(fw);
+
+                // Post the journal this flow never had: Dr the company account the money
+                // left, Cr the Head Office customer-wallet liability. Only on success -
+                // a failed funding must not produce an entry.
+                if (funded != null && funded.getStatus() == HttpStatus.OK.value()) {
+                    glPostingService.postWalletTopUpFromAccount(dto.getFromAccountId(),
+                            fw.getAmount(), "FT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(),
+                            dto.getCustomerId());
+                }
+                return funded;
             }
 
             // Legacy GL-to-GL transfer (both accounts supplied): keep the double entry.

@@ -1209,3 +1209,8 @@ STYLE FOR RIDER DETAIL VIEW (READ-ONLY)
     left: 80em;
   }
 }
+
+.riderbox-status-in_transit {
+  background: #ede4ff;
+  color: #4b2a8a;
+}

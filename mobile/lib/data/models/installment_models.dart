@@ -8,6 +8,7 @@ class InstallmentCalculateRequest {
   final double productPrice;
   final String frequency; // DAILY, WEEKLY, MONTHLY
   final int durationInMonths;
+  final bool includeInsurance;
 
   InstallmentCalculateRequest({
     this.orderId = 0, // Default to 0 if no order exists yet
@@ -16,6 +17,7 @@ class InstallmentCalculateRequest {
     required this.productPrice,
     required this.frequency,
     required this.durationInMonths,
+    this.includeInsurance = true,
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class InstallmentCalculateRequest {
       'userId': userId,
       'frequency': frequency.toUpperCase(),
       'durationInMonths': durationInMonths,
+      'includeInsurance': includeInsurance,
     };
   }
 }
@@ -38,9 +41,18 @@ class InstallmentPlan {
   final double? deliveryFee;
   final double totalAmount;
   final String frequency;
+  // Despite the name, this is the number of payments (the server's
+  // numberOfInstallments, e.g. 30 for a 1-month DAILY plan) - it is what the
+  // breakdown screens show as "30 DAYS". The months the customer actually picked
+  // live in [selectedMonths].
   final int durationInMonths;
   final List<InstallmentSchedule> schedule;
   final DateTime? createdAt;
+  // The duration in months the customer chose on the frequency screen - what
+  // POST /api/installments expects as durationInMonths. Null on plans that were
+  // loaded from the server rather than built from that screen.
+  final int? selectedMonths;
+  final bool includeInsurance;
 
   InstallmentPlan({
     required this.planId,
@@ -56,7 +68,22 @@ class InstallmentPlan {
     required this.durationInMonths,
     required this.schedule,
     this.createdAt,
+    this.selectedMonths,
+    this.includeInsurance = true,
   });
+
+  /// Months to send back when persisting this plan. Sending [durationInMonths]
+  /// (the payment count) instead turned a 1-month DAILY plan (30 payments) into
+  /// a 30-month one on create. Fallback for plans that never went through the
+  /// frequency screen: a MONTHLY plan's payment count is its months, and
+  /// DAILY/WEEKLY are only offered over a single month.
+  int get monthsForRequest {
+    if (selectedMonths != null && selectedMonths! > 0) return selectedMonths!;
+    if (frequency.toUpperCase() == 'MONTHLY' && durationInMonths > 0) {
+      return durationInMonths;
+    }
+    return 1;
+  }
 
   InstallmentPlan copyWith({
     int? planId,
@@ -76,6 +103,8 @@ class InstallmentPlan {
       durationInMonths: durationInMonths,
       schedule: schedule ?? this.schedule,
       createdAt: createdAt,
+      selectedMonths: selectedMonths,
+      includeInsurance: includeInsurance,
     );
   }
 

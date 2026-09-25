@@ -99,13 +99,15 @@ const Dnt = ({ toggleDntModal }) => {
     }
 
     const query = searchQuery.toLowerCase();
-    const filtered = notifications.filter((notification) => {
-      const salesRef = (notification.salesRef || notification.orderId || "").toLowerCase();
-      const productId = (notification.productId || "").toLowerCase();
-      const productName = (notification.productName || "").toLowerCase();
-      const riderName = (notification.riderName || "").toLowerCase();
-      return salesRef.includes(query) || productId.includes(query) || productName.includes(query) || riderName.includes(query);
-    });
+    const filtered = notifications.filter((notification) =>
+      [
+        notification.orderId,
+        notification.notificationType,
+        notification.productName,
+        notification.customerName,
+        notification.message,
+      ].some((value) => String(value ?? "").toLowerCase().includes(query))
+    );
     setFilteredNotifications(filtered);
   };
 
@@ -206,29 +208,34 @@ const Dnt = ({ toggleDntModal }) => {
               <table className="mt-0 manage-riders-table" style={{ width: "100%", minWidth: "900px" }}>
                 <thead>
                   <tr>
-                    <th>SALES REF</th>
-                    <th>PRODUCT ID</th>
+                    <th>DATE</th>
+                    <th>TYPE</th>
+                    <th>ORDER</th>
                     <th>PRODUCT NAME</th>
-                    <th>RIDER&apos;S NAME</th>
-                    <th>QUANTITY DELIVERED</th>
+                    <th>CUSTOMER</th>
+                    <th>MESSAGE</th>
                     <th>ACTION</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredNotifications.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="text-center py-4">
+                      <td colSpan="7" className="text-center py-4">
                         {error ? "Error loading notifications" : "No notifications found"}
                       </td>
                     </tr>
                   ) : (
                     filteredNotifications.map((notification, index) => (
-                      <tr key={notification.id || notification.notificationId || index}>
-                        <td>{notification.salesRef || notification.orderId || "-"}</td>
-                        <td>{notification.productId || "-"}</td>
+                      <tr
+                        key={notification.id || notification.notificationId || index}
+                        style={notification.isRead === false ? { fontWeight: 600 } : undefined}
+                      >
+                        <td>{notification.notificationDate ? new Date(notification.notificationDate).toLocaleString() : "-"}</td>
+                        <td>{(notification.notificationType || "-").replace(/_/g, " ")}</td>
+                        <td>{notification.orderId ?? "-"}</td>
                         <td>{notification.productName || "-"}</td>
-                        <td>{notification.riderName || "-"}</td>
-                        <td>{notification.quantityDelivered || notification.quantity || "-"}</td>
+                        <td>{notification.customerName || "-"}</td>
+                        <td>{notification.message || "-"}</td>
                         <td>
                           <button
                             className="btn-link text-primary view-btn"

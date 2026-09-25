@@ -91,6 +91,9 @@ class AppRoutes {
   static const String deliveryAbout = '/delivery-about';
   static const String deliveryForgotPassword = '/delivery-forgot-password';
   static const String deliveryChangePassword = '/delivery-change-password';
+  static const String deliveryNotifications = '/delivery-notifications';
+  static const String deliveryChatList = '/delivery-chat';
+  static const String deliveryChat = '/delivery-chat-thread';
 
 // recovery screen
   static const String recoverySplash = '/recovery-splash';

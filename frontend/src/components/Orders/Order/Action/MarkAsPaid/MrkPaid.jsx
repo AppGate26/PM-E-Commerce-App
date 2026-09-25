@@ -289,7 +289,7 @@ const MrkPaid = ({ toggleMrkPaidModal, onOrderUpdated }) => {
     setSuccess("");
 
     try {
-      await payNextInstallmentViaPaystackPopup({
+      const outcome = await payNextInstallmentViaPaystackPopup({
         orderId: selectedOrderId,
         email: orderDetails?.email || selectedOrder?.email || "",
       });
@@ -297,8 +297,15 @@ const MrkPaid = ({ toggleMrkPaidModal, onOrderUpdated }) => {
       await fetchPaymentDetails(selectedOrderId);
       await fetchOrderDetails(selectedOrderId);
 
-      setSuccess("Payment window closed. Order payment details have been refreshed.");
-      setTimeout(() => setSuccess(""), 4000);
+      // Report what the server says happened, not merely that the popup closed - an
+      // abandoned checkout used to read as a successful payment.
+      if (outcome?.settled) {
+        setSuccess("Payment confirmed. Order payment details have been refreshed.");
+        setTimeout(() => setSuccess(""), 4000);
+      } else {
+        setError(outcome?.settlementMessage || "Payment was not confirmed.");
+        setTimeout(() => setError(""), 5000);
+      }
     } catch (err) {
       setError(err?.message || "Failed to start installment payment. Please try again.");
       setTimeout(() => setError(""), 5000);

@@ -85,6 +85,40 @@ public class GlPostingService {
         });
     }
 
+    /**
+     * A company account topping up a customer's wallet (Accounting → Fund Transfers):
+     * Dr the company GL the money came out of, Cr the Head Office Customer Wallet GL.
+     * Without this the wallet grew with no journal behind it at all.
+     *
+     * @param debitAccountId the company GL account chosen on the form; nothing is posted
+     *                       when it is absent, because there is no second side to the entry
+     */
+    public void postWalletTopUpFromAccount(Long debitAccountId, Double amount, String reference,
+                                           Long customerUserId) {
+        afterCommit(() -> {
+            if (amount == null || amount <= 0 || reference == null) {
+                return;
+            }
+            Long headOffice = headOfficeBranchId();
+            if (debitAccountId == null) {
+                log.error("GL POSTING SKIPPED for {} ({}): no source account was chosen for the "
+                        + "transfer, so the journal has no debit side.", reference, amount);
+                return;
+            }
+            Optional<Account> debitAccount = accountRepository.findById(debitAccountId);
+            Optional<Account> creditAccount = resolveAccount(headOffice, GlPurpose.CUSTOMER_WALLET);
+            if (debitAccount.isEmpty() || creditAccount.isEmpty()) {
+                log.error("GL POSTING SKIPPED for {} ({}): missing {}{}{}.", reference, amount,
+                        debitAccount.isEmpty() ? "source GL account " + debitAccountId : "",
+                        debitAccount.isEmpty() || creditAccount.isEmpty() ? "" : " and ",
+                        creditAccount.isEmpty() ? "Head Office CUSTOMER_WALLET GL" : "");
+                return;
+            }
+            postLines("GL-FT-" + reference, headOffice, amount, debitAccount.get(), creditAccount.get(),
+                    "Fund transfer to customer wallet " + reference, reference, customerUserId);
+        });
+    }
+
     private void post(String journalReference, Long journalBranchId, Double amount,
                       Long debitBranchId, GlPurpose debitPurpose,
                       Long creditBranchId, GlPurpose creditPurpose,
@@ -106,17 +140,25 @@ public class GlPostingService {
                     creditAccount.isEmpty() ? creditPurpose + " GL for branch " + creditBranchId : "");
             return;
         }
+        postLines(journalReference, journalBranchId, amount, debitAccount.get(), creditAccount.get(),
+                description, paymentReference, customerUserId);
+    }
+
+    /** Builds and posts the balanced pair once both accounts are known. */
+    private void postLines(String journalReference, Long journalBranchId, Double amount,
+                           Account debitAccount, Account creditAccount,
+                           String description, String paymentReference, Long customerUserId) {
         BigDecimal value = BigDecimal.valueOf(amount).setScale(2, RoundingMode.HALF_UP);
 
         JournalLineDto debitLine = new JournalLineDto();
-        debitLine.setAccountId(debitAccount.get().getId());
+        debitLine.setAccountId(debitAccount.getId());
         debitLine.setDescription(description);
         debitLine.setDebit(value);
         debitLine.setUserId(customerUserId);
         debitLine.setReferenceNo(paymentReference);
 
         JournalLineDto creditLine = new JournalLineDto();
-        creditLine.setAccountId(creditAccount.get().getId());
+        creditLine.setAccountId(creditAccount.getId());
         creditLine.setDescription(description);
         creditLine.setCredit(value);
         creditLine.setUserId(customerUserId);

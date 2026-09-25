@@ -76,6 +76,17 @@ public class CashierStandService {
         }
 
         payment.setTotalBalance(total);
+
+        // A repeat save of the same reference is the same payment, not a second one. The
+        // screen tells the operator to "save again" when the id doesn't come back, which
+        // created a duplicate CashPayment and inflated the till by the amount twice.
+        CashPayment existing = payment.getReferenceNumber() != null
+                ? cashPaymentRepository.findByReferenceNumber(payment.getReferenceNumber()).orElse(null)
+                : null;
+        if (existing != null) {
+            return existing;
+        }
+
         CashPayment saved = cashPaymentRepository.save(payment);
 
         // Keep the cashier's running till total in the DB (server-authoritative).
@@ -85,7 +96,35 @@ public class CashierStandService {
             adjustTillBalance(payment.getEnteredBy(), payment.getTillBox(), total);
         }
 
+        // Record the deposit so it reaches the cashier reports and the call-over, which
+        // read deposit_transactions. Nothing in the system ever wrote that table, so every
+        // one of those screens was permanently empty.
+        recordDepositTransaction(saved, total);
+
         return saved;
+    }
+
+    /** Mirrors a collected cash payment into deposit_transactions for the cashier reports. */
+    private void recordDepositTransaction(CashPayment payment, BigDecimal total) {
+        try {
+            if (total == null || total.compareTo(BigDecimal.ZERO) <= 0) {
+                return;
+            }
+            DepositTransaction deposit = new DepositTransaction();
+            deposit.setTransactionId(payment.getReferenceNumber());
+            deposit.setCustomerName(payment.getCustomerName());
+            deposit.setTransactionDate(LocalDate.now());
+            deposit.setDescription("Cash payment collected at the counter");
+            deposit.setAmount(total);
+            deposit.setTransactionType(payment.getPaymentMethod() == PaymentMethod.CASH
+                    ? com.appGate.cashierstand.enums.TransactionType.CASH_PAYMENT
+                    : com.appGate.cashierstand.enums.TransactionType.BANK_TRANSFER);
+            deposit.setCashier(payment.getEnteredBy());
+            depositTransactionRepository.save(deposit);
+        } catch (Exception e) {
+            System.err.println("Could not record deposit transaction for payment "
+                    + payment.getReferenceNumber() + ": " + e.getMessage());
+        }
     }
 
     public CashPayment getCashPayment(Long paymentId) {
@@ -202,6 +241,13 @@ public class CashierStandService {
     }
 
     @Transactional
+    /**
+     * @deprecated Unreachable: its endpoint was removed. It fabricates the balances below
+     *     and reduces no actual loan, so it must not be wired back up as-is. A real
+     *     implementation has to resolve the customer's LoanDetails/LoanRepaymentEntry rows
+     *     and settle against them, the way SalesService.verifyOrderInstallmentPayment does.
+     */
+    @Deprecated
     public LoanPayment processLoanPayment(LoanPaymentDto dto) {
         LoanPayment payment = new LoanPayment();
         payment.setTransactionId(generateTransactionId());

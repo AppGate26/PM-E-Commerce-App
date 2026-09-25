@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pm_e_commerce_app/core/routes/routes_name.dart';
 import 'package:pm_e_commerce_app/core/services/storage_service.dart';
 import 'package:pm_e_commerce_app/core/services/secure_credentials_service.dart';
+import 'package:pm_e_commerce_app/core/services/shared_preference_service.dart';
 import 'package:pm_e_commerce_app/core/theme/app_colors.dart';
 import 'package:pm_e_commerce_app/presentation/recovery/widgets/recovery_bottom_nav_bar.dart';
 
@@ -153,6 +154,8 @@ class _RecoveryHomeScreenState extends State<RecoveryHomeScreen> {
                           Navigator.of(context).pop();
                           await StorageService.removeAllAuthData();
                           await SecureCredentialsService.disable();
+                          await SharedPreferenceService
+                              .clearBiometricPromptSeen();
                           if (context.mounted) context.go(AppRoutes.login);
                         },
                         style: ElevatedButton.styleFrom(

@@ -10,12 +10,12 @@ import com.appGate.delivery.repository.DeliveryFeedbackRepository;
 import com.appGate.delivery.repository.RiderBoxRepository;
 import com.appGate.delivery.response.BaseResponse;
 import com.appGate.delivery.utils.FileUploadUtil;
-import com.appGate.orderingsales.models.Order;
-import com.appGate.orderingsales.models.OrderItem;
+import com.appGate.orderingsales.enums.DeliveryStatus;
+import com.appGate.orderingsales.enums.OrderStatus;
 import com.appGate.orderingsales.repository.OrderRepository;
+import com.appGate.orderingsales.repository.SalesOrderRepository;
 import com.appGate.orderingsales.service.MobileSalesOrderSyncService;
-import com.appGate.rbac.models.User;
-import com.appGate.rbac.repository.UserRepository;
+import com.appGate.rbac.service.BranchScopeService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -44,22 +44,31 @@ public class DeliveryOperationsService {
     private final DeliveryConfirmationRepository deliveryConfirmationRepository;
     private final DeliveryFeedbackRepository deliveryFeedbackRepository;
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
+    private final SalesOrderRepository salesOrderRepository;
     private final MobileSalesOrderSyncService mobileSalesOrderSyncService;
+    private final RiderBoxDetailsResolver detailsResolver;
+    private final DeliveryNotificationService deliveryNotificationService;
+    private final BranchScopeService branchScopeService;
 
     public DeliveryOperationsService(
             RiderBoxRepository riderBoxRepository,
             DeliveryConfirmationRepository deliveryConfirmationRepository,
             DeliveryFeedbackRepository deliveryFeedbackRepository,
             OrderRepository orderRepository,
-            UserRepository userRepository,
-            MobileSalesOrderSyncService mobileSalesOrderSyncService) {
+            SalesOrderRepository salesOrderRepository,
+            MobileSalesOrderSyncService mobileSalesOrderSyncService,
+            RiderBoxDetailsResolver detailsResolver,
+            DeliveryNotificationService deliveryNotificationService,
+            BranchScopeService branchScopeService) {
         this.riderBoxRepository = riderBoxRepository;
         this.deliveryConfirmationRepository = deliveryConfirmationRepository;
         this.deliveryFeedbackRepository = deliveryFeedbackRepository;
         this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
+        this.salesOrderRepository = salesOrderRepository;
         this.mobileSalesOrderSyncService = mobileSalesOrderSyncService;
+        this.detailsResolver = detailsResolver;
+        this.deliveryNotificationService = deliveryNotificationService;
+        this.branchScopeService = branchScopeService;
     }
 
     /**
@@ -73,9 +82,15 @@ public class DeliveryOperationsService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found"));
     }
 
+    // Everything the rider still has to deliver. ACCEPTED used to be missing here, so a box an
+    // admin accepted on the web vanished from the rider app (it isn't in history either, which
+    // is DELIVERED only). IN_TRANSIT is the rider's own "on the way" state - see startDelivery.
+    private static final List<RiderBoxStatusEnum> OPEN_STATUSES = List.of(
+            RiderBoxStatusEnum.PENDING, RiderBoxStatusEnum.ACCEPTED, RiderBoxStatusEnum.IN_TRANSIT);
+
     public BaseResponse getPendingDeliveries(Long riderId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<RiderBox> riderBoxes = riderBoxRepository.findByRiderIdAndStatus(riderId, RiderBoxStatusEnum.PENDING, pageable);
+        Page<RiderBox> riderBoxes = riderBoxRepository.findByRiderIdAndStatusIn(riderId, OPEN_STATUSES, pageable);
 
         List<PendingDeliveryDto> deliveries = riderBoxes.getContent().stream()
                 .map(this::mapToPendingDeliveryDto)
@@ -96,6 +111,60 @@ public class DeliveryOperationsService {
         PendingDeliveryDto dto = mapToPendingDeliveryDto(riderBox);
 
         return new BaseResponse(HttpStatus.OK.value(), "Delivery details retrieved successfully", dto);
+    }
+
+    /**
+     * Rider taps "Start delivery": the box goes IN_TRANSIT, and so does the order behind it.
+     * For a mobile order that is the same transition as the admin SHIPPED status update
+     * (OrderService.updateOrderStatus) - orderStatus SHIPPED, deliveryStatus IN_TRANSIT,
+     * shippedAt stamped - so the customer app and the web Transit page both pick it up.
+     * Calling it again on a box already in transit is a no-op.
+     */
+    @Transactional
+    public BaseResponse startDelivery(Long riderBoxId) {
+        RiderBox riderBox = boxInScope(riderBoxId);
+
+        if (riderBox.getStatus() == RiderBoxStatusEnum.REJECTED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery was rejected and cannot be started");
+        }
+        if (riderBox.getStatus() == RiderBoxStatusEnum.DELIVERED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery has already been confirmed");
+        }
+        if (riderBox.getStatus() == RiderBoxStatusEnum.IN_TRANSIT) {
+            return new BaseResponse(HttpStatus.OK.value(), "Delivery already in transit", detailsResolver.resolve(riderBox));
+        }
+
+        riderBox.setStatus(RiderBoxStatusEnum.IN_TRANSIT);
+        riderBoxRepository.save(riderBox);
+
+        if (riderBox.getOrderId() != null) {
+            orderRepository.findById(riderBox.getOrderId()).ifPresent(order -> {
+                order.setOrderStatus(OrderStatus.SHIPPED);
+                order.setDeliveryStatus(DeliveryStatus.IN_TRANSIT);
+                if (order.getShippedAt() == null) {
+                    order.setShippedAt(LocalDateTime.now());
+                }
+                orderRepository.save(order);
+            });
+            // Mirror onto the admin-facing SalesOrder. Done directly rather than through
+            // syncOrderStatus, which throws when an older order has no mirror - that shouldn't
+            // stop a rider from setting off.
+            salesOrderRepository.findByMobileOrderId(riderBox.getOrderId()).ifPresent(mirror -> {
+                mirror.setStatus(OrderStatus.SHIPPED);
+                salesOrderRepository.save(mirror);
+            });
+        } else if (riderBox.getSalesOrderId() != null) {
+            salesOrderRepository.findById(riderBox.getSalesOrderId()).ifPresent(salesOrder -> {
+                salesOrder.setStatus(OrderStatus.SHIPPED);
+                salesOrderRepository.save(salesOrder);
+            });
+        }
+
+        PendingDeliveryDto details = detailsResolver.resolve(riderBox);
+        deliveryNotificationService.notifyRiderBoxEvent(riderBox, details, "IN_TRANSIT",
+                describe(details) + " is on the way" + riderSuffix(details));
+
+        return new BaseResponse(HttpStatus.OK.value(), "Delivery started", details);
     }
 
     @Transactional
@@ -138,29 +207,109 @@ public class DeliveryOperationsService {
         // see MobileSalesOrderSyncService.markOrderDelivered.
         if (riderBox.getOrderId() != null) {
             mobileSalesOrderSyncService.markOrderDelivered(riderBox.getOrderId());
+        } else if (riderBox.getSalesOrderId() != null) {
+            // Walk-in sale: no mobile Order to go through - mark the SalesOrder itself
+            // delivered, the same way RiderBoxService.deliverProduct does.
+            salesOrderRepository.findById(riderBox.getSalesOrderId()).ifPresent(salesOrder -> {
+                salesOrder.setStatus(OrderStatus.DELIVERED);
+                salesOrderRepository.save(salesOrder);
+            });
         }
+
+        PendingDeliveryDto details = detailsResolver.resolve(riderBox);
+        deliveryNotificationService.notifyRiderBoxEvent(riderBox, details, "DELIVERED",
+                describe(details) + " has been delivered" + riderSuffix(details));
 
         return new BaseResponse(HttpStatus.OK.value(), "Delivery confirmed successfully", confirmation);
     }
 
     @Transactional
     public BaseResponse submitFeedback(DeliveryFeedbackDto dto) {
-        boxInScope(dto.getRiderBoxId());
+        RiderBox riderBox = boxInScope(dto.getRiderBoxId());
+        PendingDeliveryDto details = detailsResolver.resolve(riderBox);
 
         DeliveryConfirmation confirmation = deliveryConfirmationRepository.findByRiderBoxId(dto.getRiderBoxId())
                 .orElse(null);
 
+        // Rider name, product and customer come from the delivery itself rather than being
+        // typed by the rider - the app's values are only used when the box can't supply one.
         DeliveryFeedback feedback = new DeliveryFeedback();
         feedback.setRiderBoxId(dto.getRiderBoxId());
         feedback.setDeliveryConfirmationId(confirmation != null ? confirmation.getId() : null);
-        feedback.setDeliveryAgentName(dto.getDeliveryAgentName());
-        feedback.setProductId(dto.getProductId());
-        feedback.setCustomerName(dto.getCustomerName());
+        feedback.setDeliveryAgentName(firstNonBlank(details.getRiderName(), dto.getDeliveryAgentName()));
+        feedback.setProductId(details.getProductId() != null ? details.getProductId() : dto.getProductId());
+        feedback.setCustomerName(firstNonBlank(details.getCustomerName(), dto.getCustomerName()));
         feedback.setStatus(dto.getStatus());
 
         deliveryFeedbackRepository.save(feedback);
 
         return new BaseResponse(HttpStatus.OK.value(), "Feedback submitted successfully", feedback);
+    }
+
+    /**
+     * Rider-submitted feedback for the web Feedback Notification page. Each row is joined back
+     * to its rider box for the product/customer/quantity the page shows. Branch-scoped
+     * through the box, the same way the other admin delivery lists are.
+     */
+    public BaseResponse getAllFeedback() {
+        Long branchId = branchScopeService.getScopedBranchId();
+
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (DeliveryFeedback feedback : deliveryFeedbackRepository.findAllByOrderByCreatedAtDesc()) {
+            RiderBox riderBox = riderBoxRepository.findById(feedback.getRiderBoxId()).orElse(null);
+            if (branchId != null && (riderBox == null || !branchId.equals(riderBox.getBranchId()))) {
+                continue;
+            }
+            PendingDeliveryDto details = riderBox != null ? detailsResolver.resolve(riderBox) : null;
+
+            Map<String, Object> row = new HashMap<>();
+            row.put("id", feedback.getId());
+            row.put("riderBoxId", feedback.getRiderBoxId());
+            row.put("orderId", details != null ? details.getOrderId() : null);
+            row.put("salesReference", details != null ? details.getSalesReference() : null);
+            row.put("productId", feedback.getProductId() != null ? feedback.getProductId()
+                    : details != null ? details.getProductId() : null);
+            row.put("productName", details != null ? details.getProductName() : null);
+            row.put("riderId", riderBox != null ? riderBox.getRiderId() : null);
+            row.put("riderName", firstNonBlank(feedback.getDeliveryAgentName(),
+                    details != null ? details.getRiderName() : null));
+            row.put("customerName", firstNonBlank(feedback.getCustomerName(),
+                    details != null ? details.getCustomerName() : null));
+            row.put("deliveryAddress", details != null ? details.getDeliveryAddress() : null);
+            row.put("quantityDelivered", details != null && details.getItems() != null
+                    ? details.getItems().stream().mapToInt(i -> i.getQuantity() != null ? i.getQuantity() : 0).sum()
+                    : null);
+            row.put("status", feedback.getStatus() != null ? feedback.getStatus().name() : null);
+            row.put("createdAt", feedback.getCreatedAt());
+            rows.add(row);
+        }
+
+        return new BaseResponse(HttpStatus.OK.value(), "Delivery feedback retrieved successfully", rows);
+    }
+
+    private static String firstNonBlank(String preferred, String fallback) {
+        return preferred != null && !preferred.isBlank() ? preferred : fallback;
+    }
+
+    // "Order #12 (Samsung A15) for John Doe" - used in notification messages.
+    static String describe(PendingDeliveryDto details) {
+        StringBuilder sb = new StringBuilder("Order");
+        if (details.getSalesReference() != null) {
+            sb.append(" ").append(details.getSalesReference());
+        } else if (details.getOrderId() != null) {
+            sb.append(" #").append(details.getOrderId());
+        }
+        if (details.getProductName() != null) {
+            sb.append(" (").append(details.getProductName()).append(")");
+        }
+        if (details.getCustomerName() != null) {
+            sb.append(" for ").append(details.getCustomerName());
+        }
+        return sb.toString();
+    }
+
+    private static String riderSuffix(PendingDeliveryDto details) {
+        return details.getRiderName() != null ? " - rider " + details.getRiderName() : "";
     }
 
     public BaseResponse getDeliveryHistory(Long riderId, LocalDate startDate, LocalDate endDate,
@@ -227,84 +376,27 @@ public class DeliveryOperationsService {
     }
 
     private PendingDeliveryDto mapToPendingDeliveryDto(RiderBox riderBox) {
-        PendingDeliveryDto dto = new PendingDeliveryDto();
-        dto.setRiderBoxId(riderBox.getRiderBoxId());
-        dto.setOrderId(riderBox.getOrderId());
-        dto.setSaleRef(riderBox.getSaleRef());
-        dto.setStatus(riderBox.getStatus().name());
-
-        // Get order details
-        if (riderBox.getOrderId() != null) {
-            Order order = orderRepository.findById(riderBox.getOrderId()).orElse(null);
-            if (order != null) {
-                dto.setDeliveryAddress(order.getDeliveryAddress());
-                dto.setCustomerPhone(order.getDeliveryPhone());
-
-                // Get customer name
-                User user = userRepository.findById(order.getUserId()).orElse(null);
-                if (user != null) {
-                    dto.setCustomerName(user.getFirstName() + " " + user.getLastName());
-                }
-
-                // Get product details from order items. An order can hold several products,
-                // so surface all of them via `items` - productName/productImage above only
-                // ever mirrored the first one, which hid the rest from the rider (see
-                // PendingDeliveryDto).
-                if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
-                    List<PendingDeliveryItemDto> items = order.getOrderItems().stream()
-                            .map(this::mapToPendingDeliveryItemDto)
-                            .collect(Collectors.toList());
-                    dto.setItems(items);
-
-                    PendingDeliveryItemDto firstItem = items.get(0);
-                    dto.setProductName(firstItem.getProductName());
-                    dto.setProductImage(firstItem.getProductImage());
-                }
-            }
-        }
-
-        return dto;
-    }
-
-    private PendingDeliveryItemDto mapToPendingDeliveryItemDto(OrderItem orderItem) {
-        PendingDeliveryItemDto itemDto = new PendingDeliveryItemDto();
-        itemDto.setProductId(orderItem.getProductId());
-        itemDto.setProductName(orderItem.getProductName());
-        itemDto.setProductImage(orderItem.getProductImage());
-        itemDto.setQuantity(orderItem.getQuantity());
-        itemDto.setUnitPrice(orderItem.getUnitPrice());
-        itemDto.setSubtotal(orderItem.getSubtotal());
-        return itemDto;
+        return detailsResolver.resolve(riderBox);
     }
 
     private Map<String, Object> mapToDeliveryHistory(RiderBox riderBox) {
+        PendingDeliveryDto details = detailsResolver.resolve(riderBox);
+
         Map<String, Object> history = new HashMap<>();
         history.put("riderBoxId", riderBox.getRiderBoxId());
         history.put("deliveryDate", riderBox.getUpdatedAt() != null ? riderBox.getUpdatedAt().toLocalDate() : null);
+        history.put("customerName", details.getCustomerName());
+        history.put("deliveryAddress", details.getDeliveryAddress());
+        history.put("deliveryAgentName", details.getRiderName());
+        history.put("items", details.getItems());
+        history.put("productId", details.getProductId());
+        history.put("productName", details.getProductName());
 
+        // What the rider actually recorded at the door wins over the order's own values.
         DeliveryConfirmation confirmation = deliveryConfirmationRepository.findByRiderBoxId(riderBox.getRiderBoxId()).orElse(null);
         if (confirmation != null) {
             history.put("deliveryAgentName", confirmation.getDeliveryAgentName());
             history.put("deliveryAddress", confirmation.getDeliveryAddress());
-        }
-
-        // Get order details
-        if (riderBox.getOrderId() != null) {
-            Order order = orderRepository.findById(riderBox.getOrderId()).orElse(null);
-            if (order != null) {
-                User user = userRepository.findById(order.getUserId()).orElse(null);
-                if (user != null) {
-                    history.put("customerName", user.getFirstName() + " " + user.getLastName());
-                }
-
-                if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
-                    List<PendingDeliveryItemDto> items = order.getOrderItems().stream()
-                            .map(this::mapToPendingDeliveryItemDto)
-                            .collect(Collectors.toList());
-                    history.put("items", items);
-                    history.put("productName", items.get(0).getProductName());
-                }
-            }
         }
 
         history.put("status", "DELIVERED");

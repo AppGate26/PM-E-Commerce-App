@@ -1,5 +1,6 @@
 package com.appGate.delivery.service;
 
+import com.appGate.delivery.dto.PendingDeliveryDto;
 import com.appGate.delivery.dto.RiderBoxDto;
 import com.appGate.delivery.dto.RiderBoxViewDto;
 import com.appGate.delivery.enums.RiderBoxStatusEnum;
@@ -31,12 +32,18 @@ public class RiderBoxService {
     private final OrderRepository orderRepository;
     private final com.appGate.rbac.service.BranchScopeService branchScopeService;
     private final MobileSalesOrderSyncService mobileSalesOrderSyncService;
+    private final RiderBoxDetailsResolver detailsResolver;
+    private final DeliveryNotificationService deliveryNotificationService;
 
     public RiderBoxService(RiderBoxRepository riderBoxRepository, RiderRepository riderRepository,
                            SalesOrderRepository salesOrderRepository,
                            OrderRepository orderRepository,
                            com.appGate.rbac.service.BranchScopeService branchScopeService,
-                           MobileSalesOrderSyncService mobileSalesOrderSyncService){
+                           MobileSalesOrderSyncService mobileSalesOrderSyncService,
+                           RiderBoxDetailsResolver detailsResolver,
+                           DeliveryNotificationService deliveryNotificationService){
+     this.detailsResolver = detailsResolver;
+     this.deliveryNotificationService = deliveryNotificationService;
      this.riderBoxRepository = riderBoxRepository;
      this.riderRepository = riderRepository;
      this.salesOrderRepository = salesOrderRepository;
@@ -129,6 +136,13 @@ public class RiderBoxService {
             });
         }
 
+        // Lets the rider (app notification list) and dispatch (web Delivery Notifications)
+        // know a new delivery is waiting - assignment used to leave no trace there.
+        PendingDeliveryDto details = detailsResolver.resolve(savedRiderBox);
+        deliveryNotificationService.notifyRiderBoxEvent(savedRiderBox, details, "ORDER_ASSIGNED",
+                "New delivery assigned: " + DeliveryOperationsService.describe(details)
+                        + (details.getDeliveryAddress() != null ? " - " + details.getDeliveryAddress() : ""));
+
         return new BaseResponse(HttpStatus.CREATED.value(), "Order assigned to rider successfully", savedRiderBox);
 
     }
@@ -178,6 +192,10 @@ public class RiderBoxService {
             });
         }
 
+        PendingDeliveryDto details = detailsResolver.resolve(riderBox);
+        deliveryNotificationService.notifyRiderBoxEvent(riderBox, details, "REJECTED",
+                DeliveryOperationsService.describe(details) + " was taken off your deliveries");
+
         return new BaseResponse(HttpStatus.OK.value(), "Product rejected", riderBox);
     }
 
@@ -204,6 +222,10 @@ public class RiderBoxService {
                 salesOrderRepository.save(salesOrder);
             });
         }
+
+        PendingDeliveryDto details = detailsResolver.resolve(riderBox);
+        deliveryNotificationService.notifyRiderBoxEvent(riderBox, details, "DELIVERED",
+                DeliveryOperationsService.describe(details) + " was marked delivered by dispatch");
 
         return new BaseResponse(HttpStatus.OK.value(), "Product delivered", riderBox);
     }

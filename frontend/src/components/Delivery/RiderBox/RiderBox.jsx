@@ -2,12 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import BranchBadge from "../../shared/BranchBadge";
 import "../../../Styles/Delivery/Delivery.css";
-import { apiRequest } from "../../../lib/config";
 import { deliveryApi } from "../../../lib/deliveryApi";
 import { useAuth } from "../../../context/AuthContext";
-import DeleteConfirmModalSimple from "../../Inventory/Edit/shared/DeleteConfirmModalSimple";
 
-const STATUSES = ["PENDING", "ACCEPTED", "REJECTED", "DELIVERED"];
+const STATUSES = ["PENDING", "ACCEPTED", "IN_TRANSIT", "REJECTED", "DELIVERED"];
 
 const normalizeList = (response) => {
   if (Array.isArray(response)) return response;
@@ -83,8 +81,6 @@ const RiderBox = ({ toggleBoxModal, selectedRiderId }) => {
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [loading, setLoading] = useState(false);
   const [inserting, setInserting] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -204,40 +200,17 @@ const RiderBox = ({ toggleBoxModal, selectedRiderId }) => {
       setError("");
       setSuccessMessage("");
 
+      // Fetch every status and filter to this rider below. This used to probe several URLs
+      // first, but the backend ignores riderId on /admin/rider-boxes?status=PENDING, so that
+      // probe always "won" and the table only ever showed the rider's PENDING boxes.
       let rows = [];
-      const candidateEndpoints = [
-        `/admin/rider-boxes?riderId=${riderId}`,
-        `/admin/rider-boxes?rider_id=${riderId}`,
-        `/admin/rider-boxes?status=PENDING&riderId=${riderId}`,
-        `/admin/rider-boxes?status=PENDING&rider_id=${riderId}`,
-        `/admin/rider-boxes/rider/${riderId}`,
-        `/admin/rider-boxes/find-by-rider/${riderId}`,
-      ];
-
-      for (const endpoint of candidateEndpoints) {
+      for (const status of STATUSES) {
         try {
-          const response = await apiRequest(endpoint, "GET");
-          const found = normalizeList(response);
-          if (found.length) {
-            rows = found;
-            break;
-          }
+          const response = await deliveryApi.getRiderBoxesByStatus(status);
+          rows.push(...normalizeList(response));
         } catch (err) {
           if (isForbiddenError(err)) break;
         }
-      }
-
-      if (!rows.length) {
-        const allRows = [];
-        for (const status of STATUSES) {
-          try {
-            const response = await deliveryApi.getRiderBoxesByStatus(status);
-            allRows.push(...normalizeList(response));
-          } catch (err) {
-            if (isForbiddenError(err)) break;
-          }
-        }
-        rows = allRows;
       }
 
       rows = rows.filter((item) => {
@@ -322,51 +295,6 @@ const RiderBox = ({ toggleBoxModal, selectedRiderId }) => {
       setSuccessMessage("");
     } finally {
       setInserting(false);
-    }
-  };
-
-  const queueDelete = (boxItemId, orderId) => {
-    setConfirmDeleteId({ boxItemId, orderId });
-  };
-
-  const confirmDelete = async () => {
-    if (!confirmDeleteId) return;
-    if (!canFetchAdminDeliveryData) {
-      setError("Deleting rider box assignments is restricted for this account.");
-      setSuccessMessage("");
-      return;
-    }
-
-    const { boxItemId, orderId } = confirmDeleteId;
-    const idToUse = boxItemId || orderId;
-
-    try {
-      setDeletingId(idToUse);
-      setError("");
-      setSuccessMessage("");
-
-      if (boxItemId) {
-        try {
-          await deliveryApi.deleteRiderBoxById(boxItemId);
-        } catch {
-          await deliveryApi.deleteRiderBoxByAltId(idToUse);
-        }
-      } else {
-        await deliveryApi.deleteRiderBoxByAltId(idToUse);
-      }
-
-      setSuccessMessage("Assignment deleted successfully.");
-      setConfirmDeleteId(null);
-
-      if (formData.riderId) {
-        await fetchRiderAssignments(formData.riderId);
-      }
-      await fetchReadyOrders();
-    } catch (err) {
-      setError(err?.message || "Failed to delete assignment.");
-      setSuccessMessage("");
-    } finally {
-      setDeletingId(null);
     }
   };
 
@@ -585,7 +513,7 @@ const RiderBox = ({ toggleBoxModal, selectedRiderId }) => {
                       <td>{orderReferenceNo}</td>
                       <td>
                         <span className={`riderbox-status-pill riderbox-status-${status.toLowerCase()}`}>
-                          {status}
+                          {status.replace("_", " ")}
                         </span>
                       </td>
                       <td>{riderId}</td>
@@ -603,20 +531,12 @@ const RiderBox = ({ toggleBoxModal, selectedRiderId }) => {
                               </button>
                             </>
                           )}
-                          {status === "ACCEPTED" && (
+                          {(status === "ACCEPTED" || status === "IN_TRANSIT") && (
                             <button type="button" className="manage-riders-btn manage-riders-btn-small manage-riders-btn-primary" onClick={() => handleStatusAction("DELIVER", riderBoxId)}>
                               Deliver
                             </button>
                           )}
                           {status === "DELIVERED" && <span className="riderbox-delivered-text">Delivered</span>}
-                          <button
-                            type="button"
-                            className="manage-riders-btn manage-riders-btn-small manage-riders-btn-danger"
-                            onClick={() => queueDelete(riderBoxId, item.orderId)}
-                            disabled={deletingId === (riderBoxId || item.orderId)}
-                          >
-                            {deletingId === (riderBoxId || item.orderId) ? "Deleting..." : "Delete"}
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -627,13 +547,6 @@ const RiderBox = ({ toggleBoxModal, selectedRiderId }) => {
           </table>
         )}
       </div>
-
-      <DeleteConfirmModalSimple
-        isOpen={!!confirmDeleteId}
-        title="Delete Rider Box Item?"
-        onClose={() => setConfirmDeleteId(null)}
-        onConfirm={confirmDelete}
-      />
     </div>
   );
 };

@@ -308,9 +308,11 @@ public class RiderService {
         Rider rider = getRider(riderId);
 
         // Check if rider has pending or active deliveries
-        List<com.appGate.delivery.models.RiderBox> activeBoxes = riderBoxRepository.findByRiderIdAndStatus(
+        List<com.appGate.delivery.models.RiderBox> activeBoxes = riderBoxRepository.findByRiderIdAndStatusIn(
                 riderId,
-                com.appGate.delivery.enums.RiderBoxStatusEnum.PENDING
+                List.of(com.appGate.delivery.enums.RiderBoxStatusEnum.PENDING,
+                        com.appGate.delivery.enums.RiderBoxStatusEnum.ACCEPTED,
+                        com.appGate.delivery.enums.RiderBoxStatusEnum.IN_TRANSIT)
         );
 
         if (!activeBoxes.isEmpty()) {

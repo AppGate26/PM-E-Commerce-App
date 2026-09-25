@@ -423,7 +423,13 @@ const CashSales = ({ toggleCshModal }) => {
     return productTable.map((product) => {
       const price = parseFloat(product.unitPrice) || 0;
       const quantity = parseInt(product.quantity) || 1;
-      const discount = parseFloat(product.discount) || 0;
+      const discountPercent = parseFloat(product.discount) || 0;
+      // The operator enters a percentage (the field is labelled "DISCOUNT (%)"), but the
+      // backend subtracts `discount` as a naira amount (SalesService.lineTotal). Sending
+      // the raw percentage made the Paystack charge and the server's expected total
+      // disagree, so verification failed with "Amount mismatch" AFTER the customer had
+      // paid - money collected, no sales order, no refund path. Convert it here.
+      const discount = price * quantity * (discountPercent / 100);
 
       return {
         productInfo: {

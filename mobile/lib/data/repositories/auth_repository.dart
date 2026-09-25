@@ -4,6 +4,7 @@ import 'package:pm_e_commerce_app/core/constants/api_constants.dart';
 import 'package:pm_e_commerce_app/core/networks/api_client.dart';
 import 'package:pm_e_commerce_app/core/services/storage_service.dart';
 import 'package:pm_e_commerce_app/core/services/secure_credentials_service.dart';
+import 'package:pm_e_commerce_app/core/services/shared_preference_service.dart';
 import 'package:pm_e_commerce_app/core/utils/error_handler.dart';
 import 'package:pm_e_commerce_app/data/models/user_model.dart';
 
@@ -518,6 +519,7 @@ class AuthRepository {
   // Explicit logout revokes fingerprint quick-login too, so the next
   // person to use this device can't silently reuse this account.
   await SecureCredentialsService.disable();
+  await SharedPreferenceService.clearBiometricPromptSeen();
 }
 
 

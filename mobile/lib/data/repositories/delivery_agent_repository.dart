@@ -7,6 +7,7 @@ import 'package:pm_e_commerce_app/core/services/storage_service.dart';
 import 'package:pm_e_commerce_app/core/services/delivery_api_verification_service.dart';
 import 'package:pm_e_commerce_app/core/utils/error_handler.dart';
 import 'package:pm_e_commerce_app/data/models/delivery_agent_model.dart';
+import 'package:pm_e_commerce_app/data/models/delivery_messaging_model.dart';
 
 class DeliveryAgentRepository {
   final ApiClient _apiClient = ApiClient();
@@ -929,5 +930,101 @@ class DeliveryAgentRepository {
       ErrorHandler.logError('DeliveryAgent SubmitFeedback', e);
       throw ErrorHandler.getUserFriendlyError(e);
     }
+  }
+
+  // ============================================================
+  // Start delivery / notifications / dispatch chat
+  // ============================================================
+
+  /// Sends a request and returns the `data` payload of the backend's BaseResponse.
+  Future<dynamic> _send(String label, String method, String url,
+      {Object? body}) async {
+    try {
+      final response = await _apiClient.dio.request(
+        ApiConstants.normalizeUrl(url),
+        data: body,
+        options: Options(
+          method: method,
+          contentType: 'application/json',
+          headers: {'Accept': 'application/json'},
+        ),
+      );
+      final data = response.data;
+      final status = response.statusCode ?? 0;
+      if (status < 200 || status >= 300) {
+        throw (data is Map ? data['message'] : null) ?? 'Request failed ($status)';
+      }
+      return data is Map ? (data['data'] ?? data['response']) : data;
+    } on DioException catch (e) {
+      ErrorHandler.logError(label, e);
+      throw ErrorHandler.getUserFriendlyError(e);
+    } catch (e) {
+      ErrorHandler.logError(label, e);
+      throw ErrorHandler.getUserFriendlyError(e);
+    }
+  }
+
+  List<Map<String, dynamic>> _asMapList(dynamic data) {
+    final list = data is Map ? data['content'] : data;
+    if (list is! List) return [];
+    return list.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+  }
+
+  /// Rider is setting off - the backend moves the delivery to IN_TRANSIT.
+  Future<void> startDelivery(int riderBoxId) async {
+    await _send('DeliveryAgent StartDelivery', 'PUT',
+        ApiConstants.deliveryAgentStartDelivery(riderBoxId));
+  }
+
+  Future<RiderNotificationPage> getNotifications(int riderId) async {
+    final data = await _send('DeliveryAgent Notifications', 'GET',
+        ApiConstants.deliveryAgentNotifications(riderId));
+    return RiderNotificationPage(
+      items: _asMapList(data).map(RiderNotification.fromJson).toList(),
+      unreadCount: data is Map ? int.tryParse('${data['unreadCount'] ?? 0}') ?? 0 : 0,
+    );
+  }
+
+  Future<int> getUnreadNotificationCount(int riderId) async {
+    final data = await _send('DeliveryAgent NotificationsUnread', 'GET',
+        ApiConstants.deliveryAgentNotificationsUnread(riderId));
+    return data is Map ? int.tryParse('${data['unreadCount'] ?? 0}') ?? 0 : 0;
+  }
+
+  Future<void> markNotificationRead(int riderId, int notificationId) async {
+    await _send('DeliveryAgent NotificationRead', 'PUT',
+        ApiConstants.deliveryAgentNotificationRead(riderId, notificationId));
+  }
+
+  Future<void> markAllNotificationsRead(int riderId) async {
+    await _send('DeliveryAgent NotificationsReadAll', 'PUT',
+        ApiConstants.deliveryAgentNotificationsReadAll(riderId));
+  }
+
+  Future<List<ChatContact>> getChatContacts() async {
+    final data = await _send(
+        'DeliveryAgent ChatContacts', 'GET', ApiConstants.deliveryAgentChatContacts);
+    return _asMapList(data).map(ChatContact.fromJson).toList();
+  }
+
+  Future<int> getChatUnreadCount() async {
+    final data = await _send(
+        'DeliveryAgent ChatUnread', 'GET', ApiConstants.deliveryAgentChatUnread);
+    return data is Map ? int.tryParse('${data['unreadCount'] ?? 0}') ?? 0 : 0;
+  }
+
+  /// Oldest first. Opening a conversation marks it read on the backend.
+  Future<List<ChatMessage>> getChatMessages(int contactUserId) async {
+    final data = await _send('DeliveryAgent ChatMessages', 'GET',
+        ApiConstants.deliveryAgentChatMessages(contactUserId));
+    return _asMapList(data).map(ChatMessage.fromJson).toList();
+  }
+
+  /// Returns the updated conversation.
+  Future<List<ChatMessage>> sendChatMessage(int contactUserId, String message) async {
+    final data = await _send('DeliveryAgent ChatSend', 'POST',
+        ApiConstants.deliveryAgentChatMessages(contactUserId),
+        body: {'message': message});
+    return _asMapList(data).map(ChatMessage.fromJson).toList();
   }
 }

@@ -131,6 +131,7 @@ public class DeliveryReportService {
 
         List<RiderBox> pendingBoxes = riderBoxRepository.findByRiderIdAndStatus(riderId, RiderBoxStatusEnum.PENDING);
         List<RiderBox> acceptedBoxes = riderBoxRepository.findByRiderIdAndStatus(riderId, RiderBoxStatusEnum.ACCEPTED);
+        List<RiderBox> inTransitBoxes = riderBoxRepository.findByRiderIdAndStatus(riderId, RiderBoxStatusEnum.IN_TRANSIT);
         List<RiderBox> deliveredBoxes = riderBoxRepository.findByRiderIdAndStatus(riderId, RiderBoxStatusEnum.DELIVERED);
         List<RiderBox> rejectedBoxes = riderBoxRepository.findByRiderIdAndStatus(riderId, RiderBoxStatusEnum.REJECTED);
 
@@ -139,10 +140,12 @@ public class DeliveryReportService {
         display.put("riderName", rider.getSurName() + " " + rider.getOtherName());
         display.put("pendingCount", pendingBoxes.size());
         display.put("acceptedCount", acceptedBoxes.size());
+        display.put("inTransitCount", inTransitBoxes.size());
         display.put("deliveredCount", deliveredBoxes.size());
         display.put("rejectedCount", rejectedBoxes.size());
         display.put("pendingBoxes", pendingBoxes);
         display.put("acceptedBoxes", acceptedBoxes);
+        display.put("inTransitBoxes", inTransitBoxes);
         display.put("deliveredBoxes", deliveredBoxes);
         display.put("rejectedBoxes", rejectedBoxes);
 
@@ -161,7 +164,8 @@ public class DeliveryReportService {
         List<RiderBox> allBoxes = riderBoxRepository.findByRiderIdAndStatus(rider.getRiderId(), RiderBoxStatusEnum.DELIVERED);
         report.put("totalDeliveries", allBoxes.size());
 
-        List<RiderBox> pendingBoxes = riderBoxRepository.findByRiderIdAndStatus(rider.getRiderId(), RiderBoxStatusEnum.PENDING);
+        List<RiderBox> pendingBoxes = riderBoxRepository.findByRiderIdAndStatusIn(rider.getRiderId(),
+                List.of(RiderBoxStatusEnum.PENDING, RiderBoxStatusEnum.ACCEPTED, RiderBoxStatusEnum.IN_TRANSIT));
         report.put("pendingDeliveries", pendingBoxes.size());
 
         return report;

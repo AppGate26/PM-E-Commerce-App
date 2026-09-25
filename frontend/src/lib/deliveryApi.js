@@ -53,9 +53,16 @@ export const deliveryApi = {
 
   // Delivery management
   getTransitDeliveries: async () => {
-    const response = await apiRequest("/admin/transit-deliveries", "GET");
+    const response = await apiRequest("/admin/transit-deliveries?size=500", "GET");
     return asArray(response);
   },
+
+  // Transit rows started by a rider carry riderBoxId (closes the rider's trip too); rows
+  // only put in transit by an admin SHIPPED update have just an orderId.
+  markTransitDelivered: (delivery) =>
+    delivery?.riderBoxId
+      ? apiRequest(`/admin/deliver/${delivery.riderBoxId}`, "PUT")
+      : apiRequest(`/admin/mark-delivered/${delivery.orderId}`, "PUT"),
 
   getDeliveryNotifications: async () => {
     const response = await apiRequest("/admin/delivery-notifications", "GET");
@@ -72,6 +79,12 @@ export const deliveryApi = {
 
   getRiderFeedback: async () => {
     const response = await apiRequest("/admin/rider-feedback", "GET");
+    return asArray(response);
+  },
+
+  // Feedback riders submit from the delivery app, joined to product/customer details.
+  getDeliveryFeedback: async () => {
+    const response = await apiRequest("/admin/delivery-feedback", "GET");
     return asArray(response);
   },
 
@@ -117,12 +130,6 @@ export const deliveryApi = {
 
   assignProductToRider: (payload) =>
     apiRequest("/admin/assign-product", "POST", payload),
-
-  deleteRiderBoxById: (boxItemId) =>
-    apiRequest(`/admin/rider-boxes/${boxItemId}`, "DELETE"),
-
-  deleteRiderBoxByAltId: (id) =>
-    apiRequest(`/admin/rider-box/${id}`, "DELETE"),
 
   acceptRiderBox: (riderBoxId) => apiRequest(`/admin/accept/${riderBoxId}`, "PUT"),
   rejectRiderBox: (riderBoxId) => apiRequest(`/admin/reject/${riderBoxId}`, "PUT"),

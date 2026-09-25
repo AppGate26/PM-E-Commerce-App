@@ -13,6 +13,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByPaymentReference(String paymentReference);
 
+    // Used to tell "this sale already has a payment artefact" from "money was never recorded".
+    java.util.List<Payment> findBySalesOrderId(Long salesOrderId);
+
     List<Payment> findByUserId(Long userId);
 
     List<Payment> findByUserIdAndStatus(Long userId, PaymentStatus status);

@@ -35,15 +35,38 @@ class DeliveryAgent {
   }
 }
 
+/// Reads an int the API may send as a number or a numeric string.
+int _asInt(dynamic value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+/// Falls back to the first entry of `items` - the backend lists every product on an
+/// order there, and older responses had no top-level productId at all.
+int _productIdFrom(Map<String, dynamic> json) {
+  final direct = _asInt(json['productId']);
+  if (direct != 0) return direct;
+  final items = json['items'];
+  if (items is List && items.isNotEmpty && items.first is Map) {
+    return _asInt((items.first as Map)['productId']);
+  }
+  return 0;
+}
+
 class PendingDelivery {
   final int riderBoxId;
   final int productId;
   final String productName;
   final String? productImage;
   final String customerName;
+  final String? customerPhone;
   final String deliveryAddress;
   final String? estimatedTime;
   final DateTime? createdAt;
+
+  /// PENDING, ACCEPTED or IN_TRANSIT (the rider has tapped "Start delivery").
+  final String status;
 
   PendingDelivery({
     required this.riderBoxId,
@@ -51,15 +74,21 @@ class PendingDelivery {
     required this.productName,
     this.productImage,
     required this.customerName,
+    this.customerPhone,
     required this.deliveryAddress,
     this.estimatedTime,
     this.createdAt,
+    this.status = 'PENDING',
   });
+
+  bool get isInTransit => status == 'IN_TRANSIT';
 
   factory PendingDelivery.fromJson(Map<String, dynamic> json) {
     return PendingDelivery(
-      riderBoxId: json['riderBoxId'] ?? json['id'] ?? 0,
-      productId: json['productId'] ?? 0,
+      riderBoxId: _asInt(json['riderBoxId'] ?? json['id']),
+      productId: _productIdFrom(json),
+      customerPhone: json['customerPhone']?.toString(),
+      status: json['status']?.toString() ?? 'PENDING',
       productName: json['productName'] ?? json['product'] ?? '',
       productImage: json['productImage'] ?? json['image'],
       customerName: json['customerName'] ?? json['customer'] ?? '',
@@ -95,8 +124,8 @@ class DeliveryHistory {
 
   factory DeliveryHistory.fromJson(Map<String, dynamic> json) {
     return DeliveryHistory(
-      riderBoxId: json['riderBoxId'] ?? json['id'] ?? 0,
-      productId: json['productId'] ?? 0,
+      riderBoxId: _asInt(json['riderBoxId'] ?? json['id']),
+      productId: _productIdFrom(json),
       productName: json['productName'] ?? json['product'] ?? '',
       customerName: json['customerName'] ?? json['customer'] ?? '',
       deliveryAddress: json['deliveryAddress'] ?? json['address'] ?? '',
@@ -120,6 +149,10 @@ class DeliveryDetail {
   final String? timeOfDelivery;
   final String? proofOfDeliveryImage;
   final String status;
+  final String? customerPhone;
+  final String? salesReference;
+  final String? productCategory;
+  final String? riderName;
 
   DeliveryDetail({
     required this.riderBoxId,
@@ -132,12 +165,22 @@ class DeliveryDetail {
     this.timeOfDelivery,
     this.proofOfDeliveryImage,
     required this.status,
+    this.customerPhone,
+    this.salesReference,
+    this.productCategory,
+    this.riderName,
   });
+
+  bool get isInTransit => status == 'IN_TRANSIT';
 
   factory DeliveryDetail.fromJson(Map<String, dynamic> json) {
     return DeliveryDetail(
-      riderBoxId: json['riderBoxId'] ?? json['id'] ?? 0,
-      productId: json['productId'] ?? 0,
+      riderBoxId: _asInt(json['riderBoxId'] ?? json['id']),
+      productId: _productIdFrom(json),
+      customerPhone: json['customerPhone']?.toString(),
+      salesReference: json['salesReference']?.toString(),
+      productCategory: json['productCategory']?.toString(),
+      riderName: json['riderName']?.toString(),
       productName: json['productName'] ?? json['product'] ?? '',
       productImage: json['productImage'] ?? json['image'],
       customerName: json['customerName'] ?? json['customer'] ?? '',

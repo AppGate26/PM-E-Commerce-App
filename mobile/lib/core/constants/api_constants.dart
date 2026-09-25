@@ -42,6 +42,23 @@ class ApiConstants {
       '$deliveryAgentBase/confirm-delivery';
   static const String deliveryAgentSubmitFeedback =
       '$deliveryAgentBase/submit-feedback';
+  static String deliveryAgentStartDelivery(int riderBoxId) =>
+      '$deliveryAgentBase/start-delivery/$riderBoxId';
+  static String deliveryAgentNotifications(int riderId) =>
+      '$deliveryAgentBase/notifications/$riderId';
+  static String deliveryAgentNotificationsUnread(int riderId) =>
+      '$deliveryAgentBase/notifications/$riderId/unread-count';
+  static String deliveryAgentNotificationRead(int riderId, int id) =>
+      '$deliveryAgentBase/notifications/$riderId/$id/read';
+  static String deliveryAgentNotificationsReadAll(int riderId) =>
+      '$deliveryAgentBase/notifications/$riderId/read-all';
+  // Rider <-> dispatch chat. The rider is taken from the login token.
+  static const String deliveryAgentChatContacts =
+      '$deliveryAgentBase/chat/contacts';
+  static const String deliveryAgentChatUnread =
+      '$deliveryAgentBase/chat/unread-count';
+  static String deliveryAgentChatMessages(int contactUserId) =>
+      '$deliveryAgentBase/chat/messages/$contactUserId';
 
   // core/constants/api_constants.dart
 

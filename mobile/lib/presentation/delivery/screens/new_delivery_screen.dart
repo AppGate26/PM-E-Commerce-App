@@ -29,6 +29,9 @@ class _NewDeliveryScreenState extends ConsumerState<NewDeliveryScreen> {
   final ImagePicker _picker = ImagePicker();
   int _currentIndex = 2;
   int? _riderBoxId;
+  // Carried through to the feedback screen so it can fill these in by itself.
+  dynamic _productId;
+  String _customerName = '';
   bool _isLoading = false;
 
   @override
@@ -62,6 +65,8 @@ class _NewDeliveryScreenState extends ConsumerState<NewDeliveryScreen> {
       _riderBoxId = extra['riderBoxId'] as int?;
       _addressController.text = extra['address'] ?? '';
       _itemController.text = extra['item'] ?? '';
+      _productId = extra['productId'];
+      _customerName = extra['customerName']?.toString() ?? '';
       print('🚚 [NewDelivery] Loaded data - riderBoxId: $_riderBoxId');
     }
   }
@@ -169,7 +174,8 @@ class _NewDeliveryScreenState extends ConsumerState<NewDeliveryScreen> {
             'riderBoxId': _riderBoxId,
             'address': deliveryAddress,
             'item': itemOfDelivery,
-            'customerName': '', // Will be filled in confirmation screen
+            'productId': _productId,
+            'customerName': _customerName,
           },
         );
       }
