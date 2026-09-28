@@ -112,12 +112,12 @@ public class InstallmentPlan extends BaseEntity {
 
     // The delivery fee quoted for this plan's cart when the plan was built
     // (InstallmentService.buildPlan, from the delivery destination the caller supplied) -
-    // 0/null when no destination was supplied or the order is PICKUP. It is deliberately
-    // NOT part of totalAmount/grandTotal/installmentAmount: delivery is never financed
-    // across the installments, it is charged in full as part of the first payment
-    // (down payment), so firstPaymentAmount = downPayment + deliveryFee. Read by
-    // PaymentGatewayService.resolveDownPaymentDeliveryFee as the authoritative fee to
-    // fold into that charge, instead of having to recover a cached quote.
+    // 0/null when no destination was supplied or the order is PICKUP, and re-set at
+    // checkout to the order's real fee. It is deliberately NOT part of
+    // totalAmount/grandTotal/installmentAmount/downPayment: it is spread across the
+    // installments that make up the first 50% of the plan, each of which carries its
+    // share in Installment.deliveryFeePortion (see InstallmentDeliveryFeeSpread). Read by
+    // PaymentGatewayService.resolveDownPaymentDeliveryFee as the authoritative total.
     private Double deliveryFee;
 
     // How much of the delivery fee, if any, was already collected as part of the

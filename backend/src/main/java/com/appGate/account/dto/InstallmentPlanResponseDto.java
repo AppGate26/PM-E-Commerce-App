@@ -21,23 +21,22 @@ import java.util.stream.Collectors;
  * lockstep with {@code InstallmentPlan}'s current JSON shape.
  *
  * <p><b>How to render the amounts.</b> {@code grandTotal} and {@code installmentAmount}
- * describe the FINANCED amount only (product subtotal + insurance): delivery is never
- * financed, so it is never part of a period's payment. The delivery fee rides entirely on
- * the first payment, which is why three derived fields are served alongside them:
+ * describe the FINANCED amount only (product subtotal + insurance). The delivery fee is
+ * spread evenly across the installments that make up the first 50% of the plan (see
+ * InstallmentDeliveryFeeSpread): each of those rows' {@code amountDue} includes its
+ * {@code deliveryFeePortion}, and the rest stay {@code installmentAmount}. Derived fields:
  *
  * <ul>
- *   <li>{@code deliveryFee} - the fee quoted for this plan's cart/destination, charged
- *       once, in full, with the down payment.</li>
- *   <li>{@code firstPaymentAmount} = {@code downPayment} + {@code deliveryFee} - what the
- *       customer actually pays up front.</li>
+ *   <li>{@code deliveryFee} - the total fee quoted for this plan's cart/destination.</li>
+ *   <li>{@code firstPaymentAmount} - installment #1's amountDue (downPayment + its
+ *       delivery share): what the customer actually pays up front.</li>
  *   <li>{@code totalPayable} = {@code grandTotal} + {@code deliveryFee} - everything the
  *       plan will collect across its lifetime.</li>
  * </ul>
  *
- * Display {@code firstPaymentAmount} for period #1 and {@code installmentAmount} for the
- * rest. Do NOT divide {@code totalPayable} by {@code numberOfInstallments} - that spreads
- * the delivery fee across the months, which is exactly what this breakdown exists to
- * prevent.
+ * Display each row's {@code amountDue} from {@code installments}. Do NOT divide
+ * {@code totalPayable} by {@code numberOfInstallments} - delivery is only spread across
+ * the first half of the plan, not all of it.
  */
 @Data
 @NoArgsConstructor
@@ -54,8 +53,7 @@ public class InstallmentPlanResponseDto {
     private Double downPayment;
     private Double remainingBalance;
     private Double installmentAmount;
-    // Delivery, charged once with the first payment and never financed - see the class
-    // javadoc. deliveryFee mirrors the plan column; the other two are derived, served so
+    // Delivery, spread over the first half of the installments - see the class javadoc. deliveryFee mirrors the plan column; the other two are derived, served so
     // no client has to (mis)compute them.
     private Double deliveryFee;
     private Double firstPaymentAmount;
@@ -90,6 +88,15 @@ public class InstallmentPlanResponseDto {
         double deliveryFee = plan.getDeliveryFee() != null ? plan.getDeliveryFee() : 0.0;
         double downPayment = plan.getDownPayment() != null ? plan.getDownPayment() : 0.0;
         double grandTotal = plan.getGrandTotal() != null ? plan.getGrandTotal() : 0.0;
+        // Row #1 already carries its delivery share. A legacy plan whose rows were never
+        // spread (null share) collected the whole fee with the down payment instead.
+        double firstPaymentAmount = plan.getInstallments() == null ? downPayment + deliveryFee
+                : plan.getInstallments().stream()
+                        .filter(row -> Integer.valueOf(1).equals(row.getInstallmentNumber())
+                                && row.getDeliveryFeePortion() != null)
+                        .mapToDouble(row -> row.getAmountDue() != null ? row.getAmountDue() : 0.0)
+                        .findFirst()
+                        .orElse(downPayment + deliveryFee);
         return InstallmentPlanResponseDto.builder()
                 .id(plan.getId())
                 .orderId(plan.getOrderId())
@@ -102,7 +109,7 @@ public class InstallmentPlanResponseDto {
                 .remainingBalance(plan.getRemainingBalance())
                 .installmentAmount(plan.getInstallmentAmount())
                 .deliveryFee(deliveryFee)
-                .firstPaymentAmount(downPayment + deliveryFee)
+                .firstPaymentAmount(firstPaymentAmount)
                 .totalPayable(grandTotal + deliveryFee)
                 .frequency(plan.getFrequency())
                 .numberOfInstallments(plan.getNumberOfInstallments())

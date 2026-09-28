@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pm_e_commerce_app/core/routes/routes_name.dart';
 import 'package:pm_e_commerce_app/core/theme/app_colors.dart';
 import 'package:pm_e_commerce_app/data/models/installment_models.dart';
+import 'package:pm_e_commerce_app/presentation/payment/screens/payment_frequency/installment_schedule_display_utils.dart';
 
 class InstallmentBreakDownDeliveryScreen extends StatefulWidget {
   const InstallmentBreakDownDeliveryScreen({super.key});
@@ -314,8 +315,9 @@ class _InstallmentBreakDownDeliveryScreenState
                           ...plan.schedule.asMap().entries.map((entry) {
                             final index = entry.key;
                             final schedule = entry.value;
-                            final isHighlighted =
-                                index == (plan.schedule.length / 2).floor();
+                            final isHighlighted = index ==
+                                InstallmentDisplayUtils.shipmentReadyIndex(
+                                    plan.schedule);
 
                             if (isHighlighted) {
                               return Column(

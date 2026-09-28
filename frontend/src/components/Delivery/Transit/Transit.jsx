@@ -5,6 +5,18 @@ import { deliveryApi } from "../../../lib/deliveryApi";
 import "../../../Styles/Delivery/Delivery.css";
 import TransitDeliveryDetail from "./TransitDeliveryDetail";
 
+// Every undelivered delivery is listed here, not only the ones on the road -
+// rider box statuses (PENDING/ACCEPTED/IN_TRANSIT) and order delivery statuses.
+const STATUS_LABELS = {
+  PENDING: "Assigned to rider",
+  ACCEPTED: "Accepted by rider",
+  AWAITING_PICKUP: "Awaiting pickup",
+  PICKED_UP: "Picked up",
+  IN_TRANSIT: "In transit",
+};
+
+const formatStatus = (status) => (status ? STATUS_LABELS[status] || status : "-");
+
 const Transit = ({ toggleTransitModal }) => {
   const [deliveries, setDeliveries] = useState([]);
   const [filteredDeliveries, setFilteredDeliveries] = useState([]);
@@ -105,6 +117,7 @@ const Transit = ({ toggleTransitModal }) => {
         delivery.customerName,
         delivery.riderName,
         delivery.productDescription,
+        formatStatus(delivery.deliveryStatus),
       ].some((value) => String(value ?? "").toLowerCase().includes(query))
     );
     setFilteredDeliveries(filtered);
@@ -189,14 +202,15 @@ const Transit = ({ toggleTransitModal }) => {
                   <th>PRODUCT NAME</th>
                   <th>PRODUCT DESCRIPTION</th>
                   <th>CUSTOMER NAME</th>
+                  <th>STATUS</th>
                   <th>ACTION</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredDeliveries.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-4">
-                      {error ? "Error loading transit deliveries" : "No transit deliveries found"}
+                    <td colSpan="7" className="text-center py-4">
+                      {error ? "Error loading transit deliveries" : "No undelivered deliveries found"}
                     </td>
                   </tr>
                 ) : (
@@ -207,6 +221,7 @@ const Transit = ({ toggleTransitModal }) => {
                       <td>{delivery.productName || delivery.product_name || "-"}</td>
                       <td>{delivery.productDescription || delivery.description || delivery.product_description || "-"}</td>
                       <td>{delivery.customerName || delivery.customer_name || "-"}</td>
+                      <td>{formatStatus(delivery.deliveryStatus)}</td>
                       <td>
                         <button
                           className="btn-link text-primary view-btn"

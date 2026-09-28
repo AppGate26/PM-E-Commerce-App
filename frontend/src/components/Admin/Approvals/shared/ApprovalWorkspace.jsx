@@ -6,6 +6,7 @@ import {
   buildActionBody,
   normalizePendingResponse,
 } from "./approvalUtils";
+import SalesReceipt from "./SalesReceipt";
 import "./ApprovalWorkspace.css";
 
 const ApprovalWorkspace = ({ config }) => {
@@ -19,6 +20,7 @@ const ApprovalWorkspace = ({ config }) => {
   const [declineOpen, setDeclineOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [extraState, setExtraState] = useState(config.initialExtraState || {});
+  const [receipt, setReceipt] = useState(null);
 
   // Optional per-config hook to narrow the normalized pending list (e.g. filter by movement type).
   const applyPendingFilter = (rows) =>
@@ -155,6 +157,10 @@ const ApprovalWorkspace = ({ config }) => {
         await apiRequest(`/admin/approvals/${approvalToApprove.id}/approve`, "PATCH", requestBody);
       }
 
+      // Sales queues pass buildReceipt so a receipt pops up for the sale just approved.
+      if (typeof config.buildReceipt === "function") {
+        setReceipt(config.buildReceipt(approvalToApprove, user));
+      }
       setSuccessMessage(config.success.approve);
       setDeclineOpen(false);
       setDeclineReason("");
@@ -526,6 +532,7 @@ const ApprovalWorkspace = ({ config }) => {
           </aside>
         </section>
       </main>
+      <SalesReceipt receipt={receipt} onClose={() => setReceipt(null)} />
     </div>
   );
 };

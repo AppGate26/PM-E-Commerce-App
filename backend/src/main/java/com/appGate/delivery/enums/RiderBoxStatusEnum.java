@@ -4,8 +4,8 @@ public enum RiderBoxStatusEnum {
     PENDING,
     ACCEPTED,
     // Rider tapped "Start delivery" in the app and is on the way - see
-    // DeliveryOperationsService.startDelivery. Stored as VARCHAR (see
-    // VarcharEnumMariaDBDialect), so no migration is needed for this value.
+    // DeliveryOperationsService.startDelivery. rider_box.status was a native
+    // ENUM without this value until V1002 converted it to VARCHAR.
     IN_TRANSIT,
     REJECTED,
     DELIVERED

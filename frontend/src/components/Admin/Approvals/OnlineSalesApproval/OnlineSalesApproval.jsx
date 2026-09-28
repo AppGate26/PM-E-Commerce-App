@@ -3,6 +3,8 @@ import AdminNav from "../../Navigation/AdminNav";
 import { apiRequest } from "../../../../lib/config";
 import { useAuth } from "../../../../context/AuthContext";
 import { normalizePendingResponse } from "../shared/approvalUtils";
+import { approverName, buildOnlineSaleReceipt } from "../shared/receiptUtils";
+import SalesReceipt from "../shared/SalesReceipt";
 import "./OnlineSalesApproval.css";
 
 const OnlineSalesApproval = () => {
@@ -12,6 +14,7 @@ const OnlineSalesApproval = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [actionLoading, setActionLoading] = useState(null);
+  const [receipt, setReceipt] = useState(null);
 
   useEffect(() => {
     fetchPendingApprovals();
@@ -64,6 +67,8 @@ const OnlineSalesApproval = () => {
       await apiRequest(`/sales/orders/${orderId}/approve`, "PUT", {
         comment: `Approved by admin ${approvedBy}`,
       });
+      const approved = pendingApprovals.find((order) => String(order.id) === String(orderId));
+      if (approved) setReceipt(buildOnlineSaleReceipt(approved, approverName(user)));
       setSuccessMessage("Online sale approved successfully!");
       setTimeout(() => {
         fetchPendingApprovals();
@@ -209,6 +214,7 @@ const OnlineSalesApproval = () => {
           </table>
         )}
       </div>
+      <SalesReceipt receipt={receipt} onClose={() => setReceipt(null)} />
     </div>
   );
 };

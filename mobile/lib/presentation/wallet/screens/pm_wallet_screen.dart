@@ -41,7 +41,15 @@ class _PMWalletScreenState extends ConsumerState<PMWalletScreen> {
     final balanceState = ref.watch(walletStateProvider);
     final txState = ref.watch(walletTransactionsProvider);
 
-    return Scaffold(
+    // Reached via context.go() after a top-up, the wallet can be the only
+    // route on the stack — send system back to home instead of exiting.
+    return WillPopScope(
+      onWillPop: () async {
+        if (context.canPop()) return true;
+        context.go(AppRoutes.home);
+        return false;
+      },
+      child: Scaffold(
       backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
         backgroundColor: AppColors.textBlue,
@@ -82,7 +90,9 @@ class _PMWalletScreenState extends ConsumerState<PMWalletScreen> {
                       Icons.arrow_back,
                       color: AppColors.blueBackground,
                     ),
-                    onPressed: () => context.pop(),
+                    onPressed: () => context.canPop()
+                        ? context.pop()
+                        : context.go(AppRoutes.home),
                   ),
                   const Spacer(),
                   GestureDetector(
@@ -169,6 +179,7 @@ class _PMWalletScreenState extends ConsumerState<PMWalletScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

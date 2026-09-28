@@ -110,7 +110,7 @@ public class PaymentGatewayService {
      * The authoritative amount to charge for a payment against an existing order -
      * never a client-supplied amount, so no caller can attach an order id to an
      * arbitrarily low payment. For an installment order this is only the up-front down
-     * payment (outstanding delivery fee + plan.getDownPayment()) - or, if that down
+     * payment (installment #1's delivery share + plan.getDownPayment()) - or, if that down
      * payment was already collected via the pre-checkout {@link #initializeDownPaymentBankTransfer}
      * flow, just whatever delivery fee is still outstanding. That flow charges the delivery
      * fee in full as part of its own charge (see {@link #resolveDownPaymentDeliveryFee}),
@@ -129,9 +129,10 @@ public class PaymentGatewayService {
         InstallmentPlan plan = installmentPlanRepository
                 .findById(order.getInstallmentPlanId())
                 .orElseThrow(() -> new RuntimeException("Installment plan not found for order " + order.getId()));
-        double alreadyCollectedDeliveryFee = plan.getDownPaymentDeliveryFee() != null
-                ? plan.getDownPaymentDeliveryFee() : 0.0;
-        double outstandingDeliveryFee = Math.max(0.0, order.getDeliveryFee() - alreadyCollectedDeliveryFee);
+        // Only the delivery share that rides on the down payment - the rest is spread over
+        // the first half of the installments (see InstallmentDeliveryFeeSpread).
+        double outstandingDeliveryFee = InstallmentDeliveryFeeSpread.deliveryDueWithDownPayment(
+                plan, installmentRepository.findByInstallmentPlanId(plan.getId()), order.getDeliveryFee());
         double amount = Boolean.TRUE.equals(plan.getDownPaymentPaid())
                 ? outstandingDeliveryFee
                 : outstandingDeliveryFee + plan.getDownPayment();
@@ -733,13 +734,13 @@ public class PaymentGatewayService {
      * plan to the new order, to reflect the payment immediately instead of waiting for
      * a payOrderByWallet-style call that never comes for this flow.
      *
-     * The delivery fee is never financed across the plan's installments - it's charged
-     * here, in full, on top of the down payment (see {@link #resolveDownPaymentDeliveryFee},
-     * which prices it from dto's delivery destination when the caller sends one and
-     * otherwise recovers the fee the customer was already quoted). This is the only
-     * charge this flow ever makes: OrderService.checkout() merely reflects the down
-     * payment already paid here, it triggers no follow-up charge, so a fee left out
-     * here is a fee never collected.
+     * The delivery fee is spread over the installments in the first half of the plan
+     * (see InstallmentDeliveryFeeSpread), so only installment #1's share is charged here
+     * on top of the down payment. {@link #resolveDownPaymentDeliveryFee} prices the total
+     * from dto's delivery destination when the caller sends one and otherwise recovers
+     * the fee the customer was already quoted; {@link #downPaymentDeliveryShare}
+     * re-spreads the schedule if that total changed. The remaining shares are collected
+     * by the later installments' own amountDue.
      */
     @Transactional
     public BaseResponse initializeDownPaymentBankTransfer(Long planId, InitializeDownPaymentDto dto) {
@@ -777,9 +778,11 @@ public class PaymentGatewayService {
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getUserId()));
 
             // Server-computed, never a client-supplied amount - same principle as
-            // resolveOrderChargeAmount. The delivery fee is charged here in full (see
-            // resolveDownPaymentDeliveryFee), not financed across the plan's installments.
-            java.math.BigDecimal deliveryFee = resolveDownPaymentDeliveryFee(plan, dto);
+            // resolveOrderChargeAmount. Only installment #1's share of the delivery fee is
+            // charged here; the rest is spread over the first half of the plan (see
+            // downPaymentDeliveryShare).
+            java.math.BigDecimal deliveryFee = java.math.BigDecimal.valueOf(
+                    downPaymentDeliveryShare(plan, resolveDownPaymentDeliveryFee(plan, dto)));
             Double amount = plan.getDownPayment() + deliveryFee.doubleValue();
 
             Payment payment = new Payment();
@@ -867,8 +870,8 @@ public class PaymentGatewayService {
      * generic {@link #initializeCardPayment} instead - that call sets both
      * Payment.orderId and Payment.installmentPlanId to null, so verifying it never
      * reaches markOrderPaid/markDownPaymentPaid and the plan's down payment is never
-     * recorded even though Paystack charged the card successfully. Charges the delivery
-     * fee in full alongside the down payment, exactly as that method does.
+     * recorded even though Paystack charged the card successfully. Charges installment
+     * #1's delivery share alongside the down payment, exactly as that method does.
      */
     @Transactional
     public BaseResponse initializeDownPaymentCard(Long planId, InitializeDownPaymentDto dto) {
@@ -906,9 +909,11 @@ public class PaymentGatewayService {
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getUserId()));
 
             // Server-computed, never a client-supplied amount - same principle as
-            // resolveOrderChargeAmount. The delivery fee is charged here in full (see
-            // resolveDownPaymentDeliveryFee), not financed across the plan's installments.
-            java.math.BigDecimal deliveryFee = resolveDownPaymentDeliveryFee(plan, dto);
+            // resolveOrderChargeAmount. Only installment #1's share of the delivery fee is
+            // charged here; the rest is spread over the first half of the plan (see
+            // downPaymentDeliveryShare).
+            java.math.BigDecimal deliveryFee = java.math.BigDecimal.valueOf(
+                    downPaymentDeliveryShare(plan, resolveDownPaymentDeliveryFee(plan, dto)));
             Double amount = plan.getDownPayment() + deliveryFee.doubleValue();
 
             Payment payment = new Payment();
@@ -1325,11 +1330,11 @@ public class PaymentGatewayService {
     }
 
     /**
-     * The delivery fee to charge in full alongside an installment plan's pre-checkout
-     * down payment (see {@link #initializeDownPaymentBankTransfer}/
-     * {@link #initializeDownPaymentCard}). Delivery is never financed across the plan's
-     * installments, and this flow makes no later charge, so whatever isn't included here
-     * is simply never collected - hence four sources, tried in order:
+     * The plan's total delivery fee, resolved at an installment plan's pre-checkout down
+     * payment (see {@link #initializeDownPaymentBankTransfer}/
+     * {@link #initializeDownPaymentCard}), which then spreads it over the first half of the
+     * installments via {@link #downPaymentDeliveryShare}. A fee missed here is never
+     * spread and so never collected - hence four sources, tried in order:
      *
      * <ol>
      *   <li>dto's own delivery destination - a fresh quote priced server-side from the
@@ -1386,6 +1391,33 @@ public class PaymentGatewayService {
                     + plan.getId() + " (user " + dto.getUserId() + ").");
         }
         return previouslyQuoted;
+    }
+
+    /**
+     * Installment #1's share of {@code deliveryFee} - what a pre-checkout down payment
+     * collects on top of plan.downPayment. If the fee just resolved differs from the one
+     * the plan was spread with (e.g. the customer changed destination, or a legacy plan
+     * never had it spread), the plan's schedule is re-spread first so the remaining shares
+     * on the first half of the installments still add up to the full fee.
+     */
+    private double downPaymentDeliveryShare(InstallmentPlan plan, java.math.BigDecimal deliveryFee) {
+        List<com.appGate.account.models.Installment> rows = installmentRepository.findByInstallmentPlanId(plan.getId());
+        double fee = deliveryFee.doubleValue();
+        if (rows.isEmpty()) {
+            return fee;
+        }
+        double planFee = plan.getDeliveryFee() != null ? plan.getDeliveryFee() : 0.0;
+        boolean notSpread = rows.stream().anyMatch(row -> row.getDeliveryFeePortion() == null);
+        if (notSpread || Math.abs(fee - planFee) >= 0.01) {
+            InstallmentDeliveryFeeSpread.respread(plan, rows, fee, 0.0);
+            installmentRepository.saveAll(rows);
+            installmentPlanRepository.save(plan);
+        }
+        return rows.stream()
+                .filter(row -> row.getInstallmentNumber() == 1)
+                .findFirst()
+                .map(InstallmentDeliveryFeeSpread::portionOf)
+                .orElse(fee);
     }
 
     /**

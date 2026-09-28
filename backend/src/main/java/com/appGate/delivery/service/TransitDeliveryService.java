@@ -70,17 +70,20 @@ public class TransitDeliveryService {
     }
 
     /**
-     * Everything currently on the road. Mostly that's rider boxes the rider has started
-     * (RiderBox IN_TRANSIT - see DeliveryOperationsService.startDelivery), which also covers
-     * walk-in sales that have no mobile Order. Orders put in transit by the admin SHIPPED
-     * status update without any rider trip behind them are still listed too.
+     * Every registered delivery that hasn't been delivered yet: rider boxes still PENDING,
+     * ACCEPTED or IN_TRANSIT (see DeliveryOperationsService.startDelivery), which also covers
+     * walk-in sales that have no mobile Order, plus orders awaiting pickup, picked up or put
+     * in transit by the admin SHIPPED status update without any rider box behind them.
+     * Delivered and rejected deliveries are left out.
      */
     public BaseResponse getAllTransitDeliveries(int page, int size, String sortBy) {
         Long branchId = branchScopeService.getScopedBranchId();
 
+        List<RiderBoxStatusEnum> openBoxStatuses = List.of(
+                RiderBoxStatusEnum.PENDING, RiderBoxStatusEnum.ACCEPTED, RiderBoxStatusEnum.IN_TRANSIT);
         List<RiderBox> boxes = branchId == null
-                ? riderBoxRepository.findByStatus(RiderBoxStatusEnum.IN_TRANSIT)
-                : riderBoxRepository.findByStatusAndBranchId(RiderBoxStatusEnum.IN_TRANSIT, branchId);
+                ? riderBoxRepository.findByStatusIn(openBoxStatuses)
+                : riderBoxRepository.findByStatusInAndBranchId(openBoxStatuses, branchId);
 
         List<Map<String, Object>> deliveries = new ArrayList<>();
         Set<Long> coveredOrderIds = new HashSet<>();
@@ -92,7 +95,8 @@ public class TransitDeliveryService {
         }
 
         Pageable orderPage = PageRequest.of(0, 1000, Sort.by("shippedAt").descending());
-        List<DeliveryStatus> statuses = List.of(DeliveryStatus.IN_TRANSIT);
+        List<DeliveryStatus> statuses = List.of(
+                DeliveryStatus.AWAITING_PICKUP, DeliveryStatus.PICKED_UP, DeliveryStatus.IN_TRANSIT);
         Page<Order> transitOrders = branchId == null
                 ? orderRepository.findByDeliveryStatusIn(statuses, orderPage)
                 : orderRepository.findByBranchIdAndDeliveryStatusIn(branchId, statuses, orderPage);
@@ -131,7 +135,7 @@ public class TransitDeliveryService {
         dto.put("customerName", details.getCustomerName());
         dto.put("customerPhone", details.getCustomerPhone());
         dto.put("deliveryAddress", details.getDeliveryAddress());
-        dto.put("deliveryStatus", DeliveryStatus.IN_TRANSIT.name());
+        dto.put("deliveryStatus", box.getStatus().name());
         dto.put("riderId", box.getRiderId());
         dto.put("riderName", details.getRiderName());
         dto.put("riderPhone", box.getRider() != null ? box.getRider().getPhoneNumber() : null);
@@ -167,8 +171,10 @@ public class TransitDeliveryService {
     public BaseResponse markAsDelivered(Long orderId) {
         Order order = orderInScope(orderId);
 
-        if (order.getDeliveryStatus() != DeliveryStatus.IN_TRANSIT && order.getDeliveryStatus() != DeliveryStatus.PICKED_UP) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is not in transit");
+        if (order.getDeliveryStatus() != DeliveryStatus.IN_TRANSIT
+                && order.getDeliveryStatus() != DeliveryStatus.PICKED_UP
+                && order.getDeliveryStatus() != DeliveryStatus.AWAITING_PICKUP) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is not awaiting delivery");
         }
 
         // Update the order's status and mirror it onto the admin-facing SalesOrder -
@@ -220,7 +226,9 @@ public class TransitDeliveryService {
         dto.put("deliveryStatus", order.getDeliveryStatus().name());
         dto.put("deliveryAddress", order.getDeliveryAddress());
         dto.put("totalAmount", order.getGrandTotal());
-        dto.put("shippedAt", order.getShippedAt());
+        // Orders still awaiting pickup have no shippedAt yet - fall back to when they were placed
+        // so they don't all sink to the bottom of the list.
+        dto.put("shippedAt", order.getShippedAt() != null ? order.getShippedAt() : order.getCreatedAt());
         dto.put("riderId", order.getRiderId());
 
         // Get customer info

@@ -47,10 +47,16 @@ class InstallmentDisplayUtils {
   }
 
   /// The schedule to show. The server's own schedule wins whenever it sent one —
-  /// it is the schedule the customer will actually be charged against.
+  /// it is the schedule the customer will actually be charged against. Any part
+  /// of the plan's delivery fee its rows don't already carry (e.g. a preview
+  /// from /installments/calculate, priced before the address was known) is
+  /// spread over the first half of the payments, the same way the backend does.
   static List<InstallmentSchedule> buildDisplaySchedule(InstallmentPlan plan) {
     if (plan.schedule.isNotEmpty) {
-      return plan.schedule;
+      final alreadySpread = plan.schedule
+          .fold<double>(0, (sum, s) => sum + (s.deliveryFeePortion ?? 0));
+      return spreadDeliveryFee(
+          plan.schedule, (plan.deliveryFee ?? 0) - alreadySpread);
     }
 
     // plan.durationInMonths already holds the server's payment count; only
@@ -80,15 +86,70 @@ class InstallmentDisplayUtils {
     });
   }
 
-  /// What the customer pays up front: the first installment plus the delivery
-  /// fee, which is never financed across the plan and is collected in full with
-  /// payment #1 (PaymentGatewayService.resolveOrderChargeAmount does the same sum
-  /// server-side). Showing the installment alone under-quoted the first charge.
+  /// Index of the installment after which the item can be collected: the first
+  /// row where the running total reaches 50% of the plan, matching the backend's
+  /// "Minimum 50% required" rule (SalesService). Summed from amountToPay because
+  /// the server schedule's cumulative field tracks amount paid so far (₦0 before
+  /// checkout). A 4-payment plan -> after #2, 3 -> after #2, 6 -> after #3.
+  static int shipmentReadyIndex(List<InstallmentSchedule> schedule) {
+    if (schedule.isEmpty) return -1;
+    final totalMinorUnits = schedule.fold<int>(
+        0, (sum, s) => sum + (s.amountToPay * 100).round());
+    int runningMinorUnits = 0;
+    for (var i = 0; i < schedule.length; i++) {
+      runningMinorUnits += (schedule[i].amountToPay * 100).round();
+      if (runningMinorUnits * 2 >= totalMinorUnits) return i;
+    }
+    return schedule.length - 1;
+  }
+
+  /// How many leading payments make up the first half of a plan — the ones
+  /// that carry the delivery fee. Matches the backend's
+  /// InstallmentDeliveryFeeSpread.firstHalfCount: 4 -> 2, 5 -> 3, 1 -> 1.
+  static int deliveryPaymentCount(int totalPayments) {
+    final half = (totalPayments + 1) ~/ 2;
+    return half > 0 ? half : 1;
+  }
+
+  /// Adds [deliveryFee] evenly to the payments in the first half of
+  /// [schedule], e.g. a ₦100,000 item over 4 months with a ₦3,000 delivery fee
+  /// pays ₦25,000 + ₦1,500 in months 1 and 2, then ₦25,000 in months 3 and 4.
+  /// Kobo rounding leftover goes on payment #1, like the backend. Returns
+  /// [schedule] unchanged when there is nothing to spread.
+  static List<InstallmentSchedule> spreadDeliveryFee(
+      List<InstallmentSchedule> schedule, double deliveryFee) {
+    final feeMinorUnits = (deliveryFee * 100).round();
+    if (schedule.isEmpty || feeMinorUnits <= 0) return schedule;
+
+    final count = deliveryPaymentCount(schedule.length);
+    final perPaymentMinorUnits = feeMinorUnits ~/ count;
+    final leftoverMinorUnits = feeMinorUnits - perPaymentMinorUnits * count;
+
+    double cumulative = 0;
+    return List.generate(schedule.length, (index) {
+      final row = schedule[index];
+      final shareMinorUnits = index < count
+          ? perPaymentMinorUnits + (index == 0 ? leftoverMinorUnits : 0)
+          : 0;
+      final share = shareMinorUnits / 100;
+      final amount = row.amountToPay + share;
+      cumulative += amount;
+      return row.copyWith(
+        amountToPay: amount,
+        cumulative: cumulative,
+        deliveryFeePortion: (row.deliveryFeePortion ?? 0) + share,
+      );
+    });
+  }
+
+  /// What the customer pays up front: payment #1, which already includes its
+  /// share of the delivery fee (see [spreadDeliveryFee]) — the same amount
+  /// PaymentGatewayService.resolveOrderChargeAmount charges server-side.
   static double firstPaymentAmount(InstallmentPlan plan) {
     final schedule = buildDisplaySchedule(plan);
-    final firstInstallment =
-        schedule.isNotEmpty ? schedule.first.amountToPay : plan.totalAmount;
-    return firstInstallment + (plan.deliveryFee ?? 0);
+    return schedule.isNotEmpty
+        ? schedule.first.amountToPay
+        : plan.totalAmount + (plan.deliveryFee ?? 0);
   }
 
   static DateTime _generateDueDate(

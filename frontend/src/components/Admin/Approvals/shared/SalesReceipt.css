@@ -1,0 +1,309 @@
+/* Sales receipt — colours and type follow the APPGATE_Invoice template
+   (Arial, #1A73E8 accent, #202124 text, #5F6368 labels). */
+
+.sr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  background: rgba(19, 32, 56, 0.55);
+}
+
+.sr-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  font: 600 14px Arial, Helvetica, sans-serif;
+  color: #202124;
+}
+
+.sr-toolbar > div {
+  display: flex;
+  gap: 8px;
+}
+
+.sr-btn {
+  padding: 8px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  background: #fff;
+  color: #202124;
+  font: 600 13px Arial, Helvetica, sans-serif;
+  cursor: pointer;
+}
+
+.sr-btn-primary {
+  border-color: #1a73e8;
+  background: #1a73e8;
+  color: #fff;
+}
+
+.sr-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 16px 40px;
+}
+
+.sr-page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 18mm 16mm;
+  background: #fff;
+  color: #202124;
+  font: 9.5pt/1.45 Arial, Helvetica, sans-serif;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.sr-page * {
+  box-sizing: border-box;
+}
+
+.sr-letterhead {
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #1a73e8;
+}
+
+.sr-letterhead h1 {
+  margin: 0;
+  font-size: 20pt;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #1a73e8;
+}
+
+.sr-letterhead p {
+  margin: 2px 0 0;
+  font-size: 9pt;
+  color: #5f6368;
+}
+
+.sr-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 18px;
+}
+
+.sr-billto {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sr-billto h2 {
+  margin: 0 0 8px;
+  font-size: 17pt;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #202124;
+}
+
+.sr-billto strong {
+  font-size: 10.5pt;
+}
+
+.sr-label,
+.sr-meta-list dt,
+.sr-box dt {
+  color: #5f6368;
+  font-weight: 700;
+}
+
+.sr-meta-list,
+.sr-box {
+  margin: 0;
+}
+
+.sr-meta-list > div,
+.sr-box > div {
+  display: flex;
+  gap: 6px;
+}
+
+.sr-meta-list {
+  align-self: flex-end;
+  min-width: 220px;
+}
+
+.sr-meta-list > div {
+  justify-content: flex-end;
+}
+
+.sr-meta-list dd,
+.sr-box dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.sr-project {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 18px;
+  padding: 10px 12px;
+  background: #e8f0fe;
+  border-left: 4px solid #1a73e8;
+}
+
+.sr-project-tag {
+  font-weight: 700;
+  color: #1a73e8;
+  letter-spacing: 0.06em;
+}
+
+.sr-project p {
+  margin: 2px 0 0;
+  color: #5f6368;
+}
+
+.sr-section-title {
+  margin: 20px 0 8px;
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: #1a73e8;
+}
+
+.sr-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sr-table th {
+  padding: 7px 8px;
+  background: #1a73e8;
+  color: #fff;
+  font-weight: 700;
+  text-align: left;
+}
+
+.sr-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sr-table .sr-c {
+  text-align: center;
+}
+
+.sr-table .sr-r {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sr-total td {
+  background: #f1f3f4;
+  font-weight: 700;
+  border-bottom: 2px solid #1a73e8;
+}
+
+.sr-total td:last-child {
+  color: #1a73e8;
+}
+
+.sr-words {
+  margin: 10px 0 0;
+}
+
+.sr-box {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 20px;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+}
+
+.sr-notes {
+  margin: 0;
+  padding-left: 18px;
+  color: #5f6368;
+}
+
+.sr-notes li + li {
+  margin-top: 3px;
+}
+
+.sr-thanks {
+  margin: 18px 0 0;
+  font-style: italic;
+  text-align: center;
+}
+
+.sr-sign {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  margin-top: 36px;
+  font-weight: 700;
+}
+
+.sr-sign-line {
+  margin-top: 28px;
+  font-weight: 400;
+}
+
+@media (max-width: 640px) {
+  .sr-page {
+    padding: 20px 16px;
+  }
+
+  .sr-meta {
+    flex-direction: column;
+  }
+
+  .sr-meta-list > div {
+    justify-content: flex-start;
+  }
+
+  .sr-box {
+    grid-template-columns: 1fr;
+  }
+
+  .sr-table {
+    font-size: 8.5pt;
+  }
+}
+
+/* Print only the receipt page, full colour, on A4. */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body.sales-receipt-open > *:not(.sr-overlay) {
+    display: none !important;
+  }
+
+  body.sales-receipt-open .sr-overlay {
+    position: static;
+    background: none;
+  }
+
+  body.sales-receipt-open .sr-toolbar {
+    display: none;
+  }
+
+  body.sales-receipt-open .sr-scroll {
+    overflow: visible;
+    padding: 0;
+  }
+
+  body.sales-receipt-open .sr-page {
+    max-width: none;
+    width: 210mm;
+    box-shadow: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

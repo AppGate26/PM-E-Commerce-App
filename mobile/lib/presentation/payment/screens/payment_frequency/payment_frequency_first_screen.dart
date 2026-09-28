@@ -128,16 +128,10 @@ class _PaymentFrequencyFirstScreenState
       _selectedFrequency = frequency;
     });
 
-    // Show popup only when Monthly is selected
-    if (frequency == 'Monthly') {
-      print('💳 [PAYMENT FREQ] Monthly selected - showing months popup');
-      _showMonthlyPopup(context);
-    } else {
-      // For Daily and Weekly, proceed directly to calculate and show pickup/delivery selection
-      print(
-          '💳 [PAYMENT FREQ] $frequency selected - calculating installment plan directly (no months popup)');
-      _calculateAndProceed(frequency, null);
-    }
+    // Every frequency asks for the duration in months; the backend turns that
+    // into the number of days/weeks (e.g. 2 months of Weekly = ~8 payments).
+    print('💳 [PAYMENT FREQ] $frequency selected - showing months popup');
+    _showMonthsPopup(context, frequency);
   }
 
   Future<void> _calculateAndProceed(String frequency, int? months) async {
@@ -343,7 +337,7 @@ class _PaymentFrequencyFirstScreenState
     }
   }
 
-  void _showMonthlyPopup(BuildContext context) {
+  void _showMonthsPopup(BuildContext context, String frequency) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -361,10 +355,18 @@ class _PaymentFrequencyFirstScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'How many month would you need to complete your payment ?',
+                  'How many months would you need to complete your payment?',
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
+                      color: AppColors.textLight,
+                      fontFamily: 'Montserrat'),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'You will pay ${frequency.toLowerCase()} over this period.',
+                  style: TextStyle(
+                      fontSize: 13,
                       color: AppColors.textLight,
                       fontFamily: 'Montserrat'),
                 ),
@@ -372,30 +374,30 @@ class _PaymentFrequencyFirstScreenState
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildNumberItem('1', context, 1),
-                    _buildNumberItem('2', context, 2),
-                    _buildNumberItem('3', context, 3),
-                    _buildNumberItem('4', context, 4),
+                    _buildNumberItem('1', context, frequency, 1),
+                    _buildNumberItem('2', context, frequency, 2),
+                    _buildNumberItem('3', context, frequency, 3),
+                    _buildNumberItem('4', context, frequency, 4),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildNumberItem('5', context, 5),
-                    _buildNumberItem('6', context, 6),
-                    _buildNumberItem('7', context, 7),
-                    _buildNumberItem('8', context, 8),
+                    _buildNumberItem('5', context, frequency, 5),
+                    _buildNumberItem('6', context, frequency, 6),
+                    _buildNumberItem('7', context, frequency, 7),
+                    _buildNumberItem('8', context, frequency, 8),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildNumberItem('9', context, 9),
-                    _buildNumberItem('10', context, 10),
-                    _buildNumberItem('11', context, 11),
-                    _buildNumberItem('12', context, 12),
+                    _buildNumberItem('9', context, frequency, 9),
+                    _buildNumberItem('10', context, frequency, 10),
+                    _buildNumberItem('11', context, frequency, 11),
+                    _buildNumberItem('12', context, frequency, 12),
                   ],
                 ),
               ],
@@ -946,12 +948,13 @@ class _PaymentFrequencyFirstScreenState
     );
   }
 
-  Widget _buildNumberItem(String number, BuildContext context, int months) {
+  Widget _buildNumberItem(
+      String number, BuildContext context, String frequency, int months) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
           Navigator.pop(context);
-          _calculateAndProceed('Monthly', months);
+          _calculateAndProceed(frequency, months);
         },
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 4),
