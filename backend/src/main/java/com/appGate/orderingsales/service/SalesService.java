@@ -1047,7 +1047,7 @@ public class SalesService {
             }
             Payment payment = new Payment();
             payment.setSalesOrderId(order.getId());
-            payment.setUserId(order.getCustomerId());
+            payment.setUserId(order.getCustomerId() != null ? order.getCustomerId() : 0L);
             payment.setAmount(amount != null ? amount.doubleValue() : 0d);
             payment.setPaymentMethod(PaymentMethod.CARD);
             payment.setStatus(PaymentStatus.COMPLETED);
@@ -1075,7 +1075,7 @@ public class SalesService {
             BigDecimal total = order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO;
             Payment payment = new Payment();
             payment.setSalesOrderId(order.getId());
-            payment.setUserId(order.getCustomerId());
+            payment.setUserId(order.getCustomerId() != null ? order.getCustomerId() : 0L);
             payment.setAmount(total.doubleValue());
             // No gateway was involved; BANK_TRANSFER is the closest of the four methods
             // for "settled off-system", and the reference says how it was recorded.

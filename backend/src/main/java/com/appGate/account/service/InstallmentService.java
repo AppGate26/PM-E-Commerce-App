@@ -58,9 +58,9 @@ public class InstallmentService {
      * <p>
      * Pass the optional delivery destination (see InstallmentPlanDto) to have the
      * delivery fee priced into the preview as well. It is reported as its own
-     * {@code deliveryFee} and folded into {@code firstPaymentAmount} only - never spread
-     * across the installments, which stay {@code installmentAmount} each. Render those
-     * fields rather than dividing a delivery-inclusive total by the number of periods.
+     * {@code deliveryFee} and spread across the installments in the first half of the
+     * plan (see InstallmentDeliveryFeeSpread) - render each row's {@code amountDue}
+     * rather than dividing a delivery-inclusive total by the number of periods.
      */
     public BaseResponse calculateInstallmentPlan(InstallmentPlanDto dto) {
         try {
@@ -102,8 +102,8 @@ public class InstallmentService {
      * as CheckoutDto.installmentPlanId.
      *
      * Send the same delivery destination here as on the preview: the quoted delivery fee
-     * is stored on the plan (never financed into it) and is what the down-payment charge
-     * then collects in full - see PaymentGatewayService.resolveDownPaymentDeliveryFee.
+     * is stored on the plan (never financed into it) and spread across the first half of
+     * its installments - see InstallmentDeliveryFeeSpread.
      *
      * Idempotent: the mobile app has no way to resume a plan it already created (e.g.
      * after a network retry, or backing out and re-entering the installment checkout
@@ -190,12 +190,13 @@ public class InstallmentService {
     // MobileSalesOrderSyncService.createLoanShadow, which mirrors this schedule as-is
     // without a separate synthetic down-payment entry.
     //
-    // The delivery fee is quoted here too (when dto carries a delivery destination) but is
-    // deliberately kept OUT of amountFinanced/grandTotal/periodAmount, so it is never
-    // divided across the periods: it rides entirely on the first payment. The financed
-    // schedule stays delivery-free; plan.deliveryFee carries the fee and
-    // InstallmentPlanResponseDto.firstPaymentAmount is what the customer actually pays up
-    // front (downPayment + deliveryFee).
+    // The delivery fee is quoted here too (when dto carries a delivery destination) and kept
+    // OUT of amountFinanced/grandTotal/periodAmount/downPayment, but it is spread evenly
+    // across the installments that make up the first 50% of the plan (see
+    // InstallmentDeliveryFeeSpread): each of those rows' amountDue carries its share, so
+    // e.g. a 100,000 item over 4 months pays 25,000 + half the fee in months 1 and 2.
+    // plan.deliveryFee carries the total, and InstallmentPlanResponseDto.firstPaymentAmount
+    // is what the customer actually pays up front (row #1's amountDue).
     private InstallmentPlan buildPlan(InstallmentPlanDto dto, Double amountFinanced) {
         // Insurance is optional; a null flag means an older client, which always had it.
         boolean includeInsurance = !Boolean.FALSE.equals(dto.getIncludeInsurance());
@@ -235,9 +236,12 @@ public class InstallmentService {
             dto.getFrequency()
         );
 
+        // downPayment stays the delivery-free principal of period #1; its delivery share is
+        // added to row #1's amountDue by the spread below.
         Double downPayment = fullSchedule.get(0).getAmountDue();
         plan.setDownPayment(downPayment);
-        plan.setRemainingBalance(grandTotal - downPayment);
+        InstallmentDeliveryFeeSpread.respread(plan, fullSchedule, deliveryFee, 0.0);
+        plan.setRemainingBalance(plan.getRemainingBalance() - fullSchedule.get(0).getAmountDue());
         plan.setInstallmentAmount(periodAmount);
         plan.setNumberOfInstallments(totalPeriods);
         plan.setNextPaymentDate(fullSchedule.get(0).getDueDate());

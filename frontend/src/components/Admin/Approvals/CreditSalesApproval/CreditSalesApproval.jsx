@@ -3,6 +3,8 @@ import AdminNav from "../../Navigation/AdminNav";
 import { apiRequest } from "../../../../lib/config";
 import { useAuth } from "../../../../context/AuthContext";
 import { normalizePendingResponse } from "../shared/approvalUtils";
+import { approverName, buildCreditSaleReceipt } from "../shared/receiptUtils";
+import SalesReceipt from "../shared/SalesReceipt";
 import "./CreditSalesApproval.css";
 
 const CreditSalesApproval = () => {
@@ -12,6 +14,7 @@ const CreditSalesApproval = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [actionLoading, setActionLoading] = useState(null);
+  const [receipt, setReceipt] = useState(null);
 
   useEffect(() => {
     fetchPendingApprovals();
@@ -57,6 +60,10 @@ const CreditSalesApproval = () => {
         declineReason: "",
         approvedBy,
       });
+      const approved = pendingApprovals.find(
+        (approval) => String(approval?.id || approval?.approvalId) === String(approvalId)
+      );
+      if (approved) setReceipt(buildCreditSaleReceipt(approved, approverName(user)));
       setSuccessMessage("Credit sale approved successfully!");
       setTimeout(() => {
         fetchPendingApprovals();
@@ -248,6 +255,7 @@ const CreditSalesApproval = () => {
           )}
         </table>
       </div>
+      <SalesReceipt receipt={receipt} onClose={() => setReceipt(null)} />
     </div>
   );
 };

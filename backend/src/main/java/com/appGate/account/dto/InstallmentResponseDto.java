@@ -23,6 +23,8 @@ public class InstallmentResponseDto {
     private Long id;
     private Integer installmentNumber;
     private Double amountDue;
+    // This row's share of the plan's delivery fee, already included in amountDue.
+    private Double deliveryFeePortion;
     private Double amountPaid;
     private LocalDate dueDate;
     private LocalDate paidDate;
@@ -42,6 +44,7 @@ public class InstallmentResponseDto {
                 .id(installment.getId())
                 .installmentNumber(installment.getInstallmentNumber())
                 .amountDue(installment.getAmountDue())
+                .deliveryFeePortion(installment.getDeliveryFeePortion())
                 .amountPaid(installment.getAmountPaid())
                 .dueDate(installment.getDueDate())
                 .paidDate(installment.getPaidDate())

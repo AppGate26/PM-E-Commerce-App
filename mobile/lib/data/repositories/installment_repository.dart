@@ -250,6 +250,8 @@ class InstallmentRepository {
                     int.tryParse(extractFieldValue(obj, 'installmentNumber') ?? ''),
                 'amountDue':
                     double.tryParse(extractFieldValue(obj, 'amountDue') ?? ''),
+                'deliveryFeePortion': double.tryParse(
+                    extractFieldValue(obj, 'deliveryFeePortion') ?? ''),
                 'amountPaid':
                     double.tryParse(extractFieldValue(obj, 'amountPaid') ?? ''),
                 'dueDate': extractFieldValue(obj, 'dueDate'),
@@ -306,6 +308,8 @@ class InstallmentRepository {
                     extractFieldValue(dataSection, 'installmentAmount') ??
                         '0') ??
                 0.0,
+            'deliveryFee': double.tryParse(
+                extractFieldValue(dataSection, 'deliveryFee') ?? ''),
             'frequency': extractFieldValue(dataSection, 'frequency') ?? 'DAILY',
             'numberOfInstallments': int.tryParse(
                     extractFieldValue(dataSection, 'numberOfInstallments') ??
@@ -393,6 +397,7 @@ class InstallmentRepository {
                 'id': item['id'] ?? item['installmentId'],
                 'installmentNumber': item['installmentNumber'],
                 'amountDue': item['amountDue'],
+                'deliveryFeePortion': item['deliveryFeePortion'],
                 'amountPaid': item['amountPaid'],
                 'dueDate': item['dueDate'],
                 'paidDate': item['paidDate'],

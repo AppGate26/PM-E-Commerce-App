@@ -27,5 +27,7 @@ public interface RiderBoxRepository extends JpaRepository<RiderBox, Long> {
 
     List<RiderBox> findByBranchId(Long branchId);
     List<RiderBox> findByStatusAndBranchId(RiderBoxStatusEnum status, Long branchId);
+    List<RiderBox> findByStatusIn(List<RiderBoxStatusEnum> statuses);
+    List<RiderBox> findByStatusInAndBranchId(List<RiderBoxStatusEnum> statuses, Long branchId);
 
 }

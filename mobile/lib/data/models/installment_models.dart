@@ -75,8 +75,8 @@ class InstallmentPlan {
   /// Months to send back when persisting this plan. Sending [durationInMonths]
   /// (the payment count) instead turned a 1-month DAILY plan (30 payments) into
   /// a 30-month one on create. Fallback for plans that never went through the
-  /// frequency screen: a MONTHLY plan's payment count is its months, and
-  /// DAILY/WEEKLY are only offered over a single month.
+  /// frequency screen: a MONTHLY plan's payment count is its months; for
+  /// DAILY/WEEKLY the months can't be recovered from it, so assume one.
   int get monthsForRequest {
     if (selectedMonths != null && selectedMonths! > 0) return selectedMonths!;
     if (frequency.toUpperCase() == 'MONTHLY' && durationInMonths > 0) {
@@ -178,9 +178,11 @@ class InstallmentPlan {
               }
             }
           }
-          // Use installmentAmount from plan if not in item
+          // Use installmentAmount from plan if not in item. A row's own amountDue
+          // wins: it includes that row's share of the delivery fee.
           if (!itemMap.containsKey('amountToPay') &&
-              !itemMap.containsKey('amount')) {
+              !itemMap.containsKey('amount') &&
+              itemMap['amountDue'] == null) {
             final installmentAmount =
                 ((data['installmentAmount'] ?? 0.0) as num).toDouble();
             itemMap['amountToPay'] = installmentAmount;
@@ -264,6 +266,10 @@ class InstallmentSchedule {
   final double cumulative;
   final bool isPaid;
   final DateTime? paidAt;
+  // This payment's share of the delivery fee, already included in amountToPay.
+  // The backend spreads delivery over the payments that make up the first 50%
+  // of the plan. Null when the server didn't send one.
+  final double? deliveryFeePortion;
 
   InstallmentSchedule({
     required this.installmentId,
@@ -272,7 +278,24 @@ class InstallmentSchedule {
     required this.cumulative,
     this.isPaid = false,
     this.paidAt,
+    this.deliveryFeePortion,
   });
+
+  InstallmentSchedule copyWith({
+    double? amountToPay,
+    double? cumulative,
+    double? deliveryFeePortion,
+  }) {
+    return InstallmentSchedule(
+      installmentId: installmentId,
+      dateDue: dateDue,
+      amountToPay: amountToPay ?? this.amountToPay,
+      cumulative: cumulative ?? this.cumulative,
+      isPaid: isPaid,
+      paidAt: paidAt,
+      deliveryFeePortion: deliveryFeePortion ?? this.deliveryFeePortion,
+    );
+  }
 
   factory InstallmentSchedule.fromJson(Map<String, dynamic> json) {
     // Handle empty or invalid json
@@ -323,6 +346,9 @@ class InstallmentSchedule {
       isPaid: json['isPaid'] ?? json['paid'] ?? false,
       paidAt: json['paidAt'] != null
           ? DateTime.tryParse(json['paidAt'].toString())
+          : null,
+      deliveryFeePortion: json['deliveryFeePortion'] != null
+          ? (json['deliveryFeePortion'] as num).toDouble()
           : null,
     );
   }

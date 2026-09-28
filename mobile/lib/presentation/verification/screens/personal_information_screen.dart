@@ -176,8 +176,8 @@ class _PersonalInformationScreenState
     print('🟣 [PersonalInformation] Populating form with data...');
     print('📊 [PersonalInformation] Data keys: ${data.keys}');
 
-    final stateData = data['state'] as Map<String, dynamic>?;
-    final lgaData = data['lga'] as Map<String, dynamic>?;
+    final stateData = data['state'] is Map ? data['state'] as Map : null;
+    final lgaData = data['lga'] is Map ? data['lga'] as Map : null;
 
     setState(() {
       _firstNameController.text = data['firstName'] ?? '';

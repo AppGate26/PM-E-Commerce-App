@@ -6,6 +6,7 @@ import com.appGate.account.models.Installment;
 import com.appGate.account.models.InstallmentPlan;
 import com.appGate.account.repository.InstallmentPlanRepository;
 import com.appGate.account.repository.InstallmentRepository;
+import com.appGate.account.service.InstallmentDeliveryFeeSpread;
 import com.appGate.inventory.models.Product;
 import com.appGate.inventory.models.Stock;
 import com.appGate.inventory.repository.ProductRepository;
@@ -113,10 +114,17 @@ public class OrderService {
             double totalPaid = installments.stream()
                     .mapToDouble(i -> i.getAmountPaid() != null ? i.getAmountPaid() : 0.0)
                     .sum();
-            double grandTotal = plan.getGrandTotal() != null ? plan.getGrandTotal() : 0.0;
+            // The schedule's own total: grandTotal plus the delivery shares spread onto the
+            // first half of the rows (see InstallmentDeliveryFeeSpread), which amountPaid
+            // above also includes. Falls back to grandTotal for a plan with no rows.
+            double scheduleTotal = installments.isEmpty()
+                    ? (plan.getGrandTotal() != null ? plan.getGrandTotal() : 0.0)
+                    : installments.stream()
+                            .mapToDouble(i -> i.getAmountDue() != null ? i.getAmountDue() : 0.0)
+                            .sum();
 
             dto.setTotalAmountPaid(totalPaid);
-            dto.setTotalAmountRemaining(Math.max(grandTotal - totalPaid, 0.0));
+            dto.setTotalAmountRemaining(Math.max(scheduleTotal - totalPaid, 0.0));
             dto.setInstallments(installments.stream()
                     .map(InstallmentResponseDto::from)
                     .collect(java.util.stream.Collectors.toList()));
@@ -409,6 +417,8 @@ public class OrderService {
 
             if (installmentPlan != null) {
                 installmentPlan.setOrderId(savedOrder.getId());
+                // Before createMirror below copies the schedule onto the admin shadow.
+                spreadOrderDeliveryFee(savedOrder, installmentPlan, deliveryFee.doubleValue());
                 installmentPlanRepository.save(installmentPlan);
             }
 
@@ -464,33 +474,8 @@ public class OrderService {
                 savedOrder.setPaymentReference(installmentPlan.getDownPaymentReference());
                 orderRepository.save(savedOrder);
                 mobileSalesOrderSyncService.syncDownPaymentCollected(savedOrder.getId());
-
-                // SAFETY NET for PaymentGatewayService.matchDownPaymentDeliveryFee: that
-                // workaround guesses a delivery fee (from a cached calculate-delivery-fee
-                // quote) to fold into the down-payment charge BEFORE this order - and its
-                // real fulfillmentType/deliveryFee, computed fresh just above - exists. For
-                // a PICKUP order deliveryFee is always 0, so if the guess folded in a
-                // (nonzero, stale) delivery fee anyway, the customer was over-charged.
-                // Refund the difference to the wallet the moment the truth is known, rather
-                // than require mobile-app changes or leave the customer short-changed.
-                // Never the reverse (under-collection is never auto-charged here) - a
-                // refund needs no customer consent, a charge does.
-                double collectedAsDeliveryFee = installmentPlan.getDownPaymentDeliveryFee() != null
-                        ? installmentPlan.getDownPaymentDeliveryFee() : 0.0;
-                double actualDeliveryFee = deliveryFee.doubleValue();
-                if (collectedAsDeliveryFee > actualDeliveryFee) {
-                    double refundAmount = collectedAsDeliveryFee - actualDeliveryFee;
-                    com.appGate.account.response.BaseResponse refundResponse = walletService.creditWallet(
-                            savedOrder.getUserId(), refundAmount,
-                            "Refund: delivery fee adjustment for order " + savedOrder.getOrderNumber());
-                    if (refundResponse.getStatus() == HttpStatus.OK.value()) {
-                        installmentPlan.setDownPaymentDeliveryFee(actualDeliveryFee);
-                        installmentPlanRepository.save(installmentPlan);
-                    } else {
-                        log.warn("Could not refund over-collected delivery fee ({}) for order {} (installment plan {}): {}",
-                                refundAmount, savedOrder.getId(), installmentPlan.getId(), refundResponse.getMessage());
-                    }
-                }
+                // Any delivery fee the down payment over-collected was already refunded by
+                // spreadOrderDeliveryFee above.
             }
 
             // TEMPORARY WORKAROUND - remove once the mobile app can pass orderId on its card
@@ -543,6 +528,50 @@ public class OrderService {
             return new BaseResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Checkout failed: " + e.getMessage(), null);
         }
+    }
+
+    /**
+     * Re-spreads an installment order's delivery fee over the first half of its plan (see
+     * InstallmentDeliveryFeeSpread) now that the real fee is known - the plan was spread
+     * with a quote, which the customer's final destination may have changed.
+     *
+     * <p>SAFETY NET for a down payment that already collected more delivery than the real
+     * fee (e.g. a stale cached quote folded into a PICKUP order's down payment - see
+     * PaymentGatewayService.resolveDownPaymentDeliveryFee): the difference is refunded to
+     * the wallet and taken off installment #1. Never the reverse - an under-collection is
+     * spread onto the remaining first-half installments, never charged here, since a refund
+     * needs no customer consent and a charge does.
+     */
+    private void spreadOrderDeliveryFee(Order order, InstallmentPlan plan, double actualDeliveryFee) {
+        List<Installment> rows = installmentRepository.findByInstallmentPlanId(plan.getId());
+        double collected = plan.getDownPaymentDeliveryFee() != null ? plan.getDownPaymentDeliveryFee() : 0.0;
+
+        if (collected > actualDeliveryFee) {
+            double refundAmount = collected - actualDeliveryFee;
+            com.appGate.account.response.BaseResponse refundResponse = walletService.creditWallet(
+                    order.getUserId(), refundAmount,
+                    "Refund: delivery fee adjustment for order " + order.getOrderNumber());
+            if (refundResponse.getStatus() == HttpStatus.OK.value()) {
+                plan.setDownPaymentDeliveryFee(actualDeliveryFee);
+                collected = actualDeliveryFee;
+                rows.stream()
+                        .filter(row -> row.getInstallmentNumber() == 1 && row.getStatus() == InstallmentStatus.PAID)
+                        .findFirst()
+                        .ifPresent(first -> {
+                            double share = InstallmentDeliveryFeeSpread.portionOf(first);
+                            double taken = Math.min(refundAmount, share);
+                            first.setDeliveryFeePortion(share - taken);
+                            first.setAmountDue(first.getAmountDue() - taken);
+                            first.setAmountPaid(first.getAmountPaid() - taken);
+                        });
+            } else {
+                log.warn("Could not refund over-collected delivery fee ({}) for order {} (installment plan {}): {}",
+                        refundAmount, order.getId(), plan.getId(), refundResponse.getMessage());
+            }
+        }
+
+        InstallmentDeliveryFeeSpread.respread(plan, rows, actualDeliveryFee, Math.min(collected, actualDeliveryFee));
+        installmentRepository.saveAll(rows);
     }
 
     // Reference the mobile app embeds in CheckoutDto.notes for a payment it collected before
@@ -662,13 +691,12 @@ public class OrderService {
                 return new BaseResponse(HttpStatus.BAD_REQUEST.value(), "Down payment has already been collected for this order", null);
             }
 
-            // Determine amount to debit: for installment orders, the delivery fee is never
-            // financed - it's charged in full up front alongside the plan's down payment
-            // (which itself covers only the product subtotal + insurance, per InstallmentService).
-            // If the down payment was already collected via the pre-checkout Paystack flow,
-            // only whatever delivery fee wasn't already folded into that charge (see
-            // InstallmentPlan.downPaymentDeliveryFee and PaymentGatewayService.
-            // initializeDownPaymentBankTransfer/Card) is still outstanding here.
+            // Determine amount to debit: for installment orders, the plan's down payment
+            // (product subtotal + insurance only, per InstallmentService) plus installment
+            // #1's share of the delivery fee - the rest of the fee is spread over the first
+            // half of the installments (InstallmentDeliveryFeeSpread). If the down payment
+            // was already collected via the pre-checkout Paystack flow, only delivery that
+            // neither that charge nor a later installment covers is still outstanding here.
             Double amountToDebit = order.getGrandTotal();
             boolean isInstallmentPayment = order.getPaymentType() == PaymentType.INSTALLMENT;
             InstallmentPlan plan = null;
@@ -676,9 +704,8 @@ public class OrderService {
             if (isInstallmentPayment) {
                 plan = installmentPlanRepository.findById(order.getInstallmentPlanId())
                         .orElseThrow(() -> new RuntimeException("Installment plan not found for order " + order.getId()));
-                double alreadyCollectedDeliveryFee = plan.getDownPaymentDeliveryFee() != null
-                        ? plan.getDownPaymentDeliveryFee() : 0.0;
-                outstandingDeliveryFee = Math.max(0.0, order.getDeliveryFee() - alreadyCollectedDeliveryFee);
+                outstandingDeliveryFee = InstallmentDeliveryFeeSpread.deliveryDueWithDownPayment(
+                        plan, installmentRepository.findByInstallmentPlanId(plan.getId()), order.getDeliveryFee());
                 amountToDebit = Boolean.TRUE.equals(plan.getDownPaymentPaid())
                         ? outstandingDeliveryFee
                         : outstandingDeliveryFee + plan.getDownPayment();

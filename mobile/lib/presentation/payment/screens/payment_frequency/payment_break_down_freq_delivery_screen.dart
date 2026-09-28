@@ -404,6 +404,22 @@ class _PaymentBreakDownFreqDeliveryScreenState
         _frequencyUnit(plan.frequency, plural: plan.durationInMonths != 1);
     final shipmentWindow = _shipmentWindowText(plan);
     final hasDeliveryFee = plan.deliveryFee != null && plan.deliveryFee! > 0;
+    // Delivery is spread over the payments that make up the first 50% of the
+    // plan, so those payments are larger than the rest.
+    final displaySchedule = InstallmentDisplayUtils.buildDisplaySchedule(plan);
+    final deliveryPayments =
+        InstallmentDisplayUtils.deliveryPaymentCount(displaySchedule.length);
+    final remainingPayments = displaySchedule.length - deliveryPayments;
+    final splitsDelivery = hasDeliveryFee && remainingPayments > 0;
+    final paymentInfoText = splitsDelivery
+        ? 'You will be paying ₦${_formatCurrency(installmentAmount)} for the '
+            'first $deliveryPayments '
+            '${_frequencyUnit(plan.frequency, plural: deliveryPayments != 1)}, '
+            'then ₦${_formatCurrency(displaySchedule.last.amountToPay)} for the '
+            'remaining $remainingPayments '
+            '${_frequencyUnit(plan.frequency, plural: remainingPayments != 1)}'
+        : 'You will be paying ₦${_formatCurrency(installmentAmount)} '
+            'for ${plan.durationInMonths} consecutive $unit';
 
     print(
         '🔵 [PAYMENT BREAKDOWN DELIVERY] build() -> productName="${plan.productName}", '
@@ -502,8 +518,7 @@ class _PaymentBreakDownFreqDeliveryScreenState
 
                   // ================= PAYMENT INFO =================
                   Text(
-                    'You will be paying ₦${_formatCurrency(installmentAmount)} '
-                    'for ${plan.durationInMonths} consecutive $unit',
+                    paymentInfoText,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 16,
@@ -529,7 +544,11 @@ class _PaymentBreakDownFreqDeliveryScreenState
                   if (hasDeliveryFee) ...[
                     const SizedBox(height: 24),
                     Text(
-                      'A delivery fee of ₦${_formatCurrency(plan.deliveryFee!)} will be added',
+                      deliveryPayments > 1
+                          ? 'A delivery fee of ₦${_formatCurrency(plan.deliveryFee!)} '
+                              'is spread across your first $deliveryPayments payments'
+                          : 'A delivery fee of ₦${_formatCurrency(plan.deliveryFee!)} '
+                              'is added to your first payment',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 14,

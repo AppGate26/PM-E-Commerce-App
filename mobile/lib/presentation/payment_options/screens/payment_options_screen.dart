@@ -74,13 +74,13 @@ class PaymentOptionScreenState extends ConsumerState<PaymentOptionScreen> {
               InstallmentDisplayUtils.buildDisplaySchedule(plan);
           if (extra['totalAmount'] == null) {
             if (displaySchedule.isNotEmpty) {
-              // First installment PLUS the delivery fee: delivery is never financed
-              // across the plan, and the server charges it in full with payment #1.
-              // Quoting the installment alone under-stated this charge, which on the
-              // wallet path meant confirming one figure and being debited another.
+              // First installment including its share of the delivery fee, which
+              // the server spreads over the first 50% of the payments. Quoting a
+              // different figure here meant, on the wallet path, confirming one
+              // amount and being debited another.
               amount = InstallmentDisplayUtils.firstPaymentAmount(plan);
               print(
-                  '📦 [PaymentOption] Using FIRST payment amount (installment + delivery) = $amount');
+                  '📦 [PaymentOption] Using FIRST payment amount (installment + delivery share) = $amount');
             } else {
               amount = plan.totalAmount;
               print(

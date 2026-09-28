@@ -291,8 +291,9 @@ class _InstallmentBreakDownScreenState
                           ...displaySchedule.asMap().entries.map((entry) {
                             final index = entry.key;
                             final schedule = entry.value;
-                            final isHighlighted =
-                                index == (displaySchedule.length / 2).floor();
+                            final isHighlighted = index ==
+                                InstallmentDisplayUtils.shipmentReadyIndex(
+                                    displaySchedule);
 
                             if (isHighlighted) {
                               return Column(

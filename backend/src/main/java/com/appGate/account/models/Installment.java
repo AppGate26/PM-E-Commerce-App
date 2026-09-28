@@ -34,6 +34,10 @@ public class Installment extends BaseEntity {
     @Column(nullable = false)
     private Double amountDue;
 
+    // This row's share of the plan's delivery fee, already included in amountDue - see
+    // InstallmentDeliveryFeeSpread. Null on rows created before delivery was spread.
+    private Double deliveryFeePortion;
+
     @Column(nullable = false)
     private Double amountPaid = 0.0;
 

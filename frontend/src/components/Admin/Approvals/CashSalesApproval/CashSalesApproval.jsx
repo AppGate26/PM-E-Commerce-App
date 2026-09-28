@@ -7,6 +7,7 @@ import {
   pickValue,
   resolveApprovalData,
 } from "../shared/approvalUtils";
+import { approverName, buildCashSaleReceipt } from "../shared/receiptUtils";
 
 const getSaleData = (approval) => resolveApprovalData(approval, ["saleData", "cashSale", "sale", "data"]);
 
@@ -48,6 +49,7 @@ const CashSalesApproval = () => {
       declining: "Declining...",
     },
     declinePlaceholder: "Write why this cash sale should be declined.",
+    buildReceipt: (approval, user) => buildCashSaleReceipt(approval, approverName(user)),
     columns: [
       {
         key: "sale",

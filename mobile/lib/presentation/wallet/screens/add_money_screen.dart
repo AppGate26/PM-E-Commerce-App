@@ -1072,7 +1072,9 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                       Icons.arrow_back,
                       color: AppColors.blueBackground,
                     ),
-                    onPressed: () => context.pop(),
+                    onPressed: () => context.canPop()
+                        ? context.pop()
+                        : context.go(AppRoutes.home),
                   ),
                   const Spacer(),
                 ],

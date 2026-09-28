@@ -9,6 +9,7 @@ import 'package:pm_e_commerce_app/data/models/location_model.dart';
 import 'package:pm_e_commerce_app/data/providers/auth_provider.dart';
 import 'package:pm_e_commerce_app/data/providers/delivery_fee_provider.dart';
 import 'package:pm_e_commerce_app/data/providers/location_provider.dart';
+import 'package:pm_e_commerce_app/presentation/payment/screens/payment_frequency/installment_schedule_display_utils.dart';
 
 class PaymentFreqDeliveryScreen extends ConsumerStatefulWidget {
   const PaymentFreqDeliveryScreen({super.key});
@@ -221,11 +222,15 @@ class _PaymentFreqDeliveryScreenState
     final double newTotalAmount =
         safeProductPrice + plan.insurance + deliveryFee;
 
-// ✅ Rebuild schedule so installments add up to the new total
+// ✅ Rebuild schedule so installments add up to the new total. The delivery
+    // fee is NOT divided across every payment: it is spread over the payments
+    // that make up the first 50% of the plan (see spreadDeliveryFee), matching
+    // what the backend charges.
     final int count = plan.durationInMonths > 0 ? plan.durationInMonths : 1;
-    final double perInstallment = newTotalAmount / count;
+    final double perInstallment =
+        (safeProductPrice + plan.insurance) / count;
 
-    final List<InstallmentSchedule> newSchedule = [];
+    final List<InstallmentSchedule> baseSchedule = [];
     double cumulative = 0;
     final DateTime start = plan.createdAt ?? DateTime.now();
 
@@ -245,7 +250,7 @@ class _PaymentFreqDeliveryScreenState
           dueDate = DateTime(start.year, start.month + i + 1, start.day);
       }
 
-      newSchedule.add(InstallmentSchedule(
+      baseSchedule.add(InstallmentSchedule(
         installmentId: i + 1,
         dateDue: dueDate,
         amountToPay: perInstallment,
@@ -254,6 +259,8 @@ class _PaymentFreqDeliveryScreenState
         paidAt: null,
       ));
     }
+    final List<InstallmentSchedule> newSchedule =
+        InstallmentDisplayUtils.spreadDeliveryFee(baseSchedule, deliveryFee);
 
     print('📦 [PaymentFreqDelivery] safeProductPrice = $safeProductPrice');
     print('📦 [PaymentFreqDelivery] newTotalAmount   = $newTotalAmount');

@@ -132,7 +132,7 @@ public class MobileSalesOrderSyncService {
         // findOrdersReadyForRiderAssignment.
         mirror.setFulfillmentType(order.getFulfillmentType());
         mirror.setTotalAmount(plan != null
-                ? BigDecimal.valueOf(plan.getGrandTotal())
+                ? BigDecimal.valueOf(scheduleTotal(plan))
                 : BigDecimal.valueOf(order.getGrandTotal()));
 
         SalesOrder saved = salesOrderRepository.save(mirror);
@@ -157,7 +157,7 @@ public class MobileSalesOrderSyncService {
                 + (plan.getFrequency() != null ? plan.getFrequency().name() : "installments"));
         loan.setInterestOnLoan(BigDecimal.valueOf(plan.getInsuranceAmount()));
         loan.setStartDate(plan.getStartDate());
-        loan.setTotalRepayment(BigDecimal.valueOf(plan.getGrandTotal()));
+        loan.setTotalRepayment(BigDecimal.valueOf(scheduleTotal(plan)));
         LoanDetails savedLoan = loanDetailsRepository.save(loan);
 
         // Entry #1 IS the plan's down payment (see InstallmentService.buildPlan) -
@@ -461,13 +461,35 @@ public class MobileSalesOrderSyncService {
         if (plan == null || !Boolean.TRUE.equals(plan.getDownPaymentPaid())) {
             return null;
         }
-        BigDecimal grandTotal = BigDecimal.valueOf(plan.getGrandTotal());
+        BigDecimal grandTotal = BigDecimal.valueOf(scheduleTotal(plan));
         if (grandTotal.compareTo(BigDecimal.ZERO) <= 0) {
             return BigDecimal.ZERO;
         }
-        return BigDecimal.valueOf(plan.getDownPayment())
+        // Installment #1 as actually collected - the down payment plus its delivery share.
+        double firstPayment = plan.getInstallments() == null ? plan.getDownPayment()
+                : plan.getInstallments().stream()
+                        .filter(row -> row.getInstallmentNumber() == 1)
+                        .mapToDouble(row -> row.getAmountDue() != null ? row.getAmountDue() : 0.0)
+                        .findFirst()
+                        .orElse(plan.getDownPayment());
+        return BigDecimal.valueOf(firstPayment)
                 .multiply(BigDecimal.valueOf(100))
                 .divide(grandTotal, 2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * What the plan's schedule adds up to: grandTotal plus the delivery shares spread onto
+     * its first-half installments (see InstallmentDeliveryFeeSpread). Progress is measured
+     * against this because the mirrored repayment entries' amountPaid includes those shares.
+     */
+    private static double scheduleTotal(InstallmentPlan plan) {
+        List<Installment> rows = plan.getInstallments();
+        if (rows == null || rows.isEmpty()) {
+            return plan.getGrandTotal();
+        }
+        return rows.stream()
+                .mapToDouble(row -> row.getAmountDue() != null ? row.getAmountDue() : 0.0)
+                .sum();
     }
 
     private SalesOrder refreshProgress(SalesOrder mirror, LoanDetails loan) {
