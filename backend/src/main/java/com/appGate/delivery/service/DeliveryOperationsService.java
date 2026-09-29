@@ -1,6 +1,7 @@
 package com.appGate.delivery.service;
 
 import com.appGate.delivery.dto.*;
+import com.appGate.delivery.enums.FeedbackStatus;
 import com.appGate.delivery.enums.RiderBoxStatusEnum;
 import com.appGate.delivery.models.DeliveryConfirmation;
 import com.appGate.delivery.models.DeliveryFeedback;
@@ -242,6 +243,17 @@ public class DeliveryOperationsService {
         feedback.setStatus(dto.getStatus());
 
         deliveryFeedbackRepository.save(feedback);
+
+        // A rider who couldn't deliver reports it here instead of confirming the delivery.
+        // Let dispatch know straight away on the delivery notifications list; the box keeps
+        // its status so it stays with the rider for another attempt or reassignment.
+        if (dto.getStatus() != FeedbackStatus.DELIVERED
+                && riderBox.getStatus() != RiderBoxStatusEnum.DELIVERED) {
+            deliveryNotificationService.notifyRiderBoxEvent(riderBox, details, "FAILED",
+                    describe(details) + " could not be delivered: "
+                            + dto.getStatus().name().replace('_', ' ').toLowerCase()
+                            + riderSuffix(details));
+        }
 
         return new BaseResponse(HttpStatus.OK.value(), "Feedback submitted successfully", feedback);
     }

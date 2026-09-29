@@ -5,6 +5,7 @@ import com.appGate.orderingsales.models.LoanDetails;
 import com.appGate.orderingsales.models.SalesNotification;
 import com.appGate.orderingsales.models.SalesOrder;
 import com.appGate.orderingsales.response.BaseResponse;
+import com.appGate.orderingsales.service.SalesInvoiceService;
 import com.appGate.orderingsales.service.SalesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class SalesController {
 
     private final SalesService salesService;
+    private final SalesInvoiceService salesInvoiceService;
 
     // ==================== ORDER CREATION ====================
 
@@ -369,6 +371,28 @@ public class SalesController {
     public BaseResponse getOrderDetails(@PathVariable Long orderId) {
         SalesOrder order = salesService.getOrderDetails(orderId);
         return new BaseResponse(HttpStatus.OK.value(), "successful", order);
+    }
+
+    // "Completed orders": approved sales that have an invoice/receipt (see getOrderInvoice).
+    @GetMapping("/orders/invoiceable")
+    public BaseResponse getInvoiceableOrders(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return new BaseResponse(HttpStatus.OK.value(), "successful",
+                salesInvoiceService.getInvoiceableOrders(search, page, size));
+    }
+
+    // Invoice (balance still owed) or receipt (paid in full) for an approved sale - see
+    // SalesInvoiceService. 400 with the reason while the order is not yet approved.
+    @GetMapping("/orders/{orderId}/invoice")
+    public BaseResponse getOrderInvoice(@PathVariable Long orderId) {
+        try {
+            return new BaseResponse(HttpStatus.OK.value(), "successful",
+                    salesInvoiceService.buildForSalesOrder(orderId));
+        } catch (RuntimeException e) {
+            return new BaseResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+        }
     }
 
     @GetMapping("/orders/reference/{referenceNo}")

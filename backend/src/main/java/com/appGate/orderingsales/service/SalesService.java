@@ -19,6 +19,10 @@ import com.appGate.orderingsales.repository.OrderRepository;
 import com.appGate.orderingsales.repository.SalesNotificationRepository;
 import com.appGate.orderingsales.repository.SalesOrderRepository;
 import com.appGate.rbac.service.BranchScopeService;
+import com.appGate.rbac.enums.ApprovalStatus;
+import com.appGate.rbac.enums.ApprovalType;
+import com.appGate.rbac.models.ApprovalRequest;
+import com.appGate.rbac.repository.ApprovalRequestRepository;
 import com.appGate.account.dto.FundWalletDto;
 import com.appGate.account.enums.InstallmentFrequency;
 import com.appGate.account.enums.InstallmentStatus;
@@ -79,6 +83,9 @@ public class SalesService {
     private final OrderRepository orderRepository;
     private final InstallmentPlanRepository installmentPlanRepository;
     private final InstallmentRepository installmentRepository;
+    // Walk-in credit sales are signed off on the admin Credit Sales Approval page, which
+    // reads CREDIT_SALES ApprovalRequests - see fileWalkInCreditApprovalRequest.
+    private final ApprovalRequestRepository approvalRequestRepository;
 
     // Shared by processRefund/rejectOrder/approveOrder/submitOrderForApproval: none of them
     // should be allowed once an order has been handed to a rider or delivered. Previously each
@@ -1492,9 +1499,84 @@ public class SalesService {
             order.setComment(decisionDto.getComment());
         }
         SalesOrder savedOrder = salesOrderRepository.save(order);
+        if (savedOrder.getCustomerType() == CustomerType.WALKIN
+                && savedOrder.getOrderType() == SalesOrderType.CREDIT) {
+            fileWalkInCreditApprovalRequest(savedOrder);
+        }
         createNotification(savedOrder, NotificationType.ORDERLIST,
                 "Order submitted for admin approval: " + savedOrder.getCustomerName());
         return savedOrder;
+    }
+
+    // Walk-in credit sales are reviewed on the admin Credit Sales Approval page, which lists
+    // PENDING CREDIT_SALES ApprovalRequests (like cash sales, refunds, stock etc.) - not
+    // SalesOrders in APPROVED status the way Online Sales Approvals does. Without this the
+    // order was marked APPROVED but never showed up anywhere for the admin to act on.
+    // requestData carries salesOrderId so ApprovalService approves/rejects THIS order
+    // instead of creating a new one, plus the fields the approval page displays.
+    private void fileWalkInCreditApprovalRequest(SalesOrder order) {
+        boolean alreadyPending = approvalRequestRepository
+                .findByEntityIdAndApprovalType(order.getId(), ApprovalType.CREDIT_SALES)
+                .stream().anyMatch(r -> r.getStatus() == ApprovalStatus.PENDING);
+        if (alreadyPending) {
+            return;
+        }
+
+        LoanDetails loan = order.getLoanDetails();
+        Map<String, Object> customerInfo = new LinkedHashMap<>();
+        customerInfo.put("customerName", order.getCustomerName());
+        customerInfo.put("accountNumber", order.getAccountNumber());
+        customerInfo.put("email", order.getEmail());
+        customerInfo.put("phoneNumber", order.getPhoneNumber());
+        customerInfo.put("address", order.getAddress());
+
+        Map<String, Object> productInfo = new LinkedHashMap<>();
+        productInfo.put("productName", order.getProductName());
+        productInfo.put("referenceNo", order.getReferenceNo());
+        productInfo.put("quantity", order.getQuantity());
+        productInfo.put("unitPrice", order.getUnitPrice());
+        productInfo.put("discount", order.getDiscount());
+
+        Map<String, Object> loanInfo = new LinkedHashMap<>();
+        if (loan != null) {
+            loanInfo.put("loanType", loan.getLoanType());
+            loanInfo.put("productAmount", loan.getProductAmount());
+            loanInfo.put("repaymentMethod", loan.getRepaymentMethod());
+            loanInfo.put("duration", loan.getDuration());
+            loanInfo.put("rate", loan.getRate());
+            loanInfo.put("interestOnLoan", loan.getInterestOnLoan());
+            loanInfo.put("totalRepayment", loan.getTotalRepayment());
+            loanInfo.put("upfrontCharges", loan.getUpfrontCharges());
+            loanInfo.put("officerInCharge", loan.getOfficerInCharge());
+            loanInfo.put("startDate", loan.getStartDate() != null ? loan.getStartDate().toString() : null);
+            loanInfo.put("expirationDate", loan.getExpirationDate() != null ? loan.getExpirationDate().toString() : null);
+        } else {
+            loanInfo.put("productAmount", order.getTotalAmount());
+        }
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("salesOrderId", order.getId());
+        data.put("referenceNo", order.getReferenceNo());
+        data.put("customerName", order.getCustomerName());
+        data.put("productName", order.getProductName());
+        data.put("totalAmount", order.getTotalAmount());
+        data.put("paymentProgress", order.getPaymentProgress());
+        data.put("customerInfo", customerInfo);
+        data.put("productInfo", productInfo);
+        data.put("loanInfo", loanInfo);
+
+        ApprovalRequest request = new ApprovalRequest();
+        request.setApprovalType(ApprovalType.CREDIT_SALES);
+        request.setEntityId(order.getId());
+        request.setRequestedBy(0L);
+        request.setStatus(ApprovalStatus.PENDING);
+        request.setComments(order.getComment());
+        try {
+            request.setRequestData(objectMapper.writeValueAsString(data));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Could not build credit sale approval request: " + e.getMessage(), e);
+        }
+        approvalRequestRepository.save(request);
     }
 
     // Approve an online order that is awaiting fulfilment: moves it into PROCESSING.
@@ -2254,10 +2336,12 @@ public class SalesService {
         int durationMonths = parseDurationToMonths(dto.getDuration());
         int numberOfPayments = calculateNumberOfPayments(dto.getRepaymentMethod(), durationMonths);
 
-        // Simple interest calculation
+        // Flat interest for the whole loan: rate% of the product amount (10% of 250,000 =
+        // 25,000). It used to be pro-rated by months/12 as an annual rate, which charged
+        // far less than the rate the officer entered (e.g. 8,623 instead of 25,000).
+        BigDecimal rate = dto.getRate() != null ? dto.getRate() : BigDecimal.ZERO;
         BigDecimal interestOnLoan = dto.getProductAmount()
-                .multiply(dto.getRate().divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP))
-                .multiply(BigDecimal.valueOf(durationMonths).divide(BigDecimal.valueOf(12), 10, RoundingMode.HALF_UP))
+                .multiply(rate.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP))
                 .setScale(2, RoundingMode.HALF_UP);
 
         BigDecimal totalRepayment = dto.getProductAmount().add(interestOnLoan);

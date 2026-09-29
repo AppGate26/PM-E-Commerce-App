@@ -31,6 +31,12 @@ public class InstallmentPlanDto {
     @Min(value = 1, message = "Duration must be at least 1 month")
     private Integer durationInMonths;
 
+    // Optional, WEEKLY only: the exact number of weekly payments the customer picked.
+    // When present it wins over durationInMonths, so choosing "2 weeks" is 2 payments
+    // instead of being read as 2 months (~8 weeks).
+    @Min(value = 1, message = "Duration must be at least 1 week")
+    private Integer durationInWeeks;
+
     // Insurance is optional. Null (older app builds that never send it) keeps the
     // previous behaviour of adding it.
     private Boolean includeInsurance = true;

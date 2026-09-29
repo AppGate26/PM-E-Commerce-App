@@ -16,34 +16,44 @@ const SalesReceipt = ({ receipt, onClose }) => {
   useEffect(() => {
     if (!receipt) return undefined;
     document.body.classList.add("sales-receipt-open");
+    // Browsers use the page title as the default "Save as PDF" file name.
+    const previousTitle = document.title;
+    document.title = `${receipt.title} ${receipt.receiptNo}`;
     const onKey = (event) => {
       if (event.key === "Escape") onClose?.();
     };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.classList.remove("sales-receipt-open");
+      document.title = previousTitle;
       window.removeEventListener("keydown", onKey);
     };
   }, [receipt, onClose]);
 
   if (!receipt) return null;
 
-  const { customer = {}, items = [], credit } = receipt;
+  const { customer = {}, items = [], credit, charges = [], payments = [] } = receipt;
+  const company = receipt.company || RECEIPT_COMPANY;
   const showDiscount = items.some((line) => line.discount > 0);
   const hasBalance = receipt.balance > 0;
+  const tableCols = showDiscount ? 5 : 4;
+  const numberLabel = receipt.numberLabel || "Receipt No.";
+  const dateLabel = receipt.dateLabel || "Receipt Date";
 
-  const notes = [
-    `This receipt confirms the ${receipt.saleType.toLowerCase()} recorded under reference ${receipt.receiptNo}.`,
-    "Please quote the receipt number for any enquiry, return or refund on this sale.",
-    hasBalance
-      ? `The outstanding balance of ₦${formatNaira(receipt.balance)} is payable according to the agreed repayment schedule.`
-      : "Goods sold are subject to the company's returns and refund policy.",
-  ];
+  const notes = receipt.notes?.length
+    ? receipt.notes
+    : [
+        `This receipt confirms the ${receipt.saleType.toLowerCase()} recorded under reference ${receipt.receiptNo}.`,
+        "Please quote the receipt number for any enquiry, return or refund on this sale.",
+        hasBalance
+          ? `The outstanding balance of ₦${formatNaira(receipt.balance)} is payable according to the agreed repayment schedule.`
+          : "Goods sold are subject to the company's returns and refund policy.",
+      ];
 
   return createPortal(
     <div className="sr-overlay" role="dialog" aria-modal="true" aria-label="Sales receipt">
       <div className="sr-toolbar">
-        <span>Sale approved — receipt ready</span>
+        <span>{receipt.toolbarLabel || "Sale approved — receipt ready"}</span>
         <div>
           <button type="button" className="sr-btn sr-btn-primary" onClick={() => window.print()}>
             Print / Save PDF
@@ -57,14 +67,14 @@ const SalesReceipt = ({ receipt, onClose }) => {
       <div className="sr-scroll">
         <article className="sr-page">
           <header className="sr-letterhead">
-            <h1>{RECEIPT_COMPANY.name}</h1>
-            <p>{RECEIPT_COMPANY.tagline}</p>
+            <h1>{company.name}</h1>
+            <p>{company.tagline}</p>
           </header>
 
           <section className="sr-meta">
             <div className="sr-billto">
               <h2>{receipt.title}</h2>
-              <span className="sr-label">Received From:</span>
+              <span className="sr-label">{receipt.billToLabel || "Received From:"}</span>
               <strong>{customer.name}</strong>
               {customer.accountNumber ? <span>Account No: {customer.accountNumber}</span> : null}
               {customer.phone ? <span>{customer.phone}</span> : null}
@@ -72,8 +82,12 @@ const SalesReceipt = ({ receipt, onClose }) => {
               {customer.address ? <span>{customer.address}</span> : null}
             </div>
             <dl className="sr-meta-list">
-              <div><dt>Receipt No.:</dt><dd>{receipt.receiptNo}</dd></div>
-              <div><dt>Receipt Date:</dt><dd>{formatReceiptDate(receipt.date)}</dd></div>
+              <div><dt>{numberLabel}:</dt><dd>{receipt.receiptNo}</dd></div>
+              <div><dt>{dateLabel}:</dt><dd>{formatReceiptDate(receipt.date)}</dd></div>
+              {receipt.saleDate ? (
+                <div><dt>Sale Date:</dt><dd>{formatReceiptDate(receipt.saleDate)}</dd></div>
+              ) : null}
+              {receipt.dueOn ? <div><dt>Due On:</dt><dd>{receipt.dueOn}</dd></div> : null}
               <div><dt>Sale Type:</dt><dd>{receipt.saleType}</dd></div>
               <div><dt>Currency:</dt><dd>NGN (₦)</dd></div>
             </dl>
@@ -84,8 +98,12 @@ const SalesReceipt = ({ receipt, onClose }) => {
             <div>
               <strong>{items.map((line) => line.description).join(", ")}</strong>
               <p>
-                {receipt.saleType} approved on {formatReceiptDate(receipt.date)}
-                {receipt.approvedBy ? ` by ${receipt.approvedBy}` : ""}.
+                {receipt.summary || (
+                  <>
+                    {receipt.saleType} approved on {formatReceiptDate(receipt.date)}
+                    {receipt.approvedBy ? ` by ${receipt.approvedBy}` : ""}.
+                  </>
+                )}
               </p>
             </div>
           </section>
@@ -115,8 +133,24 @@ const SalesReceipt = ({ receipt, onClose }) => {
               ))}
             </tbody>
             <tfoot>
+              {charges.length ? (
+                <>
+                  <tr>
+                    <td colSpan={tableCols} className="sr-r">Subtotal</td>
+                    <td className="sr-r">₦ {formatNaira(receipt.subtotal)}</td>
+                  </tr>
+                  {charges.map((charge) => (
+                    <tr key={charge.label}>
+                      <td colSpan={tableCols} className="sr-r">{charge.label}</td>
+                      <td className="sr-r">
+                        {charge.amount < 0 ? "- " : ""}₦ {formatNaira(Math.abs(charge.amount))}
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              ) : null}
               <tr className="sr-total">
-                <td colSpan={showDiscount ? 5 : 4}>TOTAL SALE AMOUNT</td>
+                <td colSpan={tableCols}>{receipt.totalLabel || "TOTAL SALE AMOUNT"}</td>
                 <td className="sr-r">₦ {formatNaira(receipt.total)}</td>
               </tr>
             </tfoot>
@@ -124,7 +158,7 @@ const SalesReceipt = ({ receipt, onClose }) => {
 
           <p className="sr-words">
             <span className="sr-label">Amount in words: </span>
-            <em>{amountToWords(receipt.total)}</em>
+            <em>{receipt.amountInWords || amountToWords(receipt.total)}</em>
           </p>
 
           <h3 className="sr-section-title">Payment Details</h3>
@@ -147,12 +181,40 @@ const SalesReceipt = ({ receipt, onClose }) => {
             ) : null}
             {hasBalance ? (
               <>
-                <div><dt>Bank Name:</dt><dd>{RECEIPT_COMPANY.bankName}</dd></div>
-                <div><dt>Account Name:</dt><dd>{RECEIPT_COMPANY.accountName}</dd></div>
-                <div><dt>Account Number:</dt><dd>{RECEIPT_COMPANY.accountNumber}</dd></div>
+                <div><dt>Bank Name:</dt><dd>{company.bankName}</dd></div>
+                <div><dt>Account Name:</dt><dd>{company.accountName}</dd></div>
+                <div><dt>Account Number:</dt><dd>{company.accountNumber}</dd></div>
               </>
             ) : null}
           </dl>
+
+          {payments.length ? (
+            <>
+              <h3 className="sr-section-title">Payment History</h3>
+              <table className="sr-table">
+                <thead>
+                  <tr>
+                    <th className="sr-c">#</th>
+                    <th>Date</th>
+                    <th>Reference</th>
+                    <th>Status</th>
+                    <th className="sr-r">Amount (NGN)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payments.map((payment, index) => (
+                    <tr key={`${payment.reference || "p"}-${index}`}>
+                      <td className="sr-c">{payment.number ?? index + 1}</td>
+                      <td>{payment.date ? formatReceiptDate(payment.date) : "—"}</td>
+                      <td>{payment.reference || payment.method || "—"}</td>
+                      <td>{payment.status}</td>
+                      <td className="sr-r">₦ {formatNaira(payment.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : null}
 
           <h3 className="sr-section-title">Notes</h3>
           <ul className="sr-notes">
@@ -164,7 +226,7 @@ const SalesReceipt = ({ receipt, onClose }) => {
           <p className="sr-thanks">Thank you for your patronage.</p>
 
           <footer className="sr-sign">
-            <span>For {RECEIPT_COMPANY.name}</span>
+            <span>For {company.name}</span>
             <span className="sr-sign-line">____________________________</span>
             <span>Authorized Signatory</span>
           </footer>

@@ -63,4 +63,18 @@ export const salesApi = {
     );
     return unwrapResponse(payload);
   },
+
+  // Approved ("completed") orders that have an invoice/receipt. Returns a Spring page.
+  getInvoiceableOrders: async ({ search = "", page = 0, size = 20 } = {}) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (search.trim()) params.set("search", search.trim());
+    const payload = await apiRequest(`/sales/orders/invoiceable?${params}`, "GET");
+    return unwrapResponse(payload);
+  },
+
+  // Invoice (balance owed) or receipt (paid in full) for an approved order.
+  getOrderInvoice: async (orderId) => {
+    const payload = await apiRequest(`/sales/orders/${encodeURIComponent(orderId)}/invoice`, "GET");
+    return unwrapResponse(payload);
+  },
 };

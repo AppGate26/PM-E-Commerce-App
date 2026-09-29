@@ -122,6 +122,8 @@ class _DeliveryNotificationsScreenState
         return Icons.check_circle_outline;
       case 'REJECTED':
         return Icons.cancel_outlined;
+      case 'FAILED':
+        return Icons.report_problem_outlined;
       default:
         return Icons.notifications_none;
     }
@@ -137,6 +139,8 @@ class _DeliveryNotificationsScreenState
         return Colors.green;
       case 'REJECTED':
         return Colors.red;
+      case 'FAILED':
+        return Colors.orange;
       default:
         return Colors.grey;
     }
@@ -152,6 +156,8 @@ class _DeliveryNotificationsScreenState
         return 'Delivery completed';
       case 'REJECTED':
         return 'Delivery removed';
+      case 'FAILED':
+        return 'Delivery not completed';
       default:
         return type.replaceAll('_', ' ');
     }

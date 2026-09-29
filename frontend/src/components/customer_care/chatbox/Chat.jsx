@@ -114,19 +114,26 @@ const Chat = () => {
     }
   };
 
-  const fetchMessages = async (chatId) => {
+  // silent = background poll: no spinner, no toast, and the thread only scrolls when
+  // something new arrived; a failed poll keeps what is on screen.
+  const lastMessagesSnapshotRef = useRef("");
+  const fetchMessages = async (chatId, silent = false) => {
     if (!chatId) return;
     try {
-      setLoadingMessages(true);
+      if (!silent) setLoadingMessages(true);
       const response = await careApi.getChatMessages(chatId);
       const list = extractArray(response).map((msg, index) => normalizeMessage(msg, index));
+      const snapshot = JSON.stringify(list);
+      if (silent && snapshot === lastMessagesSnapshotRef.current) return;
+      lastMessagesSnapshotRef.current = snapshot;
       setMessages(list);
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
     } catch (err) {
+      if (silent) return;
       toast.error(`Failed to load messages: ${err?.message || "Unknown error"}`);
       setMessages([]);
     } finally {
-      setLoadingMessages(false);
+      if (!silent) setLoadingMessages(false);
     }
   };
 
@@ -193,8 +200,8 @@ const Chat = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchChats(true);
-      if (activeChat?.id) fetchMessages(activeChat.id);
-    }, 10000);
+      if (activeChat?.id) fetchMessages(activeChat.id, true);
+    }, 4000);
     return () => clearInterval(interval);
   }, [activeChat?.id]);
 

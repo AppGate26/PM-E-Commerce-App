@@ -28,7 +28,7 @@ class DeliveryChatScreen extends ConsumerStatefulWidget {
 }
 
 class _DeliveryChatScreenState extends ConsumerState<DeliveryChatScreen> {
-  static const _pollInterval = Duration(seconds: 5);
+  static const _pollInterval = Duration(seconds: 3);
 
   final _textController = TextEditingController();
   final _scrollController = ScrollController();

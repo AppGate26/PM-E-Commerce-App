@@ -9,6 +9,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pm_e_commerce_app/core/constants/api_constants.dart';
 import 'package:intl/intl.dart';
 import 'package:pm_e_commerce_app/presentation/history/screens/installment_payment_screen.dart';
+import 'package:pm_e_commerce_app/data/models/sales_invoice_model.dart';
+import 'package:pm_e_commerce_app/presentation/history/screens/order_invoice_screen.dart';
 
 class ItemPurchaseScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> extraData;
@@ -30,6 +32,10 @@ class _ItemPurchaseScreenState extends ConsumerState<ItemPurchaseScreen> {
   bool _isLoadingDetails = false;
   String? _detailsError;
 
+  // Invoice/receipt - the backend only serves one once the order has been
+  // approved, so the button stays hidden until this loads.
+  SalesInvoice? _invoice;
+
   OrderModel? get _navOrder {
     if (widget.extraData['order'] != null) {
       return widget.extraData['order'] as OrderModel;
@@ -48,6 +54,8 @@ class _ItemPurchaseScreenState extends ConsumerState<ItemPurchaseScreen> {
   Future<void> _fetchOrderDetails() async {
     final orderId = _navOrder?.id ?? widget.extraData['orderId'] as int?;
     if (orderId == null) return;
+
+    _fetchInvoice(orderId);
 
     setState(() {
       _isLoadingDetails = true;
@@ -70,6 +78,24 @@ class _ItemPurchaseScreenState extends ConsumerState<ItemPurchaseScreen> {
         _isLoadingDetails = false;
       });
     }
+  }
+
+  Future<void> _fetchInvoice(int orderId) async {
+    try {
+      final invoice =
+          await ref.read(orderRepositoryProvider).getOrderInvoice(orderId);
+      if (!mounted) return;
+      setState(() => _invoice = invoice);
+    } catch (e) {
+      // Not approved yet (or cancelled) - no invoice to show.
+      print('ℹ️ [ItemPurchaseScreen] No invoice for order $orderId: $e');
+    }
+  }
+
+  void _openInvoice(SalesInvoice invoice) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => OrderInvoiceScreen(invoice: invoice)),
+    );
   }
 
   String _formatCurrency(double amount) {
@@ -145,6 +171,15 @@ class _ItemPurchaseScreenState extends ConsumerState<ItemPurchaseScreen> {
                 else
                   _buildBuyOnceDetails(order),
                 const SizedBox(height: 28),
+                if (_invoice != null) ...[
+                  _actionButton(
+                    'View ${_invoice!.label}',
+                    icon: Icons.receipt_long_rounded,
+                    isPrimary: false,
+                    onTap: () => _openInvoice(_invoice!),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 // A settled plan leaves the order at PAYMENT_CONFIRMED, so status alone
                 // kept both repayment buttons live on a fully paid plan - tapping one
                 // just surfaced a raw backend 400.

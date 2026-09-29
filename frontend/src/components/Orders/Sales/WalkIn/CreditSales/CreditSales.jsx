@@ -239,7 +239,7 @@
 //     const loanDuration = duration || parseInt(formData.loanInfo.duration) || 0;
     
 //     if (productAmount > 0 && interestRate > 0 && loanDuration > 0) {
-//       const interest = calculateLoanInterest(productAmount, interestRate, loanDuration);
+//       const interest = calculateLoanInterest(productAmount, interestRate);
 //       const principal = calculatePrincipalRepayment(productAmount, loanDuration);
 //       const monthlyPayment = calculateMonthlyPayment(productAmount, loanDuration, interest);
       
@@ -1644,12 +1644,14 @@ const CreditSales = ({ toggleCdsModal }) => {
     }
   };
 
-  // Calculate loan interest
-  const calculateLoanInterest = (amount, rate, duration) => {
-    if (!amount || amount <= 0 || !rate || rate <= 0 || !duration || duration <= 0) {
+  // Calculate loan interest: a flat rate on the product amount for the whole
+  // loan (10% of 250,000 = 25,000), not pro-rated by duration/12. Must match
+  // SalesService.calculateLoanSchedule on the backend.
+  const calculateLoanInterest = (amount, rate) => {
+    if (!amount || amount <= 0 || !rate || rate <= 0) {
       return 0;
     }
-    return (amount * rate * duration) / 100 / 12;
+    return (amount * rate) / 100;
   };
 
   // Calculate principal repayment
@@ -1859,12 +1861,18 @@ const CreditSales = ({ toggleCdsModal }) => {
         
         setGeneratedSchedule(schedule);
         
+        // Keep every figure on the form in line with the backend schedule -
+        // principalRepayment used to keep a stale client value.
+        const firstPrincipal = Number(schedule.payments?.[0]?.principalPortion);
         setFormData(prev => ({
           ...prev,
           loanInfo: {
             ...prev.loanInfo,
-            monthlyPayment: schedule.monthlyPayment.toFixed(2),
-            interestOnLoan: schedule.totalInterest.toFixed(2)
+            monthlyPayment: Number(schedule.monthlyPayment).toFixed(2),
+            interestOnLoan: Number(schedule.totalInterest).toFixed(2),
+            ...(Number.isFinite(firstPrincipal)
+              ? { principalRepayment: firstPrincipal.toFixed(2) }
+              : {})
           }
         }));
         

@@ -212,3 +212,56 @@ export const approverName = (user) =>
   user?.username ||
   user?.email ||
   "";
+
+// Invoice/receipt served by GET /sales/orders/{id}/invoice (SalesInvoiceService) for an
+// approved order - mapped onto the shape SalesReceipt renders.
+export const receiptFromInvoice = (invoice) => {
+  const isReceipt = invoice.documentType === "RECEIPT";
+  const label = isReceipt ? "Receipt" : "Invoice";
+  return {
+    title: isReceipt ? "RECEIPT" : "INVOICE",
+    toolbarLabel: `${label} ${invoice.documentNo}`,
+    numberLabel: `${label} No.`,
+    dateLabel: `${label} Date`,
+    billToLabel: isReceipt ? "Received From:" : "Bill To:",
+    totalLabel: isReceipt ? "TOTAL AMOUNT" : "TOTAL INVOICE AMOUNT",
+    saleType: invoice.saleType || "Sale",
+    receiptNo: invoice.documentNo,
+    date: invoice.issuedAt,
+    saleDate: invoice.saleDate,
+    dueOn: isReceipt ? "" : invoice.nextDueDate ? formatReceiptDate(invoice.nextDueDate) : "Per payment schedule",
+    summary: `${invoice.saleType || "Sale"} · Order ref ${(invoice.orderReferences || []).join(", ")}`,
+    company: invoice.company || RECEIPT_COMPANY,
+    customer: {
+      name: invoice.customer?.name || "Walk-in Customer",
+      accountNumber: invoice.customer?.accountNumber || "",
+      phone: invoice.customer?.phone || "",
+      email: invoice.customer?.email || "",
+      address: invoice.customer?.address || "",
+    },
+    items: (invoice.items || []).map((line) => ({
+      description: line.description,
+      quantity: toNumber(line.quantity) || 1,
+      unitPrice: toNumber(line.unitPrice),
+      discount: toNumber(line.discount),
+      amount: toNumber(line.amount),
+    })),
+    charges: (invoice.charges || []).map((charge) => ({ label: charge.label, amount: toNumber(charge.amount) })),
+    subtotal: toNumber(invoice.subtotal),
+    total: toNumber(invoice.total),
+    amountInWords: invoice.amountInWords,
+    amountPaid: toNumber(invoice.amountPaid),
+    balance: toNumber(invoice.balance),
+    paymentMethod: invoice.paymentMethod || "—",
+    paymentStatus: invoice.paymentStatus,
+    payments: (invoice.payments || []).map((entry, index) => ({
+      number: entry.entryNumber ?? index + 1,
+      date: entry.paidDate || entry.date || entry.dueDate,
+      reference: entry.reference,
+      method: entry.method,
+      status: entry.status,
+      amount: toNumber(entry.amount ?? entry.amountPaid ?? entry.amountDue),
+    })),
+    notes: invoice.notes,
+  };
+};

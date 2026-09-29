@@ -7,6 +7,7 @@ import com.appGate.inventory.models.Supplier;
 import com.appGate.inventory.repository.SupplierRepository;
 import com.appGate.inventory.service.StockService;
 import com.appGate.orderingsales.dto.CustomerInfoDto;
+import com.appGate.orderingsales.dto.OrderDecisionDto;
 import com.appGate.orderingsales.dto.RefundDto;
 import com.appGate.orderingsales.dto.SalesOrderDto;
 import com.appGate.orderingsales.service.SalesService;
@@ -143,6 +144,15 @@ public class ApprovalService {
 
             ApprovalRequest updatedRequest = approvalRequestRepository.save(request);
 
+            // A walk-in credit sale already exists as a SalesOrder (filed by
+            // SalesService.submitOrderForApproval) - declining must reject that order too,
+            // otherwise it sits in APPROVED forever.
+            Long creditSalesOrderId = existingCreditSaleOrderId(updatedRequest);
+            if (creditSalesOrderId != null) {
+                salesService.rejectOrder(creditSalesOrderId,
+                        new OrderDecisionDto(dto.getDeclineReason()));
+            }
+
             return new BaseResponse(HttpStatus.OK.value(), "Request declined successfully", updatedRequest);
         } catch (Exception e) {
             return new BaseResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -164,7 +174,16 @@ public class ApprovalService {
                 case SUPPLIER_REGISTRATION -> createSupplierFromApproval(data);
                 case CUSTOMER_REGISTRATION -> activateCustomer(request.getEntityId());
                 case CUSTOMER_EDIT -> applyCustomerEdits(request.getEntityId(), data);
-                case CREDIT_SALES -> createWalkInCreditSaleFromApproval(data);
+                case CREDIT_SALES -> {
+                    // Filed for an existing walk-in credit order: move that order forward
+                    // (PROCESSING) instead of creating a second one from the payload.
+                    Long salesOrderId = existingCreditSaleOrderId(request);
+                    if (salesOrderId != null) {
+                        salesService.approveOrder(salesOrderId, new OrderDecisionDto(request.getComments()));
+                    } else {
+                        createWalkInCreditSaleFromApproval(data);
+                    }
+                }
                 case CASH_SALES -> createWalkInCashSalesFromApproval(data);
                 case STOCK_ADD -> createStockFromApproval(data);
                 case PRODUCT_TO_WAREHOUSE -> processProductToWarehouseMovement(data, request);
@@ -177,6 +196,21 @@ public class ApprovalService {
             // silently marking the request approved without performing the action.
             throw new RuntimeException(
                     "Approved request could not be processed: " + e.getMessage(), e);
+        }
+    }
+
+    // The SalesOrder id a CREDIT_SALES request was filed for, or null for the older
+    // payload-only requests that still need the order created on approval.
+    private Long existingCreditSaleOrderId(ApprovalRequest request) {
+        if (request.getApprovalType() != ApprovalType.CREDIT_SALES
+                || request.getRequestData() == null || request.getRequestData().isBlank()) {
+            return null;
+        }
+        try {
+            JsonNode node = objectMapper.readTree(request.getRequestData()).get("salesOrderId");
+            return (node != null && node.canConvertToLong()) ? node.asLong() : null;
+        } catch (Exception e) {
+            return null;
         }
     }
 

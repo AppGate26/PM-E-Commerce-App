@@ -248,6 +248,8 @@ class ApiConstants {
       '$baseUrl/orders/$orderId/status?status=$status';
   static String updateOrderPayment(int orderId) => '$orders/$orderId/payment';
   static String cancelOrder(int orderId) => '$orders/$orderId/cancel';
+  // Invoice/receipt - only available once the order has been approved.
+  static String orderInvoice(int orderId) => '$orders/$orderId/invoice';
   static String assignRider(int orderId, int riderId) =>
       '$orders/$orderId/assign-rider/$riderId';
   static const String checkout = '$orders/checkout';

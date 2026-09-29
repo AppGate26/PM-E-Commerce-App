@@ -8,6 +8,9 @@ class InstallmentCalculateRequest {
   final double productPrice;
   final String frequency; // DAILY, WEEKLY, MONTHLY
   final int durationInMonths;
+  // WEEKLY only: the exact number of weekly payments picked. Sent alongside
+  // durationInMonths so the backend doesn't read "2" as 2 months (~8 weeks).
+  final int? durationInWeeks;
   final bool includeInsurance;
 
   InstallmentCalculateRequest({
@@ -17,6 +20,7 @@ class InstallmentCalculateRequest {
     required this.productPrice,
     required this.frequency,
     required this.durationInMonths,
+    this.durationInWeeks,
     this.includeInsurance = true,
   });
 
@@ -25,6 +29,7 @@ class InstallmentCalculateRequest {
       'userId': userId,
       'frequency': frequency.toUpperCase(),
       'durationInMonths': durationInMonths,
+      if (durationInWeeks != null) 'durationInWeeks': durationInWeeks,
       'includeInsurance': includeInsurance,
     };
   }
@@ -52,6 +57,9 @@ class InstallmentPlan {
   // POST /api/installments expects as durationInMonths. Null on plans that were
   // loaded from the server rather than built from that screen.
   final int? selectedMonths;
+  // WEEKLY plans: the number of weeks the customer chose, sent to
+  // POST /api/installments as durationInWeeks. Null for DAILY/MONTHLY.
+  final int? selectedWeeks;
   final bool includeInsurance;
 
   InstallmentPlan({
@@ -69,6 +77,7 @@ class InstallmentPlan {
     required this.schedule,
     this.createdAt,
     this.selectedMonths,
+    this.selectedWeeks,
     this.includeInsurance = true,
   });
 
@@ -83,6 +92,13 @@ class InstallmentPlan {
       return durationInMonths;
     }
     return 1;
+  }
+
+  /// Weeks to send back when persisting a WEEKLY plan, null otherwise.
+  int? get weeksForRequest {
+    if (frequency.toUpperCase() != 'WEEKLY') return null;
+    if (selectedWeeks != null && selectedWeeks! > 0) return selectedWeeks;
+    return null;
   }
 
   InstallmentPlan copyWith({
@@ -104,6 +120,7 @@ class InstallmentPlan {
       schedule: schedule ?? this.schedule,
       createdAt: createdAt,
       selectedMonths: selectedMonths,
+      selectedWeeks: selectedWeeks,
       includeInsurance: includeInsurance,
     );
   }

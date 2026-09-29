@@ -1,0 +1,77 @@
+/* Completed orders list - header/body chrome comes from CompletedPayments.css */
+
+.cmo-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.cmo-search input {
+  flex: 1;
+  min-width: 0;
+}
+
+.cmo-btn {
+  padding: 7px 14px;
+  border: 1px solid #1a73e8;
+  border-radius: 6px;
+  background: #1a73e8;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cmo-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cmo-empty {
+  margin: 24px 0;
+  text-align: center;
+  color: #5f6368;
+}
+
+.cmo-table-wrap {
+  margin-top: 14px;
+  overflow-x: auto;
+  border: 1px solid #d6e2f3;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.cmo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cmo-table th {
+  padding: 10px;
+  background: #eaf1fc;
+  color: #103b7a;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.cmo-table td {
+  padding: 9px 10px;
+  border-top: 1px solid #edf1f7;
+  color: #202124;
+}
+
+.cmo-table .cmo-r {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cmo-pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 13px;
+}

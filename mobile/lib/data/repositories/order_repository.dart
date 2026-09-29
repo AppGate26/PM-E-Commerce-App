@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:pm_e_commerce_app/core/constants/api_constants.dart';
 import 'package:pm_e_commerce_app/core/networks/api_client.dart';
 import 'package:pm_e_commerce_app/data/models/order_model.dart';
+import 'package:pm_e_commerce_app/data/models/sales_invoice_model.dart';
 
 class OrderRepository {
   final ApiClient _apiClient = ApiClient();
@@ -353,6 +354,24 @@ class OrderRepository {
     } catch (e) {
       print('❌ [OrderRepository] Error: $e');
       rethrow;
+    }
+  }
+
+  // Invoice/receipt for an approved order. Throws the backend's reason (e.g. "will be
+  // available once it has been approved") when it isn't available yet.
+  Future<SalesInvoice> getOrderInvoice(int orderId) async {
+    try {
+      final response = await _apiClient.dio.get(
+        ApiConstants.normalizeUrl(ApiConstants.orderInvoice(orderId)),
+      );
+      final body = response.data;
+      final data = body is Map ? (body['data'] ?? body['response']) : null;
+      if (response.statusCode != 200 || data is! Map) {
+        throw (body is Map ? body['message'] : null) ?? 'Invoice not available';
+      }
+      return SalesInvoice.fromJson(Map<String, dynamic>.from(data));
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 

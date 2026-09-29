@@ -5,8 +5,10 @@ import com.appGate.orderingsales.dto.CheckoutDto;
 import com.appGate.orderingsales.enums.OrderStatus;
 import com.appGate.orderingsales.response.BaseResponse;
 import com.appGate.orderingsales.service.OrderService;
+import com.appGate.orderingsales.service.SalesInvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+    private final SalesInvoiceService salesInvoiceService;
 
     @PostMapping("/checkout")
     public BaseResponse checkout(@Valid @RequestBody CheckoutDto checkoutDto) {
@@ -29,6 +32,18 @@ public class OrderController {
     @GetMapping("/{orderId}")
     public BaseResponse getOrderDetails(@PathVariable Long orderId) {
         return orderService.getOrderDetails(orderId);
+    }
+
+    // Invoice/receipt for the customer's order, available once the order has been
+    // approved - see SalesInvoiceService.buildForMobileOrder.
+    @GetMapping("/{orderId}/invoice")
+    public BaseResponse getOrderInvoice(@PathVariable Long orderId) {
+        try {
+            return new BaseResponse(HttpStatus.OK.value(), "successful",
+                    salesInvoiceService.buildForMobileOrder(orderId));
+        } catch (RuntimeException e) {
+            return new BaseResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+        }
     }
 
     @GetMapping("/user/{userId}")

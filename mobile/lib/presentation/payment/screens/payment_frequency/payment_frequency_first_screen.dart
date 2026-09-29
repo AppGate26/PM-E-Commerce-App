@@ -128,12 +128,14 @@ class _PaymentFrequencyFirstScreenState
       _selectedFrequency = frequency;
     });
 
-    // Every frequency asks for the duration in months; the backend turns that
-    // into the number of days/weeks (e.g. 2 months of Weekly = ~8 payments).
-    print('💳 [PAYMENT FREQ] $frequency selected - showing months popup');
+    // Daily and Monthly ask for the duration in months. Weekly asks for the
+    // number of weeks, which is exactly the number of weekly payments (picking
+    // "2" used to be read as 2 months and turn into ~8 weekly payments).
+    print('💳 [PAYMENT FREQ] $frequency selected - showing duration popup');
     _showMonthsPopup(context, frequency);
   }
 
+  // [months] is the number picked in the popup: weeks for Weekly, months otherwise.
   Future<void> _calculateAndProceed(String frequency, int? months) async {
     if (_product == null) {
       print('💳 [PAYMENT FREQ] No product data available');
@@ -233,14 +235,19 @@ class _PaymentFrequencyFirstScreenState
         apiFrequency = 'MONTHLY';
       }
 
-      final durationInMonths = months ?? 1;
+      final bool isWeekly = apiFrequency == 'WEEKLY';
+      final int? durationInWeeks = isWeekly ? (months ?? 1) : null;
+      // durationInMonths is still required by the API; for Weekly it only
+      // covers the chosen weeks, the payment count comes from durationInWeeks.
+      final durationInMonths =
+          isWeekly ? ((durationInWeeks! * 7) / 30).ceil() : (months ?? 1);
 
       print('💳 [PAYMENT FREQ] Calculating installment:');
       print('💳 [PAYMENT FREQ] userId=${user.id}');
       print('💳 [PAYMENT FREQ] productId=$productId');
       print('💳 [PAYMENT FREQ] productPrice=$productPrice');
       print('💳 [PAYMENT FREQ] frequency=$apiFrequency');
-      print('💳 [PAYMENT FREQ] months=$durationInMonths');
+      print('💳 [PAYMENT FREQ] months=$durationInMonths weeks=$durationInWeeks');
 
       final request = InstallmentCalculateRequest(
         orderId: 0,
@@ -249,6 +256,7 @@ class _PaymentFrequencyFirstScreenState
         productPrice: productPrice,
         frequency: apiFrequency,
         durationInMonths: durationInMonths,
+        durationInWeeks: durationInWeeks,
         includeInsurance: _includeInsurance,
       );
 
@@ -298,6 +306,7 @@ class _PaymentFrequencyFirstScreenState
             schedule: plan.schedule,
             createdAt: plan.createdAt,
             selectedMonths: durationInMonths,
+            selectedWeeks: durationInWeeks,
             includeInsurance: _includeInsurance,
           );
 
@@ -355,7 +364,9 @@ class _PaymentFrequencyFirstScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'How many months would you need to complete your payment?',
+                  frequency == 'Weekly'
+                      ? 'How many weeks would you need to complete your payment?'
+                      : 'How many months would you need to complete your payment?',
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -364,7 +375,9 @@ class _PaymentFrequencyFirstScreenState
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'You will pay ${frequency.toLowerCase()} over this period.',
+                  frequency == 'Weekly'
+                      ? 'You will make one payment each week.'
+                      : 'You will pay ${frequency.toLowerCase()} over this period.',
                   style: TextStyle(
                       fontSize: 13,
                       color: AppColors.textLight,

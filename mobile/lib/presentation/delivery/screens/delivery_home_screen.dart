@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pm_e_commerce_app/core/routes/routes_name.dart';
+import 'package:pm_e_commerce_app/core/services/delivery_alert_service.dart';
 import 'package:pm_e_commerce_app/core/services/storage_service.dart';
 import 'package:pm_e_commerce_app/core/services/secure_credentials_service.dart';
 import 'package:pm_e_commerce_app/core/services/shared_preference_service.dart';
@@ -32,6 +33,8 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
     super.initState();
     _loadAgentName();
     _refreshBadges();
+    // Phone notifications for new deliveries/updates/messages while the app is running.
+    DeliveryAlertService.instance.start();
     // No push service is configured, so new assignments/messages are picked up by polling.
     _badgeTimer = Timer.periodic(const Duration(seconds: 30), (_) => _refreshBadges());
   }
@@ -163,6 +166,7 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
                 ElevatedButton(
                   onPressed: () async {
                     print('🚚 [DeliveryHome] Logging out...');
+                    DeliveryAlertService.instance.stop();
                     // Clear storage
                     try {
                       await StorageService.removeToken();

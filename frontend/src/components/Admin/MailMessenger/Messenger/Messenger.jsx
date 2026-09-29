@@ -12,6 +12,8 @@ import {
 import "../MailMessenger.css";
 import "./Messenger.css";
 
+const MESSAGE_POLL_MS = 3000;
+
 const formatDateTime = (value) => {
   if (!value) return "";
   const date = new Date(value);
@@ -100,6 +102,34 @@ const Messenger = () => {
   useEffect(() => {
     loadMessages();
   }, [loadMessages]);
+
+  // There is no socket for the messenger, so poll while the page is open - otherwise a
+  // reply sent from the phone only showed up after a page refresh. A failed poll keeps the
+  // current thread instead of blanking it.
+  useEffect(() => {
+    if (!activePartnerId) return undefined;
+    const partnerId = activePartnerId;
+    const timer = setInterval(async () => {
+      if (document.hidden) return;
+      try {
+        const latest = await fetchMessagesWithUser(partnerId, { id: currentUserId, email: user?.email });
+        setMessages((prev) =>
+          JSON.stringify(prev) === JSON.stringify(latest) ? prev : latest
+        );
+      } catch {
+        // keep what is on screen
+      }
+      try {
+        const latestConversations = await fetchMessengerConversations();
+        setConversations((prev) =>
+          JSON.stringify(prev) === JSON.stringify(latestConversations) ? prev : latestConversations
+        );
+      } catch {
+        // keep what is on screen
+      }
+    }, MESSAGE_POLL_MS);
+    return () => clearInterval(timer);
+  }, [activePartnerId, currentUserId, user?.email]);
 
   const activeUser = useMemo(
     () => availableUsers.find((entry) => String(entry.id) === String(activePartnerId)),

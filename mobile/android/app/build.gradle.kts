@@ -11,6 +11,8 @@ android {
     ndkVersion = "29.0.13599879"
 
     compileOptions {
+        // flutter_local_notifications (delivery alerts) needs core library desugaring.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -44,6 +46,7 @@ dependencies {
     // Required by the Theme.AppCompat parent in res/values/styles.xml, which
     // local_auth needs in order to inflate its dialogs.
     implementation("androidx.appcompat:appcompat:1.7.0")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 flutter {
