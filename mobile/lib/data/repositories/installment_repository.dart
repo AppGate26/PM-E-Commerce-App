@@ -81,6 +81,7 @@ class InstallmentRepository {
     required int userId,
     required String frequency,
     required int durationInMonths,
+    int? durationInWeeks,
     bool includeInsurance = true,
     String? fulfillmentType,
     String? deliveryAddress,
@@ -97,6 +98,7 @@ class InstallmentRepository {
         'userId': userId,
         'frequency': frequency.toUpperCase(),
         'durationInMonths': durationInMonths,
+        if (durationInWeeks != null) 'durationInWeeks': durationInWeeks,
         // Must match the preview the customer accepted, or the saved plan is priced
         // differently from what they were shown.
         'includeInsurance': includeInsurance,

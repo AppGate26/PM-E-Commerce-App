@@ -281,6 +281,7 @@ class _PaymentFreqDeliveryScreenState
       schedule: newSchedule, // ← rebuilt schedule
       createdAt: plan.createdAt,
       selectedMonths: plan.selectedMonths,
+      selectedWeeks: plan.selectedWeeks,
       includeInsurance: plan.includeInsurance,
     );
     final checkoutData = {

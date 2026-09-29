@@ -37,6 +37,9 @@ class _DeliveryConfirmationScreenState
   int _currentIndex = 2;
   int? _riderBoxId;
   int? _productId;
+  // Opened from "Can't deliver?" on the About Product screen: the rider is reporting
+  // why the delivery couldn't be made, so 'Delivered' isn't offered.
+  bool _reportingProblem = false;
   String? _deliveryAgentName;
   bool _isLoading = false;
 
@@ -78,6 +81,7 @@ class _DeliveryConfirmationScreenState
     if (extra != null) {
       _data.addAll(extra);
       _riderBoxId = extra['riderBoxId'] as int?;
+      _reportingProblem = extra['reportProblem'] == true;
       // May arrive as an int or a string depending on the screen that pushed us.
       final rawProductId = extra['productId'];
       _productId = rawProductId is int ? rawProductId : int.tryParse('${rawProductId ?? ''}');
@@ -282,8 +286,8 @@ class _DeliveryConfirmationScreenState
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: AppColors.blueBackground,
-        title: const Text(
-          'Feedback Confirmation',
+        title: Text(
+          _reportingProblem ? 'Delivery Feedback' : 'Feedback Confirmation',
           style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -395,7 +399,10 @@ class _DeliveryConfirmationScreenState
                     const SizedBox(height: 16),
 
                     // Status of delivery
-                    const Text('Status of delivery',
+                    Text(
+                        _reportingProblem
+                            ? 'Why couldn\'t the delivery be made?'
+                            : 'Status of delivery',
                         style:
                             TextStyle(fontSize: 14, color: Color(0xFF666666))),
                     const SizedBox(height: 8),
@@ -403,6 +410,8 @@ class _DeliveryConfirmationScreenState
                       value: _status,
                       hint: const Text('Select status'),
                       items: _statusOptions.entries
+                          .where((e) =>
+                              !_reportingProblem || e.key != 'DELIVERED')
                           .map((e) => DropdownMenuItem(
                               value: e.key, child: Text(e.value)))
                           .toList(),

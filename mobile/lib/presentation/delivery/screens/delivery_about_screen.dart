@@ -138,6 +138,31 @@ class _DeliveryAboutScreenState extends ConsumerState<DeliveryAboutScreen> {
     );
   }
 
+  /// Rider can't make this delivery (wrong address, owner not around, wrong product...):
+  /// opens the feedback page in report mode so dispatch is told why.
+  void _reportProblem() {
+    final riderBoxId = _deliveryDetail?.riderBoxId ?? widget.data['riderBoxId'] as int?;
+    if (riderBoxId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Delivery information missing'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    final detail = _deliveryDetail;
+    context.push(
+      AppRoutes.deliveryConfirmation,
+      extra: {
+        'riderBoxId': riderBoxId,
+        'productId': detail?.productId ?? widget.data['productId'],
+        'customerName': detail?.customerName ?? widget.data['customerName'] ?? '',
+        'reportProblem': true,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final detail = _deliveryDetail;
@@ -286,6 +311,31 @@ class _DeliveryAboutScreenState extends ConsumerState<DeliveryAboutScreen> {
                                       ),
                               ),
                             ),
+                          if (detail != null || fallbackData['riderBoxId'] != null) ...[
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _isStarting ? null : _reportProblem,
+                                icon: const Icon(Icons.report_problem_outlined, color: Colors.orange),
+                                label: const Text(
+                                  "CAN'T DELIVER? GIVE FEEDBACK",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.orange),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

@@ -9,8 +9,10 @@ import com.appGate.delivery.repository.DeliveryNotificationRepository;
 import com.appGate.delivery.repository.RiderBoxRepository;
 import com.appGate.delivery.response.BaseResponse;
 import com.appGate.orderingsales.enums.DeliveryStatus;
+import com.appGate.orderingsales.enums.OrderStatus;
 import com.appGate.orderingsales.models.Order;
 import com.appGate.orderingsales.repository.OrderRepository;
+import com.appGate.orderingsales.repository.SalesOrderRepository;
 import com.appGate.orderingsales.service.MobileSalesOrderSyncService;
 import com.appGate.rbac.models.User;
 import com.appGate.rbac.repository.UserRepository;
@@ -43,6 +45,7 @@ public class TransitDeliveryService {
     private final MobileSalesOrderSyncService mobileSalesOrderSyncService;
     private final RiderBoxRepository riderBoxRepository;
     private final RiderBoxDetailsResolver detailsResolver;
+    private final SalesOrderRepository salesOrderRepository;
 
     public TransitDeliveryService(
             OrderRepository orderRepository,
@@ -51,8 +54,10 @@ public class TransitDeliveryService {
             com.appGate.rbac.service.BranchScopeService branchScopeService,
             MobileSalesOrderSyncService mobileSalesOrderSyncService,
             RiderBoxRepository riderBoxRepository,
-            RiderBoxDetailsResolver detailsResolver) {
+            RiderBoxDetailsResolver detailsResolver,
+            SalesOrderRepository salesOrderRepository) {
         this.riderBoxRepository = riderBoxRepository;
+        this.salesOrderRepository = salesOrderRepository;
         this.detailsResolver = detailsResolver;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
@@ -70,33 +75,37 @@ public class TransitDeliveryService {
     }
 
     /**
-     * Every registered delivery that hasn't been delivered yet: rider boxes still PENDING,
-     * ACCEPTED or IN_TRANSIT (see DeliveryOperationsService.startDelivery), which also covers
-     * walk-in sales that have no mobile Order, plus orders awaiting pickup, picked up or put
-     * in transit by the admin SHIPPED status update without any rider box behind them.
-     * Delivered and rejected deliveries are left out.
+     * Goods that are on the road right now and not yet delivered: rider boxes the rider has
+     * started (IN_TRANSIT - see DeliveryOperationsService.startDelivery), which also covers
+     * walk-in sales that have no mobile Order, plus orders picked up or put in transit by the
+     * admin SHIPPED status update without any rider box behind them. Deliveries only assigned
+     * to a rider but not started, delivered and rejected ones are left out; a box whose order
+     * was already marked delivered some other way is skipped too, so a delivered item never
+     * lingers here.
      */
     public BaseResponse getAllTransitDeliveries(int page, int size, String sortBy) {
         Long branchId = branchScopeService.getScopedBranchId();
 
-        List<RiderBoxStatusEnum> openBoxStatuses = List.of(
-                RiderBoxStatusEnum.PENDING, RiderBoxStatusEnum.ACCEPTED, RiderBoxStatusEnum.IN_TRANSIT);
+        List<RiderBoxStatusEnum> transitBoxStatuses = List.of(RiderBoxStatusEnum.IN_TRANSIT);
         List<RiderBox> boxes = branchId == null
-                ? riderBoxRepository.findByStatusIn(openBoxStatuses)
-                : riderBoxRepository.findByStatusInAndBranchId(openBoxStatuses, branchId);
+                ? riderBoxRepository.findByStatusIn(transitBoxStatuses)
+                : riderBoxRepository.findByStatusInAndBranchId(transitBoxStatuses, branchId);
 
         List<Map<String, Object>> deliveries = new ArrayList<>();
         Set<Long> coveredOrderIds = new HashSet<>();
         for (RiderBox box : boxes) {
-            deliveries.add(mapRiderBoxToTransitDto(box));
             if (box.getOrderId() != null) {
+                // Covered either way, so a delivered order isn't re-added from the list below.
                 coveredOrderIds.add(box.getOrderId());
             }
+            if (isAlreadyDelivered(box)) {
+                continue;
+            }
+            deliveries.add(mapRiderBoxToTransitDto(box));
         }
 
         Pageable orderPage = PageRequest.of(0, 1000, Sort.by("shippedAt").descending());
-        List<DeliveryStatus> statuses = List.of(
-                DeliveryStatus.AWAITING_PICKUP, DeliveryStatus.PICKED_UP, DeliveryStatus.IN_TRANSIT);
+        List<DeliveryStatus> statuses = List.of(DeliveryStatus.PICKED_UP, DeliveryStatus.IN_TRANSIT);
         Page<Order> transitOrders = branchId == null
                 ? orderRepository.findByDeliveryStatusIn(statuses, orderPage)
                 : orderRepository.findByBranchIdAndDeliveryStatusIn(branchId, statuses, orderPage);
@@ -120,6 +129,22 @@ public class TransitDeliveryService {
         response.put("currentPage", page);
 
         return new BaseResponse(HttpStatus.OK.value(), "Transit deliveries retrieved successfully", response);
+    }
+
+    // True when the order behind an in-transit box was already delivered through another path
+    // (e.g. an admin status update) without the box being closed.
+    private boolean isAlreadyDelivered(RiderBox box) {
+        if (box.getOrderId() != null) {
+            return orderRepository.findById(box.getOrderId())
+                    .map(o -> o.getDeliveryStatus() == DeliveryStatus.DELIVERED)
+                    .orElse(false);
+        }
+        if (box.getSalesOrderId() != null) {
+            return salesOrderRepository.findById(box.getSalesOrderId())
+                    .map(so -> so.getStatus() == OrderStatus.DELIVERED)
+                    .orElse(false);
+        }
+        return false;
     }
 
     private Map<String, Object> mapRiderBoxToTransitDto(RiderBox box) {

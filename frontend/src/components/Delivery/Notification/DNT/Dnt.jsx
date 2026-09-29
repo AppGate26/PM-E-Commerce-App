@@ -238,10 +238,9 @@ const Dnt = ({ toggleDntModal }) => {
                         <td>{notification.message || "-"}</td>
                         <td>
                           <button
-                            className="btn-link text-primary view-btn"
+                            className="view-btn"
                             onClick={() => handleView(notification)}
-                            style={{ 
-                              textDecoration: "underline", 
+                            style={{
                               cursor: "pointer",
                               backgroundColor: "#0867db",
                               color: "white",

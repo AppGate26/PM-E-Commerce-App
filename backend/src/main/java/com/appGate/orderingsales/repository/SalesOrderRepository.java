@@ -165,6 +165,19 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
     Page<SalesOrder> findReferencedOrdersNotYetSubmittedForApproval(
             @Param("forwardedStatuses") List<OrderStatus> forwardedStatuses, Pageable pageable);
 
+    // "Completed orders" backing query: approved orders that have an invoice/receipt (see
+    // SalesInvoiceService.INVOICE_READY_STATUSES). branchId null = every branch; search is
+    // an already-lowercased "%term%" pattern, or null for no filter.
+    @Query("SELECT s FROM SalesOrder s WHERE s.status IN :statuses "
+            + "AND (:branchId IS NULL OR s.branchId = :branchId) "
+            + "AND (:search IS NULL OR LOWER(s.customerName) LIKE :search "
+            + "OR LOWER(s.referenceNo) LIKE :search OR LOWER(s.salesReference) LIKE :search "
+            + "OR LOWER(s.productName) LIKE :search)")
+    Page<SalesOrder> findInvoiceableOrders(@Param("statuses") java.util.Collection<OrderStatus> statuses,
+                                           @Param("branchId") Long branchId,
+                                           @Param("search") String search,
+                                           Pageable pageable);
+
     // "Order list as paid" backing query: orders that have crossed the >50%-paid mark
     // (reads the stored paymentProgress column directly, not the recomputed
     // resolvePaymentProgress figure - see SalesService.getOrdersAwaitingSalesReference)

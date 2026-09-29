@@ -9,6 +9,7 @@ import CdsModal from "../Sales/WalkIn/CreditSales/CdsModal";
 import OcsModal from "../Sales/OnlineSales/OnCredit/OcsModal";
 import OnOnesModal from "../Sales/OnlineSales/OnOneSales/OnOnesModal";
 import CompletedPaymentsModal from "../Sales/CompletedPayments/CompletedPaymentsModal";
+import CompletedOrdersModal from "../Sales/CompletedOrders/CompletedOrdersModal";
 import DebugOrdersModal from "../Sales/DebugOrders/DebugOrdersModal";
 import ReportsModal from "../Report/ReportSales/ReportsModal";
 import ReportOrderModal from "../Report/ReportOrder/ReportOrderModal";
@@ -42,6 +43,7 @@ const OrderTab = () => {
   const [modalOnlineCredit, setModalOnlineCredit] = useState(false);
   const [modalOnSales, setModalOnSales] = useState(false);
   const [modalCompletedPayments, setModalCompletedPayments] = useState(false);
+  const [modalCompletedOrders, setModalCompletedOrders] = useState(false);
   const [modalDebugOrders, setModalDebugOrders] = useState(false);
   const [modalSaleReport, setModalSaleReport] = useState(false);
   const [modalOrderReport, setModalOrderReport] = useState(false);
@@ -235,6 +237,9 @@ const OrderTab = () => {
   const toggleCompletedPaymentsModal = () => {
     setModalCompletedPayments(!modalCompletedPayments);
   };
+  const toggleCompletedOrdersModal = () => {
+    setModalCompletedOrders(!modalCompletedOrders);
+  };
   const toggleDebugOrdersModal = () => {
     setModalDebugOrders(!modalDebugOrders);
   };
@@ -421,6 +426,17 @@ const OrderTab = () => {
                     }}
                   >
                     {t("Completed payments")}
+                  </li>
+
+                  <li
+                    className='sales-li-dropdown'
+                    id='completed-orders-drop'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleCompletedOrdersModal();
+                    }}
+                  >
+                    {t("Completed orders")}
                   </li>
 
                   {/* Debug: User orders temporarily disabled
@@ -763,6 +779,12 @@ const OrderTab = () => {
                   >
                     {t("Completed payments")}
                   </h5>
+                  <h5
+                    className='accordion-body-H5 text-uppercase'
+                    onClick={() => handleClick(toggleCompletedOrdersModal)}
+                  >
+                    {t("Completed orders")}
+                  </h5>
                   {/* Debug: User orders temporarily disabled
                   <h5
                     className='accordion-body-H5 text-uppercase'
@@ -1000,6 +1022,10 @@ const OrderTab = () => {
       <CompletedPaymentsModal
         isOpen={modalCompletedPayments}
         toggleCompletedPaymentsModal={toggleCompletedPaymentsModal}
+      />
+      <CompletedOrdersModal
+        isOpen={modalCompletedOrders}
+        toggleCompletedOrdersModal={toggleCompletedOrdersModal}
       />
       <DebugOrdersModal
         isOpen={modalDebugOrders}

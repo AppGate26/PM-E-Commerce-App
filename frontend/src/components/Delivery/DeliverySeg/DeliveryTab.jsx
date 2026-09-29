@@ -101,7 +101,7 @@ const DeliveryTab = () => {
     try {
       const [deliveryResult, feedbackResult] = await Promise.all([
         fetchCountFromEndpoints(["/admin/delivery-notifications?page=1&limit=100"]),
-        fetchCountFromEndpoints(["/admin/rider-feedback?page=1&limit=100", "/admin/rider-feedback"]),
+        fetchCountFromEndpoints(["/admin/delivery-feedback"]),
       ]);
       const isForbidden = deliveryResult.forbidden || feedbackResult.forbidden;
       const delivery = deliveryResult.count;

@@ -329,6 +329,7 @@ class _PaymentBreakDownFreqPickupScreenState
         userId: plan.userId,
         frequency: plan.frequency,
         durationInMonths: plan.monthsForRequest,
+        durationInWeeks: plan.weeksForRequest,
         includeInsurance: plan.includeInsurance,
         // Pickup: no delivery leg, so the plan is priced with no delivery fee and the
         // first payment is the down payment alone.

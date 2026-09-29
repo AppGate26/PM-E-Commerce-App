@@ -8,6 +8,7 @@ const DeliveryNotificationDetail = ({ notification, onClose }) => {
   const [detailData, setDetailData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [enlargedImage, setEnlargedImage] = useState(null);
 
   useEffect(() => {
     console.log("═══════════════════════════════════════════════════════════");
@@ -127,6 +128,9 @@ const DeliveryNotificationDetail = ({ notification, onClose }) => {
   const riderName = detailData?.riderName || "-";
   const riderPhone = detailData?.riderPhone || detailData?.riderPhoneNo || detailData?.phone || "-";
   const deliveryDate = detailData?.deliveryDate || detailData?.notificationDate || detailData?.date || "-";
+  const deliveryImage = detailData?.proofOfDeliveryImage || null;
+  const productImage = detailData?.productImage || null;
+  const notificationType = detailData?.notificationType || notification?.notificationType;
 
   // Format date if it's a date string
   const formatDate = (dateString) => {
@@ -426,92 +430,115 @@ const DeliveryNotificationDetail = ({ notification, onClose }) => {
 
           {/* RIGHT: Images stacked */}
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-            <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-              <label style={{
-                fontFamily: "Montserrat, sans-serif",
-                fontSize: "1.4rem",
-                fontWeight: "600",
-                color: "#343a40",
-                marginBottom: "0.8rem",
-                display: "block"
-              }}>
-                Rider&apos;s Image
-              </label>
-              <div style={{
-                height: "180px",
-                border: "2px dashed #bdbdbd",
-                borderRadius: "6px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#f5f5f5",
-                marginBottom: "0.8rem"
-              }}>
-                <div style={{
-                  color: "#999",
-                  fontFamily: "Montserrat, sans-serif",
-                  fontSize: "1.2rem"
-                }}>
-                  Image Placeholder
-                </div>
-              </div>
-              <button style={{
-                fontFamily: "Montserrat, sans-serif",
-                fontSize: "1.2rem",
-                color: "#0867db",
-                backgroundColor: "transparent",
-                border: "none",
-                cursor: "pointer",
-                textDecoration: "underline"
-              }}>
-                View Bigger
-              </button>
+            <div style={{ marginBottom: "2rem" }}>
+              <ImageBox
+                label="Delivery Photo (by Rider)"
+                src={deliveryImage}
+                emptyText={
+                  notificationType === "DELIVERED"
+                    ? "No photo was uploaded"
+                    : "Available once delivered"
+                }
+                onViewBigger={setEnlargedImage}
+              />
             </div>
 
-            <div style={{ textAlign: "center" }}>
-              <label style={{
-                fontFamily: "Montserrat, sans-serif",
-                fontSize: "1.4rem",
-                fontWeight: "600",
-                color: "#343a40",
-                marginBottom: "0.8rem",
-                display: "block"
-              }}>
-                Product Image
-              </label>
-              <div style={{
-                height: "180px",
-                border: "2px dashed #bdbdbd",
-                borderRadius: "6px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#f5f5f5",
-                marginBottom: "0.8rem"
-              }}>
-                <div style={{
-                  color: "#999",
-                  fontFamily: "Montserrat, sans-serif",
-                  fontSize: "1.2rem"
-                }}>
-                  Image Placeholder
-                </div>
-              </div>
-              <button style={{
-                fontFamily: "Montserrat, sans-serif",
-                fontSize: "1.2rem",
-                color: "#0867db",
-                backgroundColor: "transparent",
-                border: "none",
-                cursor: "pointer",
-                textDecoration: "underline"
-              }}>
-                View Bigger
-              </button>
-            </div>
+            <ImageBox
+              label="Product Image"
+              src={productImage}
+              emptyText="No product image"
+              onViewBigger={setEnlargedImage}
+            />
           </div>
         </div>
       </div>
+
+      {enlargedImage && (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            setEnlargedImage(null);
+          }}
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-[1070]"
+          style={{ cursor: "zoom-out" }}
+        >
+          <img
+            src={enlargedImage}
+            alt="Enlarged"
+            style={{ maxWidth: "90vw", maxHeight: "90vh", objectFit: "contain", borderRadius: "6px" }}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ImageBox = ({ label, src, emptyText, onViewBigger }) => {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  const showImage = src && !failed;
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <label style={{
+        fontFamily: "Montserrat, sans-serif",
+        fontSize: "1.4rem",
+        fontWeight: "600",
+        color: "#343a40",
+        marginBottom: "0.8rem",
+        display: "block"
+      }}>
+        {label}
+      </label>
+      <div style={{
+        height: "180px",
+        border: showImage ? "1px solid #e0e0e0" : "2px dashed #bdbdbd",
+        borderRadius: "6px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#f5f5f5",
+        marginBottom: "0.8rem",
+        overflow: "hidden"
+      }}>
+        {showImage ? (
+          <img
+            src={src}
+            alt={label}
+            onClick={() => onViewBigger(src)}
+            onError={() => setFailed(true)}
+            style={{ width: "100%", height: "100%", objectFit: "contain", cursor: "zoom-in" }}
+          />
+        ) : (
+          <div style={{
+            color: "#999",
+            fontFamily: "Montserrat, sans-serif",
+            fontSize: "1.2rem"
+          }}>
+            {failed ? "Image could not be loaded" : emptyText}
+          </div>
+        )}
+      </div>
+      <button
+        type="button"
+        disabled={!showImage}
+        onClick={() => onViewBigger(src)}
+        style={{
+          fontFamily: "Montserrat, sans-serif",
+          fontSize: "1.2rem",
+          color: showImage ? "#0867db" : "#bdbdbd",
+          backgroundColor: "transparent",
+          border: "none",
+          cursor: showImage ? "pointer" : "not-allowed",
+          textDecoration: "underline"
+        }}
+      >
+        View Bigger
+      </button>
     </div>
   );
 };

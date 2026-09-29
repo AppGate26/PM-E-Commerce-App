@@ -204,11 +204,14 @@ public class InstallmentService {
         Double grandTotal = amountFinanced + insuranceAmount;
 
         LocalDate startDate = LocalDate.now();
-        Integer totalPeriods = calculateNumberOfInstallments(
-            dto.getFrequency(),
-            dto.getDurationInMonths(),
-            startDate
-        );
+        Integer totalPeriods = dto.getFrequency() == InstallmentFrequency.WEEKLY
+                && dto.getDurationInWeeks() != null && dto.getDurationInWeeks() > 0
+            ? dto.getDurationInWeeks()
+            : calculateNumberOfInstallments(
+                dto.getFrequency(),
+                dto.getDurationInMonths(),
+                startDate
+            );
         Double periodAmount = grandTotal / totalPeriods;
 
         // Server-priced from the cart and the supplied destination, never taken from the

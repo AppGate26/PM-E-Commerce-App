@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +20,10 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
   bool _isLoading = true;
+  // No socket for support chat: poll while the screen is open so agent replies
+  // appear without the customer having to refresh.
+  static const Duration _pollInterval = Duration(seconds: 4);
+  Timer? _pollTimer;
 
   @override
   void initState() {
@@ -36,6 +42,7 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
       data: (_) {
         _loadMessages();
         setState(() => _isLoading = false);
+        _startPolling();
       },
       error: (_, __) => setState(() => _isLoading = false),
       loading: () {},
@@ -48,12 +55,27 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
     ref.read(chatMessagesProvider.notifier).loadMessages();
   }
 
+  void _startPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(_pollInterval, (_) async {
+      if (!mounted) return;
+      final before = ref.read(chatMessagesProvider).value?.length ?? 0;
+      await ref.read(chatMessagesProvider.notifier).loadMessages(silent: true);
+      if (!mounted) return;
+      final after = ref.read(chatMessagesProvider).value?.length ?? 0;
+      if (after > before) {
+        Future.delayed(const Duration(milliseconds: 150), _scrollToBottom);
+      }
+    });
+  }
+
   void _loadChatCount() {
     ref.read(chatCountProvider.notifier).fetchChatCount();
   }
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();

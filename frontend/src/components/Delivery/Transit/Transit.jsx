@@ -5,12 +5,9 @@ import { deliveryApi } from "../../../lib/deliveryApi";
 import "../../../Styles/Delivery/Delivery.css";
 import TransitDeliveryDetail from "./TransitDeliveryDetail";
 
-// Every undelivered delivery is listed here, not only the ones on the road -
-// rider box statuses (PENDING/ACCEPTED/IN_TRANSIT) and order delivery statuses.
+// Only goods on the road are listed here (rider box IN_TRANSIT, order PICKED_UP /
+// IN_TRANSIT) - once delivered they drop off the list.
 const STATUS_LABELS = {
-  PENDING: "Assigned to rider",
-  ACCEPTED: "Accepted by rider",
-  AWAITING_PICKUP: "Awaiting pickup",
   PICKED_UP: "Picked up",
   IN_TRANSIT: "In transit",
 };
@@ -210,7 +207,7 @@ const Transit = ({ toggleTransitModal }) => {
                 {filteredDeliveries.length === 0 ? (
                   <tr>
                     <td colSpan="7" className="text-center py-4">
-                      {error ? "Error loading transit deliveries" : "No undelivered deliveries found"}
+                      {error ? "Error loading transit deliveries" : "No goods in transit"}
                     </td>
                   </tr>
                 ) : (

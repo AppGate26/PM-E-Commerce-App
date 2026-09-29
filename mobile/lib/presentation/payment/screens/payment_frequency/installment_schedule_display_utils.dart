@@ -61,9 +61,11 @@ class InstallmentDisplayUtils {
 
     // plan.durationInMonths already holds the server's payment count; only
     // derive it from months when the customer's chosen months are known.
-    final count = plan.selectedMonths != null
-        ? periodsFor(plan.frequency, plan.selectedMonths!)
-        : (plan.durationInMonths > 0 ? plan.durationInMonths : 1);
+    final count = plan.weeksForRequest != null
+        ? plan.weeksForRequest!
+        : plan.selectedMonths != null
+            ? periodsFor(plan.frequency, plan.selectedMonths!)
+            : (plan.durationInMonths > 0 ? plan.durationInMonths : 1);
 
     final totalMinorUnits = (plan.totalAmount * 100).round();
     final baseAmountMinorUnits = totalMinorUnits ~/ count;

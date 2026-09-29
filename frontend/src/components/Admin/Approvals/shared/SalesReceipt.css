@@ -4,7 +4,7 @@
 .sr-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: 10050; /* above the Orders modals (z-index 10000) it can open from */
   display: flex;
   flex-direction: column;
   background: rgba(19, 32, 56, 0.55);

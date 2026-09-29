@@ -92,9 +92,13 @@ class ChatMessagesNotifier extends Notifier<AsyncValue<List<Message>>> {
 
   ChatRepository get _repo => ref.read(chatRepositoryProvider);
 
-  Future<void> loadMessages() async {
-    print('🔄 CHAT MESSAGES NOTIFIER: loadMessages() called');
-    state = const AsyncValue.loading();
+  // [silent] is for background polling: no loading spinner, and a failed poll keeps
+  // the messages already on screen instead of replacing them with an error.
+  Future<void> loadMessages({bool silent = false}) async {
+    if (!silent) {
+      print('🔄 CHAT MESSAGES NOTIFIER: loadMessages() called');
+      state = const AsyncValue.loading();
+    }
 
     try {
       final authState = ref.read(authProvider);
@@ -107,11 +111,13 @@ class ChatMessagesNotifier extends Notifier<AsyncValue<List<Message>>> {
 
       print('✅ CHAT MESSAGES NOTIFIER: Fetching my chat history');
       final messages = await _repo.getMyChatMessages();
-      print('✅ CHAT MESSAGES NOTIFIER: Loaded ${messages.length} messages');
+      if (!silent) {
+        print('✅ CHAT MESSAGES NOTIFIER: Loaded ${messages.length} messages');
+      }
       state = AsyncValue.data(messages);
     } catch (e, st) {
       print('❌ CHAT MESSAGES NOTIFIER: Failed to load messages: $e');
-      state = AsyncValue.error(e, st);
+      if (!silent) state = AsyncValue.error(e, st);
     }
   }
 

@@ -2,9 +2,13 @@ package com.appGate.delivery.service;
 
 import com.appGate.delivery.dto.DeliveryNotificationDto;
 import com.appGate.delivery.dto.PendingDeliveryDto;
+import com.appGate.delivery.models.DeliveryConfirmation;
 import com.appGate.delivery.models.DeliveryNotification;
+import com.appGate.delivery.models.Rider;
 import com.appGate.delivery.models.RiderBox;
+import com.appGate.delivery.repository.DeliveryConfirmationRepository;
 import com.appGate.delivery.repository.DeliveryNotificationRepository;
+import com.appGate.delivery.repository.RiderBoxRepository;
 import com.appGate.delivery.response.BaseResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,17 +21,27 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class DeliveryNotificationService {
 
     private final DeliveryNotificationRepository deliveryNotificationRepository;
     private final com.appGate.rbac.service.BranchScopeService branchScopeService;
+    private final RiderBoxRepository riderBoxRepository;
+    private final DeliveryConfirmationRepository deliveryConfirmationRepository;
+    private final RiderBoxDetailsResolver detailsResolver;
 
     public DeliveryNotificationService(DeliveryNotificationRepository deliveryNotificationRepository,
-                                       com.appGate.rbac.service.BranchScopeService branchScopeService) {
+                                       com.appGate.rbac.service.BranchScopeService branchScopeService,
+                                       RiderBoxRepository riderBoxRepository,
+                                       DeliveryConfirmationRepository deliveryConfirmationRepository,
+                                       RiderBoxDetailsResolver detailsResolver) {
         this.deliveryNotificationRepository = deliveryNotificationRepository;
         this.branchScopeService = branchScopeService;
+        this.riderBoxRepository = riderBoxRepository;
+        this.deliveryConfirmationRepository = deliveryConfirmationRepository;
+        this.detailsResolver = detailsResolver;
     }
 
     /** Load a notification, refusing one that belongs to another branch. */
@@ -71,10 +85,70 @@ public class DeliveryNotificationService {
         return new BaseResponse(HttpStatus.CREATED.value(), "Notification created successfully", saved);
     }
 
+    /**
+     * A notification plus what the web "View Details" modal needs about its delivery - product,
+     * rider and the proof-of-delivery photo the rider took at the door. Notifications don't
+     * store their rider box, so it's found through the notification's orderId (the box's
+     * mobile orderId, or its salesOrderId for a walk-in sale - see notifyRiderBoxEvent).
+     */
     public BaseResponse getNotificationById(Long id) {
         DeliveryNotification notification = notificationInScope(id);
 
-        return new BaseResponse(HttpStatus.OK.value(), "Notification retrieved successfully", notification);
+        Map<String, Object> detail = new HashMap<>();
+        detail.put("id", notification.getId());
+        detail.put("orderId", notification.getOrderId());
+        detail.put("riderId", notification.getRiderId());
+        detail.put("branchId", notification.getBranchId());
+        detail.put("customerName", notification.getCustomerName());
+        detail.put("productName", notification.getProductName());
+        detail.put("deliveryAddress", notification.getDeliveryAddress());
+        detail.put("notificationType", notification.getNotificationType());
+        detail.put("message", notification.getMessage());
+        detail.put("isRead", notification.getIsRead());
+        detail.put("notificationDate", notification.getNotificationDate());
+
+        RiderBox riderBox = findRiderBox(notification);
+        if (riderBox != null) {
+            PendingDeliveryDto details = detailsResolver.resolve(riderBox);
+            detail.put("riderBoxId", riderBox.getRiderBoxId());
+            detail.put("productId", details.getProductId());
+            detail.put("productImage", details.getProductImage());
+            detail.put("salesRef", details.getSalesReference());
+            detail.put("riderName", details.getRiderName());
+
+            Rider rider = riderBox.getRider();
+            if (rider != null) {
+                detail.put("riderPhone", rider.getPhoneNumber());
+                detail.put("riderImage", rider.getPassport());
+            }
+
+            DeliveryConfirmation confirmation = deliveryConfirmationRepository
+                    .findByRiderBoxId(riderBox.getRiderBoxId()).orElse(null);
+            if (confirmation != null) {
+                detail.put("proofOfDeliveryImage", confirmation.getProofOfDeliveryImage());
+                detail.put("deliveryDate", confirmation.getTimeOfDelivery());
+            }
+        }
+
+        return new BaseResponse(HttpStatus.OK.value(), "Notification retrieved successfully", detail);
+    }
+
+    private RiderBox findRiderBox(DeliveryNotification notification) {
+        Long orderId = notification.getOrderId();
+        if (orderId == null) {
+            return null;
+        }
+        // A mobile order id and a walk-in sales order id can share a number, so only take a
+        // box that belongs to the notification's rider.
+        return riderBoxRepository.findByOrderId(orderId)
+                .filter(box -> belongsToRider(box, notification))
+                .or(() -> riderBoxRepository.findBySalesOrderId(orderId)
+                        .filter(box -> belongsToRider(box, notification)))
+                .orElse(null);
+    }
+
+    private boolean belongsToRider(RiderBox box, DeliveryNotification notification) {
+        return notification.getRiderId() == null || Objects.equals(box.getRiderId(), notification.getRiderId());
     }
 
     public BaseResponse markAsRead(Long id) {
